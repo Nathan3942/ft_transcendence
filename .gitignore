@@ -1,0 +1,14 @@
+# Dependencies / node_modules are heavy do not push them
+node_modules/
+
+# compiled files / no need to push them users can build from their machines push srcs/
+dist/
+
+# Logs 
+*.log
+
+# environement variables / sensible data such as database password API keys DO NOT PUSH!
+.env
+
+# Fichiers système Mac
+.DS_Store

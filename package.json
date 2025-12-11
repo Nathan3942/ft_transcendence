@@ -1,0 +1,32 @@
+{
+  "name": "backend-collab",
+  "version": "1.0.0",
+  "description": "broton and tmontani's work on the backend of the ft_transcendance project",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts", 
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tmontani25/transcendence-backend-collab.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/tmontani25/transcendence-backend-collab/issues"
+  },
+  "homepage": "https://github.com/tmontani25/transcendence-backend-collab#readme",
+  "dependencies": {
+    "fastify": "^5.6.2"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
