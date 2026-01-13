@@ -12,3 +12,6 @@ dist/
 
 # Fichiers système Mac
 .DS_Store
+
+#prompt copilot
+prompt.txt

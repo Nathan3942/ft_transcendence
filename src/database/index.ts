@@ -3,7 +3,7 @@ import { initTables } from './init'
 
 export { initDatabase, getDatabase, checkDatabaseHealth, initTables }
 
-export default {
+export default { // contains all db functions but unlikely to use
   initDatabase,
   getDatabase,
   checkDatabaseHealth,

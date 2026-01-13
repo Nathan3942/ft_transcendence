@@ -1,6 +1,7 @@
 import Fastify from 'fastify'
 import { initDatabase, checkDatabaseHealth, initTables } from './database'
 import { success, errorResponse} from "./utils/response";
+import v1Routes from './routes/v1'
 
 // Create a Fastify server instance with logging enabled
 const server = Fastify({
@@ -38,3 +39,5 @@ const start = async () => {
 
 // Execute the start function
 start()
+
+server.register(v1Routes, { prefix: '/api/v1' })
