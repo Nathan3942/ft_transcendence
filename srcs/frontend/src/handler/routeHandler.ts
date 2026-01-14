@@ -1,3 +1,5 @@
+import create404page from '../routes/404page'
+
 type Route = {
     path: string;
     component: () => void;
@@ -22,13 +24,13 @@ export class Router {
         this.navigateTo(window.location.pathname);
     }
 
-    public navigateTo(path: string): void {
+    public async navigateTo(path: string): Promise<void> {
         const route = this.findRoute(path);
         if (route) {
             window.history.pushState({}, "", path);
             this.render(route);
         } else {
-            this.render404();
+            this.rootElement.appendChild(await create404page());
         }
     }
     
@@ -39,10 +41,6 @@ export class Router {
     private render(route: Route): void {
         this.rootElement.innerHTML = "";
         route.component();
-    }
-
-    private render404(): void {
-        this.rootElement.innerHTML = "<h1>404 Page not found</h1>";
     }
 
     private setupPopStateListener(): void {
