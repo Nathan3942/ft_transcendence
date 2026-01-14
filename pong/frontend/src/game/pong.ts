@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 16:56:00 by njeanbou          #+#    #+#             */
-/*   Updated: 2025/12/15 19:00:42 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/01/14 13:01:39 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -765,13 +765,13 @@ export type PongController = {
 	stop: () => void;
 	reseize: (w: number, h: number) => void;
 	getState: () => PongState;
-	setInputSource: (fn: () => PongInput) => void; //pour ia ou reseau
+	setInputSource: (fn: (s: PongState) => PongInput) => void; //pour ia ou reseau
 };
 
 export function startPong(
 	canvas: HTMLCanvasElement, 
 	ctx: CanvasRenderingContext2D,
-	opts: { mode: ModeId } = { mode: "4p"},
+	opts: { mode: ModeId } = { mode: "1v1"},
 	config: Partial<PongConfig> = {},
 	events?: PongEvents
 ): PongController {
@@ -787,7 +787,7 @@ export function startPong(
 	const keysPressed = creatKeyMap();
 	const unbind = bindKeyboard(keysDown, keysPressed);
 
-	let inputSource: () => PongInput = () => keyboardToInput(keysDown, keysPressed);
+	let inputSource: (s: PongState) => PongInput = () => keyboardToInput(keysDown, keysPressed);
 
 	//boucle controllable
 	let rafId = 0;
@@ -800,7 +800,7 @@ export function startPong(
 		const dt = Math.min(0.05, (now - last) / 1000); // clamp dt evite gros saut
 		last = now;
 
-		const input = inputSource();
+		const input = inputSource(state);
 		update(state, input, dt, cfg, events);
 		render(ctx, canvas, state, cfg);
 
