@@ -24,13 +24,13 @@ export class Router {
         this.navigateTo(window.location.pathname);
     }
 
-    public async navigateTo(path: string): Promise<void> {
+    public navigateTo(path: string): void {
         const route = this.findRoute(path);
         if (route) {
             window.history.pushState({}, "", path);
             this.render(route);
         } else {
-            this.rootElement.appendChild(await create404page());
+            this.rootElement.appendChild(create404page());
         }
     }
     
