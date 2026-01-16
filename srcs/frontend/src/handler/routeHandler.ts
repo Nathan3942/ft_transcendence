@@ -1,4 +1,5 @@
-import create404page from '../routes/404page'
+import create404page from '../routes/404page';
+import assemblePage from './pageHandler';
 
 type Route = {
     path: string;
@@ -30,7 +31,7 @@ export class Router {
             window.history.pushState({}, "", path);
             this.render(route);
         } else {
-            this.rootElement.appendChild(create404page());
+            this.rootElement.appendChild(assemblePage(create404page()))
         }
     }
     
