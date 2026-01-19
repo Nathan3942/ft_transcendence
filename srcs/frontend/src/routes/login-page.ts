@@ -4,7 +4,7 @@ function createLoginForm(formContainer: Element): HTMLDivElement {
 	const template = document.createElement("template");
 	template.innerHTML = `
 		<div>
-			<h1 class="mb-6 text-center text-2l font-bold">Login</h1>
+			<h1 class="mb-6 text-center text-2xl font-bold">Login</h1>
 			<form id="login-form">
 				<input type="text" placeholder="Username" class="mb-4 w-full border p-2" />
 				<input type="password" placeholder="Password" class="mb-2 w-full border p-2" />
@@ -52,36 +52,36 @@ function createLoginForm(formContainer: Element): HTMLDivElement {
 }
 
 function createRegistrationForm(formContainer: Element): HTMLDivElement {
-    const template = document.createElement("template");
-    template.innerHTML = `
-        <div>
-            <h1 class="mb-6 text-center text-2xl font-bold">Register</h1>
-            <form id="register-form">
-                <input type="text" placeholder="Username" class="mb-4 w-full border p-2" />
-                <input type="password" placeholder="Password" class="mb-2 w-full border p-2" />
-                <input type="password" placeholder="Confirm your password" class="mb-2 w-full border p-2" />
-                <div id="registration-button-container"></div>
-            </form>
-            <p class="mt-4 text-center">
-                Already have an account?
-                <button id="show-login-button"></button>
-            </p>
-        </div>
-    `;
+	const template = document.createElement("template");
+	template.innerHTML = `
+		<div>
+			<h1 class="mb-6 text-center text-2xl font-bold">Register</h1>
+			<form id="register-form">
+				<input type="text" placeholder="Username" class="mb-4 w-full border p-2" />
+				<input type="password" placeholder="Password" class="mb-2 w-full border p-2" />
+				<input type="password" placeholder="Confirm your password" class="mb-2 w-full border p-2" />
+				<div id="registration-button-container"></div>
+			</form>
+			<p class="mt-4 text-center">
+				Already have an account?
+				<button id="show-login-button"></button>
+			</p>
+		</div>
+	`;
 
-    const form = template.content.firstElementChild as HTMLDivElement;
-    const registrationButton = createButton({
-        id: "register-button",
-        f: () => console.log("Registration button has been pressed"),
-        buttonText: "Register",
-        extraClasses: "w-full bg-blue-500 p-2 hover:bg-blue-600 dark:bg-blue-900 dark:hover:bg-blue-950",
-        type: "button",
-    });
+	const form = template.content.firstElementChild as HTMLDivElement;
+	const registrationButton = createButton({
+		id: "register-button",
+		f: () => console.log("Registration button has been pressed"),
+		buttonText: "Register",
+		extraClasses: "w-full bg-blue-500 p-2 hover:bg-blue-600 dark:bg-blue-900 dark:hover:bg-blue-950",
+		type: "button",
+	});
 
-    const registrationButtonContainer = form.querySelector("#registration-button-container");
-    if (registrationButtonContainer) {
-        registrationButtonContainer.appendChild(registrationButton);
-    }
+	const registrationButtonContainer = form.querySelector("#registration-button-container");
+	if (registrationButtonContainer) {
+		registrationButtonContainer.appendChild(registrationButton);
+	}
 
 	const startLoginButton = createButton({
 		id: "login-button",
@@ -101,7 +101,7 @@ function createRegistrationForm(formContainer: Element): HTMLDivElement {
 		showLoginButton.append(startLoginButton);
 	}
 
-    return form;
+	return form;
 }
 
 
