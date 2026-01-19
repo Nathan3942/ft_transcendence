@@ -12,8 +12,7 @@ function loadLoginForm(): HTMLDivElement {
 			</form>
 				<p class="mt-4 text-center">
 					Dont have an account?
-					<button id="showRegister" class="text-blue-500 underline hover:text-blue-700">Register
-				</button>
+					<button id="showRegister"></button>
 			</p>
 	</div>
 	`;
@@ -58,6 +57,23 @@ export default function createLoginPage(): HTMLDivElement {
 	if (buttonContainer) {
 		buttonContainer.appendChild(testButton);
 	}
+
+	const showRegister = createButton({
+		id: "showRegisterButton",
+		f: () => { 
+			if (formContainer) {
+				formContainer.innerHTML = "";
+				formContainer.append(loadRegisterForm())
+			}
+		},
+		buttonText: "Register.",
+		extraClasses: "text-blue-500 underline hover:text-blue-700",
+		type: "button",
+	})
+
+	const showRegisterButton = template.content.querySelector("#showRegister");
+	if (showRegisterButton)
+		showRegisterButton.append(showRegister);
 
 	return template.content.firstElementChild as HTMLDivElement;
 }
