@@ -29,7 +29,7 @@ export default async function usersRoutes(Fastify: FastifyInstance){
     const db = getDatabase()
     const stmt = db.prepare('SELECT * FROM users')
     const users = stmt.all()
-    return success(users)
+    reply.send(success(users))
     }))
 
     Fastify.get('/users/:id', asyncHandler(async (request, reply) => {

@@ -37,7 +37,7 @@ const start = async () => {
   }
 }
 
+server.register(v1Routes, { prefix: '/api/v1' })
 // Execute the start function
 start()
 
-server.register(v1Routes, { prefix: '/api/v1' })
