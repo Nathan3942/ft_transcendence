@@ -1,4 +1,4 @@
-export default function create404Page(): HTMLElement  {
+export default function create404Page(): HTMLDivElement  {
 	const template = document.createElement("template");
 	
 	template.innerHTML = `
@@ -8,6 +8,6 @@ export default function create404Page(): HTMLElement  {
 	</div>
 	`;
 
-	const page404 = template.content.firstElementChild as HTMLElement;
+	const page404 = template.content.firstElementChild as HTMLDivElement;
 	return page404;
 }
