@@ -6,11 +6,23 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 12:47:55 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/01/14 16:14:36 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/01/19 16:33:29 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-import type { Genome, GAConfig } from "./type";
+/* 
+	regroupe les fonction relative a la gestion de la population
+	- randomGenome : attribue des gen aleatoire a chaque individue pour la premiere generation
+	- mutate : modifie aleatoirement un gen dun individue pour pousser a l'evolution
+	- crossover : pour chaque enfant dune nouvelle generation choisi aleatoirement pour chaque gen entre ses 2 parant (les parant etant les 2 meilleur a la generation precedente)
+	-  evolve : a la fin dune generation une fois que les fitness sont calcule, resort les meilleur individue et fait une nouvelle generation avec comme base ces deux meilleur individue
+*/
+
+import type { Genome, GAConfig, TrainProgress } from "./type";
+
+function clamp01(x: number) {
+	return (Math.max(0, Math.min(1, x)));
+}
 
 export function randomGenome(): Genome {
     return {
@@ -35,7 +47,7 @@ function mutate(g: Genome, rate: number, sigma: number): Genome {
     if (Math.random() < rate)
         out.mistake = Math.min(0.25, Math.max(0, n(out.mistake)));
     if (Math.random() < rate)
-        out.jitter = Math.min(30, Math.min(0, n(out.jitter)));
+        out.jitter = Math.min(30, Math.max(0, n(out.jitter)));
     return (out);
 }
 
@@ -51,16 +63,28 @@ function crossover(a: Genome, b: Genome): Genome {
     };
 }
 
+function tournament<T>(arr: T[], score: (t: T) => number, k = 5): T {
+	let best = arr[(Math.random() * arr.length) | 0];
+	let bestS = score(best);
+	for (let i = 1; i < k; i++) {
+		const cand = arr[(Math.random() * arr.length) | 0];
+		const s = score(cand);
+		if (s > bestS) {
+			best = cand;
+			bestS = s;
+		}
+	}
+	return (best);
+}
 
-export async function evolv(cfg: GAConfig, evaluate: (g: Genome) => Promise<number>) {
-	
-	let pop = Array.from({ length: cfg.popSize }, randomGenome);
+export function evolve(cfg: GAConfig, evaluate: (g: Genome) => number, onProgress?: (p: TrainProgress) => void) {
+	let pop: Genome[] = Array.from({ length: cfg.popSize }, randomGenome);
 
 	let best = pop[0];
 	let bestFit = -Infinity;
 
 	for (let gen = 0; gen < cfg.generation; gen++) {
-		const scored = await Promise.all(pop.map(async g => ({ g, f: await evaluate(g) })));
+		const scored = pop.map((g) => ({ g, f: evaluate(g) }));
 		scored.sort((x, y) => y.f - x.f);
 
 		if (scored[0].f > bestFit) {
@@ -68,21 +92,23 @@ export async function evolv(cfg: GAConfig, evaluate: (g: Genome) => Promise<numb
 			best = scored[0].g;
 		}
 
-		const eliteCount = Math.max(1, Math.floor(cfg.popSize * cfg.elitism));
-		const elite = scored.slice(0, eliteCount).map(x => x.g);
+		onProgress?.({ gen, bestFitness: bestFit, bestGenome: best });
+
+		const elitCount = Math.max(1, Math.floor(cfg.popSize * cfg.elitism));
+		const elite = scored.slice(0, elitCount).map((x) => x.g);
 
 		const next: Genome[] = [...elite];
 
-		while (next.length < cfg.popSize) {
-			//selection simple en tournoi
-			const pick = () => scored[Math.floor(Math.random() * Math.min(20, scored.length))].g;
+		const scoreFn = (g: Genome) => scored.find((x) => x.g === g)?.f ?? -Infinity;
 
-			const child = mutate(crossover(pick(), pick()), cfg.mutationRate, cfg.mutationSigma);
+		while (next.length < cfg.popSize) {
+			const a = tournament(elite.length ? elite : pop, scoreFn, 5);
+			const b = tournament(elite.length ? elite : pop, scoreFn, 5);
+			const child = mutate(crossover(a, b), cfg.mutationRate, cfg.mutationSigma);
 			next.push(child);
 		}
 
 		pop = next;
 	}
-
-	return { best, bestFit};
+	return { best, bestFit };
 }

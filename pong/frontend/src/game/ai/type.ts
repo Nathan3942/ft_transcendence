@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 12:47:47 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/01/14 16:14:29 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/01/19 16:33:35 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,3 +27,8 @@ export type GAConfig = {
 	episodesPerGenome:	number;
 };
 
+export type TrainProgress = {
+    gen:			number;
+    bestFitness:	number;
+    bestGenome:		Genome;
+};

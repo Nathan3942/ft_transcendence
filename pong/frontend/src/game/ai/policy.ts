@@ -6,31 +6,39 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 12:47:52 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/01/14 16:20:45 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/01/19 16:33:34 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-import type { PongState, PongInput } from "game/pong";
+/*
+    definie les regle de base du bot, ces regles dependent de la valeur de chaque gen
+    un bot sur pong etant assez simpliste au niveau des input et de son environement, passer par un reseau de neuronne aurai ete overkill 
+*/
+
+import type { PongInput, PongState } from "../pong_core";
+import { clamp } from "../pong_core";
 import type { Genome } from "./type";
 
-function clamp(v: number, a: number, b: number) {
-    return (Math.max(a, Math.min(b, v)));
+function emptyInput(): PongInput {
+    return {
+        p1: { up: false, down: false },
+        p2: { up: false, down: false },
+        p3: { up: false, down: false },
+        p4: { up: false, down: false },
+    };
 }
 
 export function makeAIPolicyP2(genome: Genome) {
     let reactAcc = 0;
     let lastDecision: -1 | 0 | 1 = 0;
 
-    return (s: PongState): PongInput => {
-        const input: PongInput = {
-            p1: { up: false, down: false},
-            p2: { up: false, down: false},
-            p3: { up: false, down: false},
-            p4: { up: false, down: false},
-        };
+    return (s: PongState, dt: number): PongInput => {
+        const input = emptyInput();
+        if (s.mod !== "1v1")
+            return (input);
 
         //joue quand running
-        if (s.phase !== "RUNNING" || s.mod !== "1v1") 
+        if (s.phase !== "RUNNING") 
             return (input);
 
         //paddle P2 = index 1 dans init 1v1
@@ -38,7 +46,7 @@ export function makeAIPolicyP2(genome: Genome) {
         const paddleCenter = p2.pos + p2.len / 2;
 
         //reaction (delay)
-        reactAcc += 1 / 60; // approx peut passer dt
+        reactAcc += dt; // approx peut passer dt
         if (reactAcc < genome.reaction) {
             // conserve derniere decision pour etre coherent
             if (lastDecision === -1)
@@ -55,17 +63,19 @@ export function makeAIPolicyP2(genome: Genome) {
         let targetY = s.playY + s.playH / 2;
 
         if (ballGoingToP2) {
-            // temps avant d'atteindre le paddle droite (approx)
+            // position x du cote droite donc bord playfield
             const paddleX = s.playX + s.playW; // bord droit
             const distX = (paddleX - s.ballX);
-            const t = distX / Math.max(50, s.ballVX); // evite div 0 + limite
-        
 
+            // temps avant d'atteindre le paddle droite (approx)
+            const t = distX / Math.max(80, s.ballVX); // evite div 0 + limite
+
+            // interseption 
             targetY = s.ballY + s.ballVY * t * genome.anticipation;
 
             // jitter (style plus humain)
             targetY += (Math.random() * 2 - 1) * genome.jitter;
-
+            
             // erreur 
             if (Math.random() < genome.mistake) {
                 targetY += (Math.random() * 2 - 1) * 120;
