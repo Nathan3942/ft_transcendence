@@ -1,6 +1,6 @@
 import { createButton } from "../components/button/button";
 
-function createLoginForm(): HTMLDivElement {
+function createLoginForm(formContainer: Element): HTMLDivElement {
 	const template = document.createElement("template");
 	template.innerHTML = `
 		<div>
@@ -16,45 +16,7 @@ function createLoginForm(): HTMLDivElement {
 			</p>
 		</div>
 	`;
-
-	return template.content.firstElementChild as HTMLDivElement;
-}
-
-function createRegistrationForm(): HTMLDivElement {
-	const template = document.createElement("template");
-	template.innerHTML = `
-		<div>
-			<h1 class="mb-6 text-center text-2xl font-bold">Register</h1>
-			<form id="register-form">
-				<input type="text" placeholder="Username" class="mb-4 w-full border p-2" />
-				<input type="password" placeholder="Password" class="mb-2 w-full border p-2" />
-				<input type="password" placeholder="Confirm your password" class="mb-2 w-full border p-2" />
-				<div id="registration-button-container"></div>
-			</form>
-			<p class="mt-4 text-center">
-				Already have an account?
-				<button id="show-login-button"></button>
-			</p>
-		</div>
-	`;
-
-	return template.content.firstElementChild as HTMLDivElement;
-}
-
-export default function createLoginPage(): HTMLDivElement {
-	const template = document.createElement("template");
-	template.innerHTML = `
-		<div class="flex h-screen w-screen items-center justify-center">
-			<div id="form-container" class="items-center justify-center bg-gray-200 px-4 py-2 dark:bg-gray-950">
-			</div>
-		</div>
-	`;
-
-	const formContainer = template.content.querySelector("#form-container");
-	if (formContainer) {
-		formContainer.appendChild(createLoginForm());
-	}
-
+	
 	const loginButton = createButton({
 		id: "login-button",
 		f: () => console.log("Login Button has been pressed"),
@@ -73,7 +35,7 @@ export default function createLoginPage(): HTMLDivElement {
 		f: () => {
 			if (formContainer) {
 				formContainer.innerHTML = "";
-				formContainer.append(createRegistrationForm());
+				formContainer.append(createRegistrationForm(formContainer));
 			}
 		},
 		buttonText: "Register.",
@@ -84,6 +46,77 @@ export default function createLoginPage(): HTMLDivElement {
 	const showRegisterButton = template.content.querySelector("#show-register-button");
 	if (showRegisterButton) {
 		showRegisterButton.append(startRegisterButton);
+	}
+
+	return template.content.firstElementChild as HTMLDivElement;
+}
+
+function createRegistrationForm(formContainer: Element): HTMLDivElement {
+    const template = document.createElement("template");
+    template.innerHTML = `
+        <div>
+            <h1 class="mb-6 text-center text-2xl font-bold">Register</h1>
+            <form id="register-form">
+                <input type="text" placeholder="Username" class="mb-4 w-full border p-2" />
+                <input type="password" placeholder="Password" class="mb-2 w-full border p-2" />
+                <input type="password" placeholder="Confirm your password" class="mb-2 w-full border p-2" />
+                <div id="registration-button-container"></div>
+            </form>
+            <p class="mt-4 text-center">
+                Already have an account?
+                <button id="show-login-button"></button>
+            </p>
+        </div>
+    `;
+
+    const form = template.content.firstElementChild as HTMLDivElement;
+    const registrationButton = createButton({
+        id: "register-button",
+        f: () => console.log("Registration button has been pressed"),
+        buttonText: "Register",
+        extraClasses: "w-full bg-blue-500 p-2 hover:bg-blue-600 dark:bg-blue-900 dark:hover:bg-blue-950",
+        type: "button",
+    });
+
+    const registrationButtonContainer = form.querySelector("#registration-button-container");
+    if (registrationButtonContainer) {
+        registrationButtonContainer.appendChild(registrationButton);
+    }
+
+	const startLoginButton = createButton({
+		id: "login-button",
+		f: () => {
+			if (formContainer) {
+				formContainer.innerHTML = "";
+				formContainer.append(createLoginForm(formContainer));
+			}
+		},
+		buttonText: "Login.",
+		extraClasses: "text-blue-500 underline hover:text-blue-700",
+		type: "button",
+	});
+
+	const showLoginButton = template.content.querySelector("#show-login-button");
+	if (showLoginButton) {
+		showLoginButton.append(startLoginButton);
+	}
+
+    return form;
+}
+
+
+export default function createLoginPage(): HTMLDivElement {
+	const template = document.createElement("template");
+	template.innerHTML = `
+		<div class="flex h-screen w-screen items-center justify-center">
+			<div id="form-container" class="items-center justify-center bg-gray-200 px-4 py-2 dark:bg-gray-950">
+			</div>
+		</div>
+	`;
+
+	const formContainer = template.content.querySelector("#form-container");
+	if (formContainer) {
+		formContainer.appendChild(createLoginForm(formContainer));
 	}
 
 	return template.content.firstElementChild as HTMLDivElement;
