@@ -1,15 +1,17 @@
 import create404page from '../routes/404page';
+import createLoginPage from '../routes/login-page';
 import assemblePage from './pageHandler';
 
 type Route = {
     path: string;
-    component: () => void;
+    component: () => HTMLDivElement;
 }
 
 const routes: Route[] = [
-    { path: "/", component: () => console.log("Home Page") },
-    { path: "/leaderboard", component: () => console.log("Leaderboard page") },
-    { path: "/user-profile", component: () => console.log("User Profile page") },
+    { path: "/", component: () => "work in progres" as unknown as HTMLDivElement },
+    { path: "/leaderboard", component: () => "work in progres" as unknown as HTMLDivElement },
+    { path: "/user-profile", component: () => "work in progres" as unknown as HTMLDivElement },
+    { path: "/login", component: () => assemblePage(createLoginPage()) }
 ];
 
 export class Router {
@@ -41,7 +43,7 @@ export class Router {
 
     private render(route: Route): void {
         this.rootElement.innerHTML = "";
-        route.component();
+        this.rootElement.appendChild(route.component());
     }
 
     private setupPopStateListener(): void {
