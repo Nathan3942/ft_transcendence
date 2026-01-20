@@ -1,5 +1,6 @@
 import create404page from '../routes/404page';
 import createLoginPage from '../routes/login-page';
+import createTestPage from '../routes/test';
 import assemblePage from './pageHandler';
 
 type Route = {
@@ -11,7 +12,8 @@ const routes: Route[] = [
     { path: "/", component: () => "work in progres" as unknown as HTMLDivElement },
     { path: "/leaderboard", component: () => "work in progres" as unknown as HTMLDivElement },
     { path: "/user-profile", component: () => "work in progres" as unknown as HTMLDivElement },
-    { path: "/login", component: () => assemblePage(createLoginPage()) }
+    { path: "/login", component: () => assemblePage(createLoginPage()) },
+    { path: "/test", component: () => assemblePage(createTestPage()) }
 ];
 
 export class Router {

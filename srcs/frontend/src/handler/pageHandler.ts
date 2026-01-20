@@ -4,7 +4,7 @@ import createFooter from "../components/footer/footer";
 export default function assemblePage(element: HTMLDivElement) : HTMLDivElement {
     const template = document.createElement("template");
     template.innerHTML = `
-        <div class="w-full h-full"></div> 
+        <div class="flex flex-col w-full h-full"></div> 
     `;
 
     const outFrame = template.content.firstElementChild as HTMLDivElement;
