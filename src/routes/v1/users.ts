@@ -1,13 +1,14 @@
+
 import { FastifyInstance } from 'fastify'
 import { success, errorResponse } from '../../utils/response'
 import { getDatabase } from '../../database'
-import { asyncHandler } from '../../utils/asyncHandler'
+import { NotFoundError, UnauthorizedError, BadRequestError } from '../../utils/appErrors'
 
 
-export default async function usersRoutes(Fastify: FastifyInstance){
+export default async function usersRoutes(fastify: FastifyInstance){
 
  /************************* POST USERS **********************************/
-    Fastify.post('/users', asyncHandler(async (request, reply) => {
+    fastify.post('/users', async (request, reply) => {
 
         const {username} = request.body as { username : string }
 
@@ -22,17 +23,17 @@ export default async function usersRoutes(Fastify: FastifyInstance){
             id: result.lastInsertRowid, 
             username: username 
         })
-    }))
+    })
 
     /************************* GET USERS **********************************/
-    Fastify.get('/users', asyncHandler(async (request, reply) => {
+    fastify.get('/users', async(request, reply) => {
     const db = getDatabase()
     const stmt = db.prepare('SELECT * FROM users')
     const users = stmt.all()
     reply.send(success(users))
-    }))
+    })
 
-    Fastify.get('/users/:id', asyncHandler(async (request, reply) => {
+    fastify.get('/users/:id', async(request, reply) => {
 
         const { id } = request.params as {id : string}
         if (!id)
@@ -44,10 +45,10 @@ export default async function usersRoutes(Fastify: FastifyInstance){
             return errorResponse('404', 'User not found')
         return success(user)
 
-    }))
+    })
 
      /************************* DELETE USERS **********************************/
-    Fastify.delete('/users/:id', asyncHandler(async (request, reply) => {
+    fastify.delete('/users/:id', async(request, reply) => {
 
         const { id } = request.params as { id : string} 
         
@@ -62,9 +63,9 @@ export default async function usersRoutes(Fastify: FastifyInstance){
         
         reply.status(200)  // ← Définir le status HTTP
         return success({ message: "User deleted", id: parseInt(id) })
-    }))
+    })
 
-    Fastify.patch('/users/:id', asyncHandler(async (request, reply) => {
+    fastify.patch('/users/:id',async (request, reply) => {
         // on veut changer le nom d'un user
         const { id } = request.params as {id : string}
         const { username } = request.body as {username : string} //new username from request.body
@@ -87,18 +88,17 @@ export default async function usersRoutes(Fastify: FastifyInstance){
             id: parseInt(id),          // ← Virgule + utilise id de params
             username: username         // ← Nouveau username (du body)
         })
-    }))
-// Route de test temporaire pour vérifier asyncHandler
-    Fastify.get('/test-error', asyncHandler(async (request, reply) => {
+    })
 
-        throw new Error('error test')
-    // Qu'est-ce que tu pourrais mettre ici pour forcer une erreur ?
-    // Pense à 3 façons différentes de créer une erreur...
-}))
 
-// Route 2 : Lance un string
-Fastify.get('/test-error-2', asyncHandler(async (request, reply) => {
-    throw 'Ceci est juste un string'
-}))
+fastify.get('/NotFound', async(request, reply) => {
+    throw new NotFoundError("testing errorHandler global")
+})
 
+fastify.get('/Un', async(request, reply) => {
+    throw new UnauthorizedError("testing Unauthorized")
+})
+fastify.get('/BadRequest', async(request, reply) => {
+    throw new BadRequestError("testing bad request")
+})
 }

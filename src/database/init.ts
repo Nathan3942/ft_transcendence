@@ -1,3 +1,6 @@
+/* ce fichier permet de creer les table dans la database
+
+*/
 import { getDatabase } from './connection'
 
 export const initTables = (): void => {
@@ -11,6 +14,10 @@ export const initTables = (): void => {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
   `)
+  db.exec('CREATE TABLE IF NOT EXIST tournament()')
+
+
+  
 }
 
 export default initTables
