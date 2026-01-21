@@ -1,4 +1,5 @@
 import create404page from '../routes/404page';
+import createHomePage from '../routes/home';
 import createLoginPage from '../routes/login-page';
 import createTestPage from '../routes/test';
 import assemblePage from './pageHandler';
@@ -9,7 +10,7 @@ type Route = {
 }
 
 const routes: Route[] = [
-    { path: "/", component: () => "work in progres" as unknown as HTMLDivElement },
+    { path: "/", component: () => assemblePage(createHomePage()) },
     { path: "/leaderboard", component: () => "work in progres" as unknown as HTMLDivElement },
     { path: "/user-profile", component: () => "work in progres" as unknown as HTMLDivElement },
     { path: "/login", component: () => assemblePage(createLoginPage()) },
