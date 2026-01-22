@@ -2,7 +2,7 @@ import Fastify from 'fastify'
 import { initDatabase, checkDatabaseHealth, initTables } from './database'
 import { success, errorResponse} from "./utils/response";
 import v1Routes from './routes/v1'
-import { errorHandler } from './utils/ErrorHandler'
+import { errorHandler, notFoundHandler} from './utils/ErrorHandler'
 
 // Create a Fastify server instance with logging enabled
 const server = Fastify({
@@ -10,15 +10,6 @@ const server = Fastify({
 })
 
 // Health check route - returns "pong" when pinged
-server.get('/ping', async (request, reply) => {
-  return success("pong");
-})
-
-server.get('/fuck', async (request, reply) => {
-  return errorResponse("10", "test error");
-} )
-
-
 
 // Start the server
 const start = async () => {
@@ -42,6 +33,7 @@ const start = async () => {
 
 server.register(v1Routes, { prefix: '/api/v1' })
 server.setErrorHandler(errorHandler) // si fastify catch une erreur il utilise mon handler
+
+server.setNotFoundHandler(notFoundHandler) //catch les erreurs route inexistante
 // Execute the start function
 start()
-

@@ -5,15 +5,15 @@ import { getDatabase } from '../../database'
 import { NotFoundError, UnauthorizedError, BadRequestError } from '../../utils/appErrors'
 
 
-export default async function usersRoutes(fastify: FastifyInstance){
+export default async function usersRoutes(server : FastifyInstance){
 
  /************************* POST USERS **********************************/
-    fastify.post('/users', async (request, reply) => {
+    server.post('/users', async (request, reply) => {
 
         const {username} = request.body as { username : string }
 
         if (!username)
-            return errorResponse("400", "Username is required")
+            return errorResponse("BadRequestError", "Username is required", 400, [])
         
         const db = getDatabase()
         const stmt = db.prepare('INSERT INTO users (username) VALUES (?)')
@@ -26,29 +26,29 @@ export default async function usersRoutes(fastify: FastifyInstance){
     })
 
     /************************* GET USERS **********************************/
-    fastify.get('/users', async(request, reply) => {
+    server.get('/users', async(request, reply) => {
     const db = getDatabase()
     const stmt = db.prepare('SELECT * FROM users')
     const users = stmt.all()
     reply.send(success(users))
     })
 
-    fastify.get('/users/:id', async(request, reply) => {
+    server.get('/users/:id', async(request, reply) => {
 
         const { id } = request.params as {id : string}
         if (!id)
-                return errorResponse('400', 'Error Missing id')
+            return errorResponse("BadRequestError", "Error Missing id", 400, [])
         const db = getDatabase()
         const stmt = db.prepare('SELECT * FROM users WHERE id = ?')
         const user = stmt.get(id)
         if (!user)
-            return errorResponse('404', 'User not found')
+            return errorResponse("NotFoundError", "User not found", 404, [])
         return success(user)
 
     })
 
      /************************* DELETE USERS **********************************/
-    fastify.delete('/users/:id', async(request, reply) => {
+    server.delete('/users/:id', async(request, reply) => {
 
         const { id } = request.params as { id : string} 
         
@@ -57,32 +57,32 @@ export default async function usersRoutes(fastify: FastifyInstance){
         const result = stmt.run(id)
         
         if (result.changes == 0) {
-            reply.status(404)  // ← Définir le status HTTP
-            return errorResponse("404", "User not found")
+            reply.status(404)
+            return errorResponse("NotFoundError", "User not found", 404, [])
         }
         
         reply.status(200)  // ← Définir le status HTTP
         return success({ message: "User deleted", id: parseInt(id) })
     })
 
-    fastify.patch('/users/:id',async (request, reply) => {
+    server.patch('/users/:id',async (request, reply) => {
         // on veut changer le nom d'un user
         const { id } = request.params as {id : string}
         const { username } = request.body as {username : string} //new username from request.body
         if (!id || !username)
-            return errorResponse('400', 'Missing id or username')
+            return errorResponse("BadRequestError", "Missing id or username", 400, [])
 
         const db = getDatabase()
         const stmt = db.prepare('SELECT * FROM users WHERE id = ?') //selects all variable from the user object *
         const user = stmt.get(id)
         if (!user)
-            return errorResponse('404', 'User not found')
+            return errorResponse("NotFoundError", "User not found", 404, [])
 
 
         const update = db.prepare('UPDATE users SET username = ? WHERE id = ?')
         const final = update.run(username, id)
         if (final.changes == 0)
-            return errorResponse('500', 'Failed to update user')
+            return errorResponse("InternalServerError", "Failed to update user", 500, [])
     
         return success({
             id: parseInt(id),          // ← Virgule + utilise id de params
@@ -91,14 +91,14 @@ export default async function usersRoutes(fastify: FastifyInstance){
     })
 
 
-fastify.get('/NotFound', async(request, reply) => {
+server.get('/NotFound', async(request, reply) => {
     throw new NotFoundError("testing errorHandler global")
 })
 
-fastify.get('/Un', async(request, reply) => {
+server.get('/Un', async(request, reply) => {
     throw new UnauthorizedError("testing Unauthorized")
 })
-fastify.get('/BadRequest', async(request, reply) => {
+server.get('/BadRequest', async(request, reply) => {
     throw new BadRequestError("testing bad request")
 })
 }

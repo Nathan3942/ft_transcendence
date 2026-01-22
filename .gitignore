@@ -15,3 +15,7 @@ dist/
 
 #prompt copilot
 prompt.txt
+
+#contrat backend frontend
+contracts/
+

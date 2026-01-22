@@ -18,6 +18,7 @@ export function errorHandler(
     return reply.status(error.statusCode).send({
       error: error.name,
       message: error.message,
+      details: error.details ?? []
     });
   }
 
@@ -26,5 +27,15 @@ export function errorHandler(
   return reply.status(500).send({
     error: "InternalServerError",
     message: "Unexpected error",
+    details: []
   });
+}
+
+//handler pour les route not found 404
+export function notFoundHandler(request: FastifyRequest, reply: FastifyReply) {
+  return reply.status(404).send({
+    error: "NotFound",
+    message: "Route not found",
+    details: []
+  })
 }

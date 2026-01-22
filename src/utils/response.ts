@@ -1,18 +1,24 @@
-//this file define the response format of my api
-//format for success response
+/* ce fichier definit le format des reponses simple
+qui n'ont pas besoin de passer par le handler global */
+// Réponse standard pour un succès
 
-export function success<T>(payload: T) { //payload can be anything
+export function success<T>(payload: T) {
     return {
-        data : payload //javascript key value
-    }
-
+        data: payload
+    };
 }
 
-export function errorResponse(code : string, message : string){
+// Réponse standard pour une erreur (conforme au contrat)
+export function errorResponse(
+    error: string, // nom de l'erreur (ex: "BadRequestError")
+    message: string,
+    code: number,
+    details: any[] = []
+) {
     return {
-        error : {
-            code : code,
-            message : message,
-        }
-    }
+        error,
+        message,
+        code,
+        details
+    };
 }
