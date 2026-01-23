@@ -58,6 +58,7 @@ export class Router {
             this.render(route);
         } else {
             console.log("Error rendering route: ", path)
+            this.rootElement.innerHTML = "";
             this.rootElement.appendChild(assemblePage(create404page()))
         }
     }
