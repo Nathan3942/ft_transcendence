@@ -4,15 +4,24 @@ import createFooter from "../components/footer/footer";
 export default function assemblePage(element: HTMLDivElement) : HTMLDivElement {
     const template = document.createElement("template");
     template.innerHTML = `
-        <div class="flex flex-col w-full h-full"></div> 
+        <div class="flex flex-col w-full h-full">
+            <header>
+            </header>
+            <div id="viewport">
+            </div>
+            <footer>
+            </footer>
+        </div> 
     `;
 
-    const outFrame = template.content.firstElementChild as HTMLDivElement;
-    if (!outFrame) {
-        throw new Error("Failed to create page container");
-    }
-    outFrame.appendChild(createHeader());
-    outFrame.appendChild(element);
-    outFrame.appendChild(createFooter());
-    return outFrame; 
+    const headerContainer = template.content.querySelector("header");
+    headerContainer?.replaceWith(createHeader());
+
+    const viewportContainer = template.content.querySelector("#viewport");
+    viewportContainer?.replaceWith(element);
+
+    const footerContainer = template.content.querySelector("footer");
+    footerContainer?.replaceWith(createFooter());
+
+    return template.content.firstElementChild as HTMLDivElement; 
 }
