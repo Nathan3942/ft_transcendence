@@ -1,5 +1,5 @@
 import create404page from '../routes/404page';
-import createHomeLocalPage from '../routes/game-local';
+import createGameLocalPage from '../routes/game-local';
 import createHomePage from '../routes/home';
 import createLoginPage from '../routes/login-page';
 import createTestPage from '../routes/test';
@@ -16,7 +16,7 @@ const routes: Route[] = [
     { path: "/user-profile", component: () => "work in progres" as unknown as HTMLDivElement },
     { path: "/login", component: () => assemblePage(createLoginPage()) },
     { path: "/test", component: () => assemblePage(createTestPage()) },
-    { path: "/game-local", component: () => assemblePage(createHomeLocalPage()) }
+    { path: "/game-local", component: () => assemblePage(createGameLocalPage()) }
 ];
 
 export class Router {
