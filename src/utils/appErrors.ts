@@ -34,7 +34,7 @@ export class UnauthorizedError extends BaseError {
 export class BadRequestError extends BaseError {
     statusCode = 400;
     constructor(message = "Error Bad Request", details: any[] = []) {
-        super(message, 400, details);
+        super(message, 400, details); //constructor base class
         this.name = "BadRequestError";
     }
 }

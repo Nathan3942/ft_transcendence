@@ -13,7 +13,8 @@ export default async function usersRoutes(server : FastifyInstance){
         const {username} = request.body as { username : string }
 
         if (!username)
-            return errorResponse("BadRequestError", "Username is required", 400, [])
+            throw new BadRequestError("missing username id")
+            
         
         const db = getDatabase()
         const stmt = db.prepare('INSERT INTO users (username) VALUES (?)')
@@ -37,12 +38,12 @@ export default async function usersRoutes(server : FastifyInstance){
 
         const { id } = request.params as {id : string}
         if (!id)
-            return errorResponse("BadRequestError", "Error Missing id", 400, [])
+            throw new BadRequestError();
         const db = getDatabase()
         const stmt = db.prepare('SELECT * FROM users WHERE id = ?')
         const user = stmt.get(id)
         if (!user)
-            return errorResponse("NotFoundError", "User not found", 404, [])
+            throw new NotFoundError("user not found")
         return success(user)
 
     })
@@ -58,47 +59,37 @@ export default async function usersRoutes(server : FastifyInstance){
         
         if (result.changes == 0) {
             reply.status(404)
-            return errorResponse("NotFoundError", "User not found", 404, [])
+            throw new NotFoundError("user not found")
         }
         
         reply.status(200)  // ← Définir le status HTTP
         return success({ message: "User deleted", id: parseInt(id) })
     })
 
+/************************* PATCH USERS **********************************/
+
     server.patch('/users/:id',async (request, reply) => {
         // on veut changer le nom d'un user
         const { id } = request.params as {id : string}
         const { username } = request.body as {username : string} //new username from request.body
         if (!id || !username)
-            return errorResponse("BadRequestError", "Missing id or username", 400, [])
+            throw new BadRequestError("missing id or username")
 
         const db = getDatabase()
         const stmt = db.prepare('SELECT * FROM users WHERE id = ?') //selects all variable from the user object *
         const user = stmt.get(id)
         if (!user)
-            return errorResponse("NotFoundError", "User not found", 404, [])
+            throw new NotFoundError("user not found")
 
 
         const update = db.prepare('UPDATE users SET username = ? WHERE id = ?')
         const final = update.run(username, id)
         if (final.changes == 0)
-            return errorResponse("InternalServerError", "Failed to update user", 500, [])
+            return errorResponse("InternalServerError", "Failed to update user", 500, []) //how do i handle this
     
         return success({
             id: parseInt(id),          // ← Virgule + utilise id de params
             username: username         // ← Nouveau username (du body)
         })
     })
-
-
-server.get('/NotFound', async(request, reply) => {
-    throw new NotFoundError("testing errorHandler global")
-})
-
-server.get('/Un', async(request, reply) => {
-    throw new UnauthorizedError("testing Unauthorized")
-})
-server.get('/BadRequest', async(request, reply) => {
-    throw new BadRequestError("testing bad request")
-})
 }

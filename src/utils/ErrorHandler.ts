@@ -11,8 +11,10 @@ export function errorHandler(
   request: FastifyRequest,
   reply: FastifyReply
 ) {
+  console.log("errorHandler activated\n")
   console.log("Error received:", error);
   console.log("Instance of BaseError:", error instanceof BaseError);
+
 
   if (error instanceof BaseError) {
     return reply.status(error.statusCode).send({
