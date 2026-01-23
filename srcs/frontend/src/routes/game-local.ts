@@ -20,15 +20,15 @@ export default function createGameLocalPage(): HTMLDivElement {
 		makeBlock("bg-blue-300 dark:bg-blue-900", createButton({
 			id: "vs-player-button",
 			extraClasses:btnClasses,
-			buttonText: "Vs Player",
-			href: "/game-local-player"
+			buttonText: "Vs AI",
+			href: "/game-local-ai"
 			})
 		),
 		makeBlock("bg-red-300 dark:bg-red-900", createButton({
 			id: "vs-ai-button",
 			extraClasses: btnClasses,
-			buttonText: "Vs AI",
-			href: "/game-local-ai"
+			buttonText: "Vs Player",
+			href: "/game-local-player"
 			})
 		)
 	);
