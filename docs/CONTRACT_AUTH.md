@@ -1,7 +1,4 @@
 
----
-
-```md
 # docs/CONTRACT_AUTH.md
 # Transcendence — Contrat Auth (OAuth 42 + sessions cookies)
 
@@ -55,3 +52,4 @@ Exemple `userPublic` :
   "avatarUrl": "https://...",
   "createdAt": "..."
 }
+```

@@ -1,7 +1,3 @@
-
----
-
-```md
 # docs/CONTRACT_DB.md
 # Transcendence — Contrat DB (SQLite)
 

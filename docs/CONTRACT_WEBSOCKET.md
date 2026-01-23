@@ -1,7 +1,3 @@
-
----
-
-```md
 # docs/CONTRACT_WS.md
 # Transcendence — Contrat WebSocket
 
