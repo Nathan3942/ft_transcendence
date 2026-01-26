@@ -18,7 +18,7 @@ export default function createGameLocalPage(): HTMLDivElement {
 	const btnClasses = "w-full h-full flex flex-row p-4"; 
 	inner.append(
 		makeBlock("bg-blue-300 dark:bg-blue-900", createButton({
-			id: "vs-player-button",
+			id: "vs-ai-button",
 			extraClasses:btnClasses,
 			buttonText: "Vs AI",
 			href: "/game-local-ai",
@@ -28,15 +28,24 @@ export default function createGameLocalPage(): HTMLDivElement {
 			})
 		),
 		makeBlock("bg-purple-300 dark:bg-purple-900", createButton({
-			id: "vs-ai-button",
+			id: "vs-player-button",
 			extraClasses: btnClasses,
-			buttonText: "Vs Player",
-			href: "/game-local-player",
+			buttonText: "Player vs Player",
+			// f: () => createLocalMatch(),
 			icon: "assets/images/keyboard-svgrepo-com.svg",
 			iconAlt: "Icon",
 			iconBClass: "h-10 pr-3 dark:invert"
 			})
-		)
+		), 
+		makeBlock("bg-cyan-300 dark:bg-cyan-900", createButton({
+			id: "create-local-tournament",
+			extraClasses: btnClasses,
+			buttonText: "Local Tournament",
+			// f: () => createLocalTournament(),
+			icon: "assets/images/trophy-svgrepo-com.svg",
+			iconAlt: "Icon",
+			iconBClass: "h-10 pr-3 dark:invert"
+		}))
 	);
 
 	outer.appendChild(inner);
