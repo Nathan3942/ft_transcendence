@@ -22,9 +22,9 @@ export default function createGameOnlinePage(): HTMLDivElement {
 			extraClasses:btnClasses,
 			buttonText: "Create Match",
 			// f: createOnlineMatch(),
-			/* icon: "",
+			icon: "assets/images/plus-large-svgrepo-com.svg",
 			iconAlt: "Icon",
-			iconBClass: "h-10 pr-3 dark:invert" */
+			iconBClass: "h-10 pr-3 dark:invert"
 			})
 		),
 		makeBlock("bg-yellow-300 dark:bg-yellow-900", createButton({
@@ -40,11 +40,11 @@ export default function createGameOnlinePage(): HTMLDivElement {
 		makeBlock("bg-orange-300 dark:bg-orange-900", createButton({
 			id: "browse-matches-button",
 			extraClasses: btnClasses,
-			buttonText: "Browse Matches",
+			buttonText: "Browse Games",
 			// f: displayMatchBrowser(),
-			/* icon: "",
+			icon: "assets/images/list-svgrepo-com.svg",
 			iconAlt: "Icon",
-			iconBClass: "h-10 pr-3 dark:invert" */
+			iconBClass: "h-10 pr-3 dark:invert"
 		}))
 	);
 

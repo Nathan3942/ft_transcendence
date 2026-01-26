@@ -20,7 +20,7 @@ export default function createGameLocalPage(): HTMLDivElement {
 		makeBlock("bg-blue-300 dark:bg-blue-900", createButton({
 			id: "vs-ai-button",
 			extraClasses:btnClasses,
-			buttonText: "Vs AI",
+			buttonText: "Player vs AI",
 			href: "/game-local-ai",
 			icon: "assets/images/robot-svgrepo-com.svg",
 			iconAlt: "Icon",
