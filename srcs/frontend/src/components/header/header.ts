@@ -21,23 +21,23 @@ export default function createHeader(): HTMLHeadElement {
 		createButton({
 			id: "friend-menu-button",
 			//  f: () => display friend dropdown / overlay
-			/* icon: "",
+			icon: "assets/images/users-svgrepo-com.svg",
 			iconAlt: "Icon",
-			iconBClass: "" */
+			iconBClass: "h-8 dark:invert"
 		}),
 		createButton({
 			id: "notification-center-button",
 			// f: () => display notification dropdown / overlay
-			/* icon: "",
+			icon: "assets/images/bell-svgrepo-com.svg",
 			iconAlt: "Icon",
-			iconBClass: "" */
+			iconBClass: "h-8 dark:invert"
 		}),
 		createButton({
 			id: "user-profile-button",
 			// f: () => show user menu dropdown
-			/* icon: "",
+			icon: "assets/images/user-svgrepo-com.svg",
 			iconAlt: "Icon",
-			iconBClass: "" */
+			iconBClass: "h-8 dark:invert"
 		})
 	)
 	
