@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 12:47:49 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/01/19 16:33:30 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/01/26 17:37:00 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,126 +19,240 @@ import type { PongConfig, PongInput, PongState } from "../pong_core";
 import { DEFAULT_CONFIG, creatInitialState, updateCore } from "../pong_core";
 import { makeAIPolicyP2 } from "./policy";
 
-// bot baseline pour p1
-function makeBaselineP1() {
-	let last: -1 | 0 | 1 = 0;
-
-	return (state: any, _dt: number): PongInput => {
-		const input: PongInput = {
-			p1: { up: false, down: false, start: false, togglePause: false },
-			p2: { up: false, down: false, start: false, togglePause: false },
-			p3: { up: false, down: false },
-			p4: { up: false, down: false },
-		};
-
-		if (state.phase === "LOBBY") {
-			input.p1.start = true;
-			return (input);
-		}
-
-		if (state.phase !== "RUNNING") 
-			return (input);
-
-		const p1 = state.paddle[0];
-		const paddleCenter = p1.pos + (p1.len / 2);
-
-		// baseline simple suit la balle si elle va vers lui si non se recentre
-		const target = state.ballVX < 0 ? state.ballY : (state.playY + state.playH / 2);
-		const dy = target - paddleCenter;
-
-		if (Math.abs(dy) < 10) {
-			last = 0;
-			return (input);
-		}
-		if (dy < 0) {
-			input.p1.up = true
-			last = -1;
-		} else {
-			input.p1.down = true;
-			last = 1;
-		}
-		return (input);
-	};
+function emptyInput(): PongInput {
+  return {
+    p1: { up: false, down: false, start: false, togglePause: false },
+    p2: { up: false, down: false, start: false, togglePause: false },
+    p3: { up: false, down: false, start: false, togglePause: false },
+    p4: { up: false, down: false, start: false, togglePause: false },
+  };
 }
 
-export type simResult = {
-	fitness: number;
-	winner:	1 | 2 | 3 | 4 | null;
-	frames: number;
-	touches: number;
-	dirChanges: number;
-};
+// Baseline P1 simple: suit la balle quand elle arrive, sinon se recentre
+function baselineP1(state: PongState): PongInput {
+  const input = emptyInput();
+
+  if (state.phase === "LOBBY") {
+    input.p1.start = true;
+    input.p2.start = true;
+    return input;
+  }
+
+  // pendant COUNTDOWN/PAUSED -> pas besoin de bouger
+  if (state.phase !== "RUNNING") return input;
+
+  // P1 = paddles[0] en 1v1 (chez toi)
+  const p1 = state.paddles[0];
+  const center = p1.pos + p1.len / 2;
+
+  const targetY = state.ballVX < 0 ? state.ballY : (state.playY + state.playH / 2);
+  const dy = targetY - center;
+
+  if (Math.abs(dy) < 12) return input;
+
+  if (dy < 0) input.p1.up = true;
+  else input.p1.down = true;
+
+  return input;
+}
 
 export function evaluateGenome(genome: Genome, episodes: number, config?: Partial<PongConfig>): number {
-	const cfg: PongConfig = { ...DEFAULT_CONFIG, ...config, winningScore: 5 };
+  const cfg: PongConfig = { ...DEFAULT_CONFIG, ...config, winningScore: 5 };
+  let total = 0;
 
-	let totalFitness = 0;
+  for (let ep = 0; ep < episodes; ep++) {
+    const state = creatInitialState("1v1", 800, 600, cfg);
 
-	for (let ep = 0; ep < episodes; ep++) {
-		const state = creatInitialState("1v1", 800, 600, cfg);
+    const aiP2 = makeAIPolicyP2(genome);
 
-		const aiP2 = makeAIPolicyP2(genome);
-		const botP1 = makeBaselineP1();
+    const dt = 1 / 120;
+    const maxFrames = 60 * 120;
 
-		const dt = 1 / 120; 		// sim dt rapide
-		const maxFrames = 60 * 120; // 60s max
+    let frames = 0;
+    let touches = 0;
+    let dirChanges = 0;
 
-		let frames = 0;
-		let touches = 0;
-		let prevVX = state.ballVX;
-		let prevDir: -1 | 0 | 1 = 0;
-		let dirChanges = 0;
+    let prevVX = state.ballVX;
+    let prevDir: -1 | 0 | 1 = 0;
 
-		// demarrage immediat
-		let started = false;
+    for (; frames < maxFrames; frames++) {
+      const p1In = baselineP1(state);
+      const p2In = aiP2(state, dt);
 
-		for (; frames < maxFrames; frames++) {
-			const p1Input = botP1(state, dt);
-			const p2Input = aiP2(state, dt);
+      const input = emptyInput();
+      input.p1 = p1In.p1;
 
-			const input: PongInput = {
-				p1: p1Input.p1,
-				p2: p2Input.p2,
-				p3: { up: false, down: false },
-				p4: { up: false, down: false },
-			};
+      // P2: IA
+      input.p2 = {
+        ...input.p2,
+        up: p2In.p2.up,
+        down: p2In.p2.down,
+      };
 
-			// start auto si lobby
-			if (!started && state.phase === "LOBBY") {
-				input.p1.start = true;
-				input.p2.start = true;
-			} else {
-				started = true;
-			}
+      // start/pause: laisse baseline gérer start
+      input.p1.start = p1In.p1.start;
+      input.p2.start = p1In.p2.start; // on start aussi P2 pour être sûr
 
-			// penalite pour changement de direction
-			const dir: -1 | 0 | 1 = input.p2.up ? -1 : input.p2.down ? 1 : 0;
-			if (dir !== prevDir && dir !== 0 && prevDir !== 0)
-				dirChanges++;
-			prevDir = dir;
+      // pénalité jitter (P2)
+      const dir: -1 | 0 | 1 = input.p2.up ? -1 : input.p2.down ? 1 : 0;
+      if (dir !== prevDir && dir !== 0 && prevDir !== 0) dirChanges++;
+      prevDir = dir;
 
-			prevVX = state.ballVX;
-			updateCore(state, input, dt, cfg);
-			if (prevVX > 0 && state.ballVX < 0 && state.phase === "RUNNING") {
-				touches++;
-			}
-			if (state.phase === "GAMEOVER")
-				break;
-		}
+      prevVX = state.ballVX;
 
-		/* 
-		Fitness rules
-		- bonus if winning : 5000
-		- +1 per frame alive
-		- +200 per touche
-		- -5 per change of direction
-		*/
+      updateCore(state, input, dt, cfg);
 
-		const winBonus = state.winner === 2 ? 5000 : state.winner === 1 ? -1000 : 0;
-		const fitness = frames + touches * 200 + winBonus - dirChanges * 5;
+      // heuristique touche: vx passe de + à - (retour P2)
+      if (prevVX > 0 && state.ballVX < 0 && state.phase === "RUNNING") touches++;
 
-		totalFitness += fitness;
-	}
+      if (state.phase === "GAMEOVER") break;
 
-	return (totalFitness / episodes);
+      // accélère la sim: si COUNTDOWN, on force la reprise (optionnel)
+      if (state.phase === "COUNTDOWN") {
+        state.phase = "RUNNING";
+      }
+    }
+
+    const winBonus = state.winner === 2 ? 5000 : state.winner === 1 ? -1000 : 0;
+    const fitness = frames + touches * 500 + winBonus - state.scoreP1 * 100;
+
+    total += fitness;
+  }
+
+  return total / episodes;
 }
+
+
+
+
+
+
+
+// import type { Genome } from "./type";
+// import type { PongConfig, PongInput, PongState } from "../pong_core";
+// import { DEFAULT_CONFIG, creatInitialState, updateCore } from "../pong_core";
+// import { makeAIPolicyP2 } from "./policy";
+
+// // bot baseline pour p1
+// function makeBaselineP1() {
+// 	let last: -1 | 0 | 1 = 0;
+
+// 	return (state: any, _dt: number): PongInput => {
+// 		const input: PongInput = {
+// 			p1: { up: false, down: false, start: false, togglePause: false },
+// 			p2: { up: false, down: false, start: false, togglePause: false },
+// 			p3: { up: false, down: false },
+// 			p4: { up: false, down: false },
+// 		};
+
+// 		if (state.phase === "LOBBY") {
+// 			input.p1.start = true;
+// 			return (input);
+// 		}
+
+// 		if (state.phase !== "RUNNING") 
+// 			return (input);
+
+// 		const p1 = state.paddle[0];
+// 		const paddleCenter = p1.pos + (p1.len / 2);
+
+// 		// baseline simple suit la balle si elle va vers lui si non se recentre
+// 		const target = state.ballVX < 0 ? state.ballY : (state.playY + state.playH / 2);
+// 		const dy = target - paddleCenter;
+
+// 		if (Math.abs(dy) < 10) {
+// 			last = 0;
+// 			return (input);
+// 		}
+// 		if (dy < 0) {
+// 			input.p1.up = true
+// 			last = -1;
+// 		} else {
+// 			input.p1.down = true;
+// 			last = 1;
+// 		}
+// 		return (input);
+// 	};
+// }
+
+// export type simResult = {
+// 	fitness: number;
+// 	winner:	1 | 2 | 3 | 4 | null;
+// 	frames: number;
+// 	touches: number;
+// 	dirChanges: number;
+// };
+
+// export function evaluateGenome(genome: Genome, episodes: number, config?: Partial<PongConfig>): number {
+// 	const cfg: PongConfig = { ...DEFAULT_CONFIG, ...config, winningScore: 5 };
+
+// 	let totalFitness = 0;
+
+// 	for (let ep = 0; ep < episodes; ep++) {
+// 		const state = creatInitialState("1v1", 800, 600, cfg);
+
+// 		const aiP2 = makeAIPolicyP2(genome);
+// 		const botP1 = makeBaselineP1();
+
+// 		const dt = 1 / 120; 		// sim dt rapide
+// 		const maxFrames = 60 * 120; // 60s max
+
+// 		let frames = 0;
+// 		let touches = 0;
+// 		let prevVX = state.ballVX;
+// 		let prevDir: -1 | 0 | 1 = 0;
+// 		let dirChanges = 0;
+
+// 		// demarrage immediat
+// 		let started = false;
+
+// 		for (; frames < maxFrames; frames++) {
+// 			const p1Input = botP1(state, dt);
+// 			const p2Input = aiP2(state, dt);
+
+// 			const input: PongInput = {
+// 				p1: p1Input.p1,
+// 				p2: p2Input.p2,
+// 				p3: { up: false, down: false },
+// 				p4: { up: false, down: false },
+// 			};
+
+// 			// start auto si lobby
+// 			if (!started && state.phase === "LOBBY") {
+// 				input.p1.start = true;
+// 				input.p2.start = true;
+// 			} else {
+// 				started = true;
+// 			}
+
+// 			// penalite pour changement de direction
+// 			const dir: -1 | 0 | 1 = input.p2.up ? -1 : input.p2.down ? 1 : 0;
+// 			if (dir !== prevDir && dir !== 0 && prevDir !== 0)
+// 				dirChanges++;
+// 			prevDir = dir;
+
+// 			prevVX = state.ballVX;
+// 			updateCore(state, input, dt, cfg);
+// 			if (prevVX > 0 && state.ballVX < 0 && state.phase === "RUNNING") {
+// 				touches++;
+// 			}
+// 			if (state.phase === "GAMEOVER")
+// 				break;
+// 		}
+
+// 		/* 
+// 		Fitness rules
+// 		- bonus if winning : 5000
+// 		- +1 per frame alive
+// 		- +200 per touche
+// 		- -5 per change of direction
+// 		*/
+
+// 		const winBonus = state.winner === 2 ? 5000 : state.winner === 1 ? -1000 : 0;
+// 		const fitness = frames + touches * 200 + winBonus - dirChanges * 5;
+
+// 		totalFitness += fitness;
+// 	}
+
+// 	return (totalFitness / episodes);
+// }

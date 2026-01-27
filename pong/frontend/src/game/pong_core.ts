@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/19 10:11:49 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/01/19 16:33:45 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/01/27 10:16:21 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,7 +100,7 @@ export const DEFAULT_CONFIG: PongConfig = {
 
 // ================= Helpers ===================
 
-function computePlayfield(mod: ModeId, canvasW: number, canvasH: number) {
+export function computePlayfield(mod: ModeId, canvasW: number, canvasH: number) {
 	if (mod == "3p" || mod === "4p") {
 		const size = Math.min(canvasW, canvasH);
 		return {
@@ -110,7 +110,20 @@ function computePlayfield(mod: ModeId, canvasW: number, canvasH: number) {
 			h: size,
 		};
 	}
-	return { x: 0, y: 0, w: canvasW, h: canvasH };
+
+	const targetAspect = 4 / 3;
+	const maxW = canvasW * 0.78;
+	const maxH = canvasH * 0.78;
+
+	let w = maxW;
+	let h = w / targetAspect;
+
+	if (h > maxH) {
+		h = maxH;
+		w = h * targetAspect;
+	}
+
+	return { x: (canvasW - w) / 2, y: (canvasH - h) / 2, w, h };
 }
 
 export function clamp(v: number, min: number, max: number) {
@@ -184,22 +197,31 @@ function setBallSpeed(state: PongState, targetSpeed: number) {
 }
 
 function applyBounceFromPaddle(state: PongState, p: Paddle, cfg: PongConfig) {
-	const max = cfg.ballSpeed * 1.2;
+	const max = cfg.ballSpeed * 1.0;
+	const half = p.len / 2;
+	if (half <= 1e-6)
+		return;
 
 	// balle playfield
 	const localBallX = state.ballX - state.playX;
 	const localBallY = state.ballY - state.playY;
 
-	const center = p.pos + p.len / 2;
+	const center = p.pos + half;
 
 	if (p.side === "LEFT" || p.side === "RIGHT") {
-		const norm = (center - localBallY) / (p.len / 2);
-		state.ballVY = -norm * max;
-		state.ballVX *= -1;
+		const hit = clamp(localBallY, p.pos, p.pos + p.len);
+		let norm = (hit - center) / half;
+		norm = clamp(norm, -0.9, 0.9);
+
+		state.ballVX = Math.abs(state.ballVX) * (p.side === "LEFT" ? 1 : -1);
+		state.ballVY = norm * max;
 	} else {
-		const norm = (center - localBallX) / (p.len / 2);
-		state.ballVX = -norm * max;
-		state.ballVY *= -1;
+		const hit = clamp(localBallX, p.pos, p.pos + p.len);
+		let norm = (hit - center) / half;
+		norm = clamp(norm, -0.9, 0.9);
+
+		state.ballVY = Math.abs(state.ballVY) * (p.side === "TOP" ? 1 : -1);
+		state.ballVX = norm * max;
 	}
 
 	setBallSpeed(state, cfg.ballSpeed);
@@ -231,9 +253,11 @@ const mode1v1: GameMode = {
 		{ side: "RIGHT", pos: h / 2 - cfg.paddleHeight / 2, len: cfg.paddleHeight, thick: cfg.paddleWidth, life: 0, activate: true },
 	]),
 	checkScore: (state, cfg) => {
-		if (state.ballX >= state.width - cfg.ballRadius) return (1);
-		if (state.ballX <= cfg.ballRadius) return (2);
-		return (null);
+		const left  = state.playX + cfg.ballRadius;
+		const right = state.playX + state.playW - cfg.ballRadius;
+		if (state.ballX >= right) return 1;
+		if (state.ballX <= left) return 2;
+		return null;
 	},
 	updatePaddles: (state, input, dt, cfg) => {
 		const speed = cfg.paddleSpeed * dt;
@@ -242,15 +266,19 @@ const mode1v1: GameMode = {
 		p1.pos += moveAxis(input.p1) * speed;
 		p2.pos += moveAxis(input.p2) * speed;
 		
-		p1.pos = clamp(p1.pos, 0, state.height - p1.len);
-		p2.pos = clamp(p2.pos, 0, state.height - p2.len);
+		p1.pos = clamp(p1.pos, 0, state.playH - p1.len);
+		p2.pos = clamp(p2.pos, 0, state.playH - p2.len);
 	},
 	handleWallBounce: (state, cfg) => {
-		if (state.ballY <= cfg.ballRadius) { 
-			state.ballY = cfg.ballRadius; state.ballVY *= -1; 
+		const top = state.playY + cfg.ballRadius;
+		const bottom = state.playY + state.playH - cfg.ballRadius;
+
+		if (state.ballY <= top) {
+			state.ballY = top;
+			state.ballVY *= -1;
 		}
-		if (state.ballY >= state.height - cfg.ballRadius) {
-			state.ballY = state.height - cfg.ballRadius;
+		if (state.ballY >= bottom) {
+			state.ballY = bottom;
 			state.ballVY *= -1;
 		}
 	},
@@ -265,9 +293,11 @@ const mode2v2: GameMode = {
 		{ side: "RIGHT", pos: h / 2 - cfg.paddleHeight / 2, len: cfg.paddleHeight, thick: cfg.paddleWidth, lane: 1, life: 0, activate: true }, 
 	]),
 	checkScore: (state, cfg) => {
-		if (state.ballX >= state.width - cfg.ballRadius) return (1);
-		if (state.ballX <= cfg.ballRadius) return (2);
-		return (null);
+		const left  = state.playX + cfg.ballRadius;
+		const right = state.playX + state.playW - cfg.ballRadius;
+		if (state.ballX >= right) return 1;
+		if (state.ballX <= left) return 2;
+		return null;
 	},
 	updatePaddles: (state, input, dt, cfg) => {
 		const speed = cfg.paddleSpeed * dt;
@@ -282,15 +312,20 @@ const mode2v2: GameMode = {
 		p4.pos += moveAxis(input.p4) * speed;
 
 		for (const p of [p1, p2, p3, p4]) {
-			p.pos = clamp(p.pos, 0, state.height - p.len);
+			p.pos = clamp(p.pos, 0, state.playH - p.len);
 		}
 	},
 	handleWallBounce: (state, cfg) => {
-		if (state.ballY <= cfg.ballRadius) { 
-			state.ballY = cfg.ballRadius; state.ballVY *= -1; 
+		const top = state.playY + cfg.ballRadius;
+		const bottom = state.playY + state.playH - cfg.ballRadius;
+
+		if (state.ballY <= top) {
+			state.ballY = top;
+			state.ballVY *= -1;
 		}
-		if (state.ballY >= state.height - cfg.ballRadius) { 
-			state.ballY = state.height - cfg.ballRadius; state.ballVY *= -1; 
+		if (state.ballY >= bottom) {
+			state.ballY = bottom;
+			state.ballVY *= -1;
 		}
 	},
 };
@@ -396,7 +431,7 @@ export function creatInitialState(mode: ModeId, width: number, height: number, c
 		ballVX: cfg.ballSpeed * randomSign(),
 		ballVY: cfg.ballSpeed * 0.6 * randomSign(),
 
-		paddles: MODES[mode].initPaddles(width, height, cfg),
+		paddles: MODES[mode].initPaddles(pf.w, pf.h, cfg),
 		playX: pf.x,
 		playY: pf.y,
 		playW: pf.w,
