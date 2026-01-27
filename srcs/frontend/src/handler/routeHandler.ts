@@ -3,6 +3,7 @@ import createGameLocalPage from '../routes/game-local';
 import createLocalAIGamePage from '../routes/game-local-ai';
 import createGameOnlinePage from '../routes/game-online';
 import createHomePage from '../routes/home';
+import buildLeaderboardPage from '../routes/leaderboard';
 import createLoginPage from '../routes/login-page';
 import createTestPage from '../routes/test';
 import assemblePage from './pageHandler';
@@ -14,7 +15,7 @@ type Route = {
 
 const routes: Route[] = [
     { path: "/", component: () => assemblePage(createHomePage()) },
-    { path: "/leaderboard", component: () => assemblePage(document.createElement("div")) },
+    { path: "/leaderboard", component: () => assemblePage(buildLeaderboardPage()) },
     { path: "/user-profile", component: () => assemblePage(document.createElement("div")) },
     { path: "/login", component: () => assemblePage(createLoginPage()) },
     { path: "/test", component: () => assemblePage(createTestPage()) },
