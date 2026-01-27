@@ -20,7 +20,7 @@ export default function createGameOnlinePage(): HTMLDivElement {
 			iconBClass: "h-10 pr-3 dark:invert"
 			})
 		),
-		makeButtonBlock("bg-yellow-300 dark:bg-yellow-900", createButton({
+		makeButtonBlock("bg-yellow-400 dark:bg-yellow-900", createButton({
 			id: "create-tournament-button",
 			extraClasses: btnClasses,
 			buttonText: "Create Tournament",
@@ -30,7 +30,7 @@ export default function createGameOnlinePage(): HTMLDivElement {
 			iconBClass: "h-10 pr-3 dark:invert"
 			})
 		),
-		makeButtonBlock("bg-orange-300 dark:bg-orange-900", createButton({
+		makeButtonBlock("bg-orange-400 dark:bg-orange-900", createButton({
 			id: "browse-matches-button",
 			extraClasses: btnClasses,
 			buttonText: "Browse Games",

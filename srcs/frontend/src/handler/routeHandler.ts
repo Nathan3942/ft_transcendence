@@ -14,8 +14,8 @@ type Route = {
 
 const routes: Route[] = [
     { path: "/", component: () => assemblePage(createHomePage()) },
-    { path: "/leaderboard", component: () => "work in progres" as unknown as HTMLDivElement },
-    { path: "/user-profile", component: () => "work in progres" as unknown as HTMLDivElement },
+    { path: "/leaderboard", component: () => assemblePage(document.createElement("div")) },
+    { path: "/user-profile", component: () => assemblePage(document.createElement("div")) },
     { path: "/login", component: () => assemblePage(createLoginPage()) },
     { path: "/test", component: () => assemblePage(createTestPage()) },
     { path: "/game-local", component: () => assemblePage(createGameLocalPage()) },
