@@ -26,40 +26,45 @@ type Incoming = TrainMsg | StopMsg;
 
 let shouldStop = false;
 
+function post(msg: any) {
+	(self as any).postMessage(msg);
+}
+
 self.onmessage = (e: MessageEvent<Incoming>) => {
 	const msg = e.data;
 
 	if (msg.type === "stop") {
 		shouldStop = true;
-		(self as any).postMessage({ type: "debug", msg: "stop received" });
+		post({ type: "debug", msg: "stop received" });
 		return;
 	}
 
-	if (msg.type === "train") {
-    	shouldStop = false;
-    	(self as any).postMessage({ type: "debug", msg: "train received" });
-		
-		try {
-      		const res = evolve(
-        	msg.cfg,
-        	(g: Genome) => {
-          		if (shouldStop) return -1e18;
-          			return evaluateGenome(g, msg.cfg.episodesPerGenome);
-        	},
-        	(p) => {
-        		(self as any).postMessage({ type: "progress", ...p });
-        	}
-      	);
+	if (msg.type !== "train") return;
 
-      	(self as any).postMessage({ type: "done", bestGenome: res.best, bestFitness: res.bestFit });
-    	} catch (err: any) {
-			console.error("WORKER TRAIN ERROR:", err);
-			(self as any).postMessage({
-				type: "error",
-				msg: String(err?.stack ?? err?.message ?? err),
-			});
-		}
-  	}
+	shouldStop = false;
+	post({ type: "debug", msg: "train received" });
+
+	try {
+		const res = evolve(
+			msg.cfg,
+			(g: Genome) => {
+				if (shouldStop) return -1e18;
+				return evaluateGenome(g, msg.cfg.episodesPerGenome);
+			},
+			(p) => {
+				// p = { gen, bestFitness, bestGenome }
+				post({ type: "progress", ...p });
+			}
+		);
+
+		post({ type: "done", bestGenome: res.best, bestFitness: res.bestFit });
+	} catch (err: any) {
+		console.error("WORKER TRAIN ERROR:", err);
+		post({
+			type: "error",
+			msg: String(err?.stack ?? err?.message ?? err),
+		});
+	}
 };
 
 

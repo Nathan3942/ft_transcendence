@@ -117,7 +117,7 @@ export function makeAIPolicyP2(genome: Genome) {
         visionAcc = 0;
         
 
-        // si la balle s'eloigne (vx < 0), on peut recentrer doucement
+        // recentre si la balle seloigne
         const ballGoingToP2 = s.ballVX > 0;
 
         let targetY = s.playY + s.playH / 2;
@@ -126,7 +126,6 @@ export function makeAIPolicyP2(genome: Genome) {
 			// ligne X du paddle droit (au bord du terrain)
 			const paddleX = s.playX + s.playW - BALL_R;
 
-			// bornes rebond (comme handleWallBounce : top/bottom avec ballRadius)
 			const top = s.playY + BALL_R;
 			const bottom = s.playY + s.playH - BALL_R;
 
@@ -141,8 +140,7 @@ export function makeAIPolicyP2(genome: Genome) {
 				bottom
 			);
 
-			// anticipation = “sur/sous-corrige” en fonction du génome
-			// (1 = exact, <1 sous anticipe, >1 sur anticipe)
+			// anticipation en fonction du génome
 			targetY = s.ballY + (targetY - s.ballY) * genome.anticipation;
 
 			// jitter humain
