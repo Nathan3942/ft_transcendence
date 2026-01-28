@@ -16,23 +16,20 @@ export function getById(id: string | number){
 }
 
 
-// Création d'un utilisateur OAuth avec gestion de l'unicité
-export async function createUser({ provider, providerId, username }: { provider: string, providerId: string, username: string }): Promise<User> {
+// Création d'un utilisateur avec gestion de l'unicité
+export async function createUser({ username }: { username: string }): Promise<User> {
     try {
         const result = await queryExecute(
-            'INSERT INTO users (provider, providerId, username) VALUES (?, ?, ?)',
-            [provider, providerId, username]
+            'INSERT INTO users (username) VALUES (?)',
+            [username]
         );
         return {
             id: result.lastInsertRowid as number,
-            provider,
-            providerId,
             username,
         };
     } catch (err: any) {
-        console.log(err)
         if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
-            throw new Error('User with this provider/providerId already exists');
+            throw new Error('user already exists');
         }
         throw err;
     }

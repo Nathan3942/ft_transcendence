@@ -51,18 +51,14 @@ server.get('/zodTest', async (request, reply) =>{
         const { username } = request.body as { username: string }
 
         if (!username)
-            throw new BadRequestError("missing username id")
-
-        // À adapter : provider et providerId doivent venir de l'OAuth (ici hardcodés pour l'exemple)
-        const provider = "google";
-        const providerId = "10";
+            throw new BadRequestError("missing username")
 
         try {
-            const user = await createUser({ provider, providerId, username });
+            const user = await createUser({ username });
             return success(user);
         } catch (err: any) {
             if (err.message.includes('already exists')) {
-                throw new BadRequestError("User already exists for this provider/providerId");
+                throw new BadRequestError("User already exists");
             }
             throw err;
         }

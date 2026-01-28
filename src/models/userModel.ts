@@ -5,8 +5,5 @@ contrat de forme
 
 export interface User {
   id: number; 
-  provider: string;
-  providerId: string;
   username: string;
- 
 }

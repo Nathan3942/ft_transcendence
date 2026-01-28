@@ -11,14 +11,10 @@ export const initTables = (): void => {
   const db = getDatabase()
 
   // users
-  //unique empeche 2 users avec provider et providerId en meme temps
   db.exec(`
   CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  provider TEXT NOT NULL,
-  providerId TEXT NOT NULL,
-  username TEXT NOT NULL,
-  UNIQUE(provider, providerId)
+  username TEXT NOT NULL
 );
   `)
   // Table des tournois

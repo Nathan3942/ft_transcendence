@@ -1,6 +1,21 @@
-/*ce fichier determine les routes d'authentification
-il permet notamment d'avoir les routes qui permettent la communication
-avec le provider */
+/*
+ * ⚠️ TODO: Routes d'authentification OAuth (désactivées pour l'instant)
+ *
+ * Ce fichier contient le squelette des routes d'authentification OAuth.
+ * Ces routes seront implémentées dans une prochaine itération.
+ *
+ * Routes prévues:
+ * - GET /auth/:provider → Redirection vers le provider OAuth
+ * - GET /auth/:provider/callback → Callback après authentification
+ *
+ * À implémenter:
+ * - Validation des providers supportés
+ * - Génération et vérification du state (CSRF)
+ * - Échange du code contre un access token
+ * - Récupération des infos utilisateur
+ * - Création de session / JWT
+ */
+
 import { FastifyInstance } from 'fastify'
 import { success } from '../../utils/response'
 
