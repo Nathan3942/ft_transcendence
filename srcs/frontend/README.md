@@ -12,6 +12,18 @@ When built, the frontend consists of:
 
 ---
 
+# Project Structue
+The frontend is structured as follows:
+
+- `/public`: Contains assets such as Images, fonts, and such.
+- `/src/app.ts`: Is the primary entrypoint for the program.
+- `/src/components`: Contains reusable UI components.
+- `/src/handler`: Contains logic for non tasks with no UI interaction.
+- `/src/interfaces`: Contains TypeScript interfaces.
+- `/src/routes`: Contains the logic for constructing individual pages.
+
+---
+
 # Debugging
 To run the SPA in dev mode, to avoid having to set up a webserver each time, the repo comes with `vite` which has a built in dev server. To launch the dev server, make sure you are in the `srcs/fontend` directory, and run the command:
 ```bash
