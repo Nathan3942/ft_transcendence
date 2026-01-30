@@ -1,6 +1,42 @@
 import { createButton } from "../components/button/button";
 import makeButtonBlock from "../components/button/buttonBlock";
 
+import { startPong } from "../game/pong";
+import type { PongInput, PongState } from "../game/pong_core";
+
+async function createLocalMatch(outer: HTMLDivElement)
+{
+
+	outer.innerHTML = "";
+	outer.style.width = "100vw";
+	outer.style.height = "80vh";
+	outer.style.display = "block";
+
+	const canvas = document.createElement("canvas");
+	canvas.style.width = "100%";
+	canvas.style.height = "100%";
+	outer.appendChild(canvas);
+
+	const ctx = canvas.getContext("2d");
+	if (!ctx)
+		throw new Error("2D context not supported");
+
+	const rect = outer.getBoundingClientRect();
+	canvas.width = rect.width || window.innerWidth;
+	canvas.height = rect.height || window.innerHeight;
+
+	await (document as any).fonts?.ready;
+	const controller = startPong(canvas, ctx, { mode: "1v1" });
+
+	const onResize = () => {
+		const r = outer.getBoundingClientRect();
+		controller.reseize(r.width || window.innerWidth, r.height || window.innerHeight);
+	};
+	window.addEventListener("resize", onResize);
+
+	console.log("Start pong in local mod\n");
+}
+
 export default function createGameLocalPage(): HTMLDivElement {
 	const outer = document.createElement("div");
 	const inner = document.createElement("div");
@@ -24,7 +60,7 @@ export default function createGameLocalPage(): HTMLDivElement {
 			id: "vs-player-button",
 			extraClasses: btnClasses,
 			buttonText: "Player vs Player",
-			// f: () => createLocalMatch(),
+			f: () => createLocalMatch(outer),
 			icon: "assets/images/keyboard-svgrepo-com.svg",
 			iconAlt: "Icon",
 			iconBClass: "h-10 pr-3 dark:invert"
