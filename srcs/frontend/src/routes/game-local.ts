@@ -70,6 +70,7 @@ export default function createGameLocalPage(): HTMLDivElement {
 			id: "create-local-tournament",
 			extraClasses: btnClasses,
 			buttonText: "Local Tournament",
+			href: "/local-tournament",
 			// f: () => createLocalTournament(),
 			icon: "assets/images/trophy-svgrepo-com.svg",
 			iconAlt: "Icon",

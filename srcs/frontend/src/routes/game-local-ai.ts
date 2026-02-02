@@ -247,6 +247,8 @@ async function InitAiGame(diffNum: number, pageRoot: HTMLDivElement) {
 		worker.terminate();
 	});
 }
+
+
 export default function createLocalAIGamePage(): HTMLDivElement {
 	const outer = document.createElement("div");
 	const inner = document.createElement("div");
