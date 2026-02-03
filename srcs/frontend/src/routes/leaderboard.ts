@@ -46,50 +46,89 @@ async function importUserData(): Promise<userInfo[]> {
 	}
 };
 
-function createLeaderboardCell(): HTMLDivElement {
+function createLeaderboardCell(user: userInfo): HTMLDivElement {
 	const cell = document.createElement("div");
 
 	return cell;
 };
 
 export async function buildLeaderboardPage(): Promise<HTMLDivElement> {
-	
+
 	// Helper functions
 	function buildLeaderboard(key: scoreKey): HTMLDivElement {
-		const leaderboard = document.createElement("div");
+		const board = document.createElement("div");
 
-		return leaderboard;
+		switch(key) {
+			case "localAiE": {
+
+				break;
+			}
+			case "localAiM": {
+
+				break;
+			}
+			case "localAiH": {
+				
+				break;
+			}
+			case "totalLocalScore": {
+
+				break;
+			}
+			case "onlineCustom": {
+
+				break;
+			}
+			case "onlineTournament": {
+
+				break;
+			}
+			case "totalOnlineScore": {
+
+				break;
+			}
+		}
+
+		return board;
 	}
 
 	function buildBoardChooser(): HTMLDivElement {
 		const buttons = document.createElement("div");
+		const genClasses = "";
 		buttons.append(createButton({
 				buttonText: "Easy AI",
-				f: () => buildLeaderboard("localAiE"),
+				extraClasses: genClasses,
+				f: () => leaderboard.replaceWith(buildLeaderboard("localAiE")),
 			}),
 			createButton({
 				buttonText: "Medium AI",
-				f: () => buildLeaderboard("localAiM"),
+				extraClasses: genClasses,
+				f: () => leaderboard.replaceWith(buildLeaderboard("localAiM")),
 			}),
 			createButton({
 				buttonText: "Hard AI",
-				f: () => buildLeaderboard("localAiH"),
+				extraClasses: genClasses,
+				f: () => leaderboard.replaceWith(buildLeaderboard("localAiH")),
 			}),
 			createButton({
 				buttonText: "Total AI",
-				f: () => buildLeaderboard("totalLocalScore"),
+				extraClasses: genClasses,
+				f: () => leaderboard.replaceWith(buildLeaderboard("totalLocalScore")),
 			}),
 			createButton({
 				buttonText: "Custom Matches",
-				f: () => buildLeaderboard("onlineCustom"),
+				extraClasses: genClasses,
+				f: () => leaderboard.replaceWith(buildLeaderboard("onlineCustom")),
 			}),
 			createButton({
 				buttonText: "Online Tournaments",
-				f: () => buildLeaderboard("onlineTournament"),
+				extraClasses: genClasses,
+				f: () => leaderboard.replaceWith(buildLeaderboard("onlineTournament")),
 			}),
 			createButton({
 				buttonText: "Total Online",
-				f: () => buildLeaderboard("totalOnlineScore")
+				extraClasses: genClasses,
+				f: () => leaderboard.replaceWith(buildLeaderboard("totalOnlineScore"))
 			})
 		)
 
@@ -98,21 +137,22 @@ export async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 
 	// Function Proper
 	const outer = document.createElement("div");
-	const boardChooser: HTMLDivElement = buildBoardChooser();
 	const leaderboard = document.createElement("div");
+	const boardChooser = document.createElement("div");
 	const backButton = createBackButton("", "/");
+	let users: userInfo[];
 	
 	outer.className = "flex flex-1 flex-col";
 	
 	try {
-		let users: userInfo[] = await importUserData();
+		users = await importUserData();
 		leaderboard.replaceWith(buildLeaderboard("onlineCustom"));
-		
 	} catch (e) {
 		console.log("Could not load users:", e);
 		leaderboard.append(`Could not load users: ${e}`);
 	}
 	
+	boardChooser.replaceWith(buildBoardChooser());
 
 	outer.append(boardChooser, leaderboard, backButton);
 
