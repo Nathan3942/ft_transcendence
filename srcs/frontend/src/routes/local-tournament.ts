@@ -6,12 +6,21 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 16:32:13 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/02/02 18:22:29 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/02/03 18:28:19 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import { createButton } from "../components/button/button";
 import makeButtonBlock from "../components/button/buttonBlock";
+import { startPong } from "../game/pong";
+import type { PongInput, PongState } from "../game/pong_core";
+
+import { makeAIPolicyP2 } from "../game/ai/policy";
+import type { Genome, GAConfig } from "../game/ai/type";
+
+import hardGenome from "../game/ai/genomes/hard.json";
+
+import { loadHardGenome, genomeForDifficulty, createKeyMap, keyboardToInput, bindKeyboard, mergeKeyboardWithAIP2 } from "./game-local-ai";
 // import { creatTextInput } from "../components/TextInput/TextInput";
 
 type Player = {
@@ -24,6 +33,7 @@ type Match = {
     id: number;
     p1: Player;
     p2: Player;
+    score?: { s1: number, s2: number };
 };
 
 type Bracket = {
@@ -31,6 +41,27 @@ type Bracket = {
     semifinal: Match[];
     final: Match;
 }
+
+type GameResult = {
+    winnerSide: 1 | 2;
+    s1: number;
+    s2: number;
+}
+
+type Stage = "QF" | "SF" | "F" | "DONE";
+
+type AiLvl = "easy" | "medium" | "hard";
+
+type TournamentState = {
+    bracket: Bracket;
+    stage: Stage;
+    qfIndex: number;
+    sfIndex: number;
+    champion: Player | null;
+	aiLvl: "easy" | "medium" | "hard" | null;
+}
+
+let gTournament: TournamentState | null = null;
 
 function createTextInput(id: string, placeholder: string): HTMLInputElement {
     const input = document.createElement("input");
@@ -49,6 +80,60 @@ function createTextInput(id: string, placeholder: string): HTMLInputElement {
     return input;
 }
 
+function chooseAiLvl(inner: HTMLDivElement, onPick: (lvl: AiLvl) => void) {
+	inner.innerHTML = "";
+	inner.className = "w-full flex flex-col items-center gap-6";
+
+	const title = document.createElement("h2");
+	title.textContent = "Choose AI difficulty";
+	title.className = "text-white text-2xl font-semibold";
+	inner.appendChild(title);
+
+	const btnClasses = "w-full flex flex-row p-4 justify-center items-center rounded-xl";
+
+	const makePickBtn = (id: string, text: string, color: string, lvl: AiLvl) =>
+		makeButtonBlock(
+		color,
+		createButton({
+			id,
+			extraClasses: btnClasses,
+			buttonText: text,
+			f: () => onPick(lvl),
+		})
+		);
+
+	const wrap = document.createElement("div");
+	wrap.className = "w-72 flex flex-col gap-3";
+	wrap.appendChild(makePickBtn("diff-easy-btn", "Easy", "bg-blue-300 dark:bg-blue-900", "easy"));
+	wrap.appendChild(makePickBtn("diff-medium-btn", "Medium", "bg-purple-300 dark:bg-purple-900", "medium"));
+	wrap.appendChild(makePickBtn("diff-hard-btn", "Hard", "bg-red-300 dark:bg-red-900", "hard"));
+
+	inner.appendChild(wrap);
+}
+
+function initTournamentFromInput(aiLvl: AiLvl | null): TournamentState {
+    const players = shuffle(getPlayersFromInputs(8));
+    const bracket = buildBracketFromPlayers(players);
+	
+	
+    return {
+        bracket,
+        stage: "QF",
+        qfIndex: 0,
+        sfIndex: 0,
+        champion: null,
+		aiLvl,
+    };
+}
+
+function renderChampion(champ: Player): HTMLDivElement {
+	
+	const d = document.createElement("div");
+	d.className = "mt-6 text-white text-3xl font-semibold";
+	d.textContent = `🏆 Champion: ${champ.name}`;
+	return (d);
+}
+
 function renderMatch(match: Match, title: string): HTMLDivElement {
 	const card = document.createElement("div");
 	card.className = `
@@ -63,12 +148,12 @@ function renderMatch(match: Match, title: string): HTMLDivElement {
 
 	const row1 = document.createElement("div");
 	row1.className = "flex items-center justify-between p-2 rounded-lg bg-white/5";
-	row1.textContent = match.p1.name;
+	row1.textContent = match.score ? `${match.p1.name} (${match.score.s1})` : match.p1.name;;
 	row1.className = "p-1 rounded bg-white/5";
 
 	const row2 = document.createElement("div");
 	row2.className = "flex items-center justify-between p-2 rounded-lg bg-white/5 mt-2";
-	row2.textContent = match.p2.name;
+	row2.textContent = match.score ? `${match.p2.name} (${match.score.s2})` : match.p2.name;
 	row2.className = "p-1 rounded bg-white/5 mt-1";
 
 	card.appendChild(h);
@@ -161,50 +246,230 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 
-function createBracket(players: Player[]): Bracket {
+function applyResultAndAdvance(t: TournamentState, played: Match, res: GameResult) {
+    
+    played.score = { s1: res.s1, s2: res.s2 };
+    const winner = res.winnerSide === 1 ? played.p1 : played.p2;
 
-	if (players.length !== 8) {
-		throw new Error("Bracket requires exactly 8 players.");
+    if (t.stage === "QF") {
+        const semiIndex = Math.floor(t.qfIndex / 2);
+        const slotIsP1 = (t.qfIndex % 2 === 0);
+
+        if (slotIsP1)
+            t.bracket.semifinal[semiIndex].p1 = winner;
+        else
+            t.bracket.semifinal[semiIndex].p2 = winner;
+        t.qfIndex++;
+        if (t.qfIndex >= 4) {
+            t.stage = "SF";
+            t.sfIndex = 0;
+        }
+        return;
+    }
+
+    if (t.stage === "SF") {
+		if (t.sfIndex === 0)
+			t.bracket.final.p1 = winner;
+		else
+			t.bracket.final.p2 = winner;
+
+		t.sfIndex++;
+
+		if (t.sfIndex >= 2) {
+		t.stage = "F";
+		}
+		return;
 	}
 
+	if (t.stage === "F") {
+		t.bracket.final.score = { s1: res.s1, s2: res.s2 };
+		t.champion = winner;
+		t.stage = "DONE";
+	}
+}
+
+
+function buildBracket(inner: HTMLDivElement) {
+
+	if (!gTournament) {
+		const players = getPlayersFromInputs(8);
+		const hasBot = players.some(p => p.ai);
+
+		if (hasBot) {
+			chooseAiLvl(inner, (lvl) => {
+				gTournament = initTournamentFromInput(lvl);
+				buildBracket(inner);
+			});
+			return;
+		}
+		else {
+			gTournament = initTournamentFromInput(null);
+		}
+	}
+	
+	console.log(gTournament.aiLvl);
+
+	inner.innerHTML = "";
+	inner.className = "w-full flex flex-col items-center";
+
+	inner.appendChild(renderBracket(gTournament.bracket));
+
+	if (gTournament.stage === "DONE" && gTournament.champion) {
+		inner.appendChild(renderChampion(gTournament.champion));
+	}
+
+	const btnClasses = "w-full flex flex-row p-3 justify-center items-center rounded-xl";
+
+	const label = gTournament.stage === "DONE" ? "Restart tournament" : "Play next match";
+
+	const button = makeButtonBlock(
+		"bg-blue-300 dark:bg-blue-900",
+		createButton({
+			id: "continue",
+			extraClasses: btnClasses,
+			buttonText: label,
+			icon: "assets/images/enter-svgrepo-com.svg",
+			f: () => {
+				if (gTournament?.stage === "DONE") {
+					gTournament = null;
+					const outer = inner.parentElement;
+					if (!outer)
+						return;
+					outer.replaceWith(createLocalTournament());
+				}
+				else {
+					playNextMatch(inner);
+				}
+			},
+			iconAlt: "Icon",
+			iconBClass: "h-10 pr-3 dark:invert",
+		})
+	);
+
+	(button as HTMLElement).style.width = "18rem";
+	(button as HTMLElement).style.margin = "0 auto";
+	inner.appendChild(button);
+}
+
+
+function buildBracketFromPlayers(players: Player[]): Bracket {
+	if (players.length !== 8)
+		throw new Error("Bracket requires exactly 8 players.");
+
 	const quarterfinal: Match[] = [];
-	let matchId = 1;
+	let id = 1;
 
 	for (let i = 0; i < 8; i += 2) {
-		quarterfinal.push({
-			id: matchId++,
-			p1: players[i],
-			p2: players[i + 1],
-		});
+		quarterfinal.push({ id: id++, p1: players[i], p2: players[i + 1] });
 	}
 
 	const TBA: Player = { id: -1, name: "TBA", ai: false };
 
 	const semifinal: Match[] = [
-		{ id: matchId++, p1: TBA, p2: TBA },
-		{ id: matchId++, p1: TBA, p2: TBA },
+		{ id: id++, p1: TBA, p2: TBA },
+		{ id: id++, p1: TBA, p2: TBA },
 	];
 
-	const final: Match = { id: matchId++, p1: TBA, p2: TBA };
-	return {quarterfinal, semifinal, final };
+	const final: Match = { id: id++, p1: TBA, p2: TBA };
 
+	return { quarterfinal, semifinal, final };
 }
 
-function CreateBracket(inner: HTMLDivElement) {
-	const players = getPlayersFromInputs(8);
 
-	const seeded = shuffle(players);
+async function CreateMatch(inner: HTMLDivElement, onDone: (res: GameResult) => void) {
+    
+    inner.innerHTML = "";
 
-	const bracket = createBracket(seeded);
+    const gameWrap = document.createElement("div");
+	gameWrap.className = "w-screen h-[80vh]";
+	inner.appendChild(gameWrap);
 
-	inner.innerHTML = "";
+	const canvas = document.createElement("canvas");
+	canvas.className = "w-full h-full";
+	gameWrap.appendChild(canvas);
 
-	inner.className = "w-full flex flex-col items-center";
-	inner.appendChild(renderBracket(bracket));
+    const ctx = canvas.getContext("2d");
+    if (!ctx)
+        throw new Error("2D context not supported");
 
-	console.log("players:", players);
-	console.log("seeded:", seeded);
-	console.log("bracket:", bracket);
+    const rect = gameWrap.getBoundingClientRect();
+    canvas.width = rect.width || window.innerWidth;
+    canvas.height = rect.height || window.innerHeight;
+
+	let controller: ReturnType<typeof   startPong> | null = null;
+	let unbindKeys: null | (() => void) = null;
+
+	const onResize = () => {
+		const r = inner.getBoundingClientRect();
+		controller?.reseize(r.width || window.innerWidth, r.height || window.innerHeight);
+	};
+
+	const events = {
+		onGameOver: (winner: 1 | 2 | 3 | 4, s1: number, s2: number) => {
+			if (winner !== 1 && winner !== 2) return;
+
+			controller?.stop();
+			window.removeEventListener("resize", onResize);
+			unbindKeys?.();
+
+			onDone({ winnerSide: winner, s1, s2 });
+		},
+	};
+
+	controller = startPong(canvas, ctx, { mode: "1v1", tournament: true }, {}, events);
+	
+	if (gTournament?.aiLvl) {
+
+		const keysDown = createKeyMap();
+		const keysPressed = createKeyMap();
+		unbindKeys = bindKeyboard(keysDown, keysPressed);
+
+		const hg = await loadHardGenome();
+		const genome = genomeForDifficulty(gTournament.aiLvl, hg);
+		const aiPolicy = makeAIPolicyP2(genome);
+
+		controller.setInputSource((state: PongState, dt: number) => {
+		const kb = keyboardToInput(keysDown, keysPressed);
+		const ai = aiPolicy(state, dt);
+		return mergeKeyboardWithAIP2(kb, ai);
+    });
+  }
+
+	window.addEventListener("resize", onResize);
+
+	console.log("Start pong in local mod\n");
+}
+
+function getNextMatch(t: TournamentState): { match: Match; label: string } | null {
+    if (t.stage === "QF") {
+        const match = t.bracket.quarterfinal[t.qfIndex];
+        return { match, label: `Match ${t.qfIndex + 1}` };
+    }
+    if (t.stage === "SF") {
+        const match = t.bracket.semifinal[t.sfIndex];
+        return { match, label: `Semi ${t.sfIndex + 1}` };
+    }
+    if (t.stage === "F") {
+        return { match: t.bracket.final, label: "Final" };
+    }
+    return (null);
+}
+
+
+function playNextMatch(inner: HTMLDivElement) {
+	if (!gTournament)
+		return;
+
+	const next = getNextMatch(gTournament);
+	if (!next) {
+		buildBracket(inner);
+		return;
+	}
+
+	CreateMatch(inner, (res) => {
+		applyResultAndAdvance(gTournament!, next.match, res);
+		buildBracket(inner);
+	})
 }
 
 
@@ -239,8 +504,8 @@ export default function createLocalTournament(): HTMLDivElement {
             id: "continue",
             extraClasses: btnClasses,
             buttonText: "Continue",
-            icon: "assets/images/robot-svgrepo-com.svg",
-            f: () => CreateBracket(inner),
+            icon: "assets/images/enter-svgrepo-com.svg",
+            f: () => buildBracket(inner),
             iconAlt: "Icon",
             iconBClass: "h-10 pr-3 dark:invert"
         })

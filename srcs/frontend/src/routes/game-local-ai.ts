@@ -42,13 +42,13 @@ const AI_MEDIUM: Genome = {
 };
 
 //	Hard genome 
-async function loadHardGenome(): Promise<Genome> {
+export async function loadHardGenome(): Promise<Genome> {
 	const res = await fetch("/ai/genome/hard.json", { cache: "no-cache" });
 	if (!res.ok) throw new Error(`Cannot load /ai/genome/hard.json (${res.status})`);
 	return (await res.json()) as Genome;
 }
 
-function genomeForDifficulty(diff: AIDifficulty, hard: Genome): Genome {
+export function genomeForDifficulty(diff: AIDifficulty, hard: Genome): Genome {
 	if (diff === "easy") return AI_EASY;
 	if (diff === "medium") return AI_MEDIUM;
 	return hard;
@@ -58,11 +58,11 @@ function genomeForDifficulty(diff: AIDifficulty, hard: Genome): Genome {
 
 type KeyMap = Record<string, boolean>;
 
-function createKeyMap(): KeyMap {
+export function createKeyMap(): KeyMap {
   	return Object.create(null);
 }
 
-function bindKeyboard(keysDown: KeyMap, keysPressed: KeyMap) {
+export function bindKeyboard(keysDown: KeyMap, keysPressed: KeyMap) {
 	const down = (e: KeyboardEvent) => {
 		if (!keysDown[e.key] && !e.repeat) keysPressed[e.key] = true;
 		keysDown[e.key] = true;
@@ -80,7 +80,7 @@ function bindKeyboard(keysDown: KeyMap, keysPressed: KeyMap) {
 	};
 }
 
-function keyboardToInput(keysDown: KeyMap, keysPressed: KeyMap): PongInput {
+export function keyboardToInput(keysDown: KeyMap, keysPressed: KeyMap): PongInput {
 	const input: PongInput = {
 		p1: {
 		up: !!keysDown["w"],
@@ -103,7 +103,7 @@ function keyboardToInput(keysDown: KeyMap, keysPressed: KeyMap): PongInput {
 	return input;
 }
 
-function mergeKeyboardWithAIP2(kb: PongInput, ai: PongInput): PongInput {
+export function mergeKeyboardWithAIP2(kb: PongInput, ai: PongInput): PongInput {
 	return {
 		...kb,
 		p2: {
@@ -170,7 +170,7 @@ async function InitAiGame(diffNum: number, pageRoot: HTMLDivElement) {
 
 	// lance pong
 	await (document as any).fonts?.ready;
-	const controller = startPong(canvas, ctx, { mode: "1v1" });
+	const controller = startPong(canvas, ctx, { mode: "1v1", tournament: false });
 
 	// injection IA
 	const keysDown = createKeyMap();

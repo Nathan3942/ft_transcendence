@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 16:56:00 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/01/30 15:34:24 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/02/03 15:16:28 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ function drawScore(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, sta
 
 }
 
-function render(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, state: PongState, cfg: PongConfig) {
+function render(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, state: PongState, cfg: PongConfig, opts: StartOpts) {
 	
 	ctx.fillStyle = "black";
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -135,8 +135,10 @@ function render(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, state:
 		ctx.font = "120px 'VT323'";
 		ctx.textAlign = "center";
 		ctx.fillText(String("PLAYER " + state.winner + " WINS!"), canvas.width / 2, canvas.height / 2);
-		ctx.font = "60px 'VT323'";
-		ctx.fillText("Press START to restart", canvas.width / 2, canvas.height / 2 + 80);
+		if (opts.tournament === false) {
+			ctx.font = "60px 'VT323'";
+			ctx.fillText("Press START to restart", canvas.width / 2, canvas.height / 2 + 80);
+		}
 	}
 }
 
@@ -212,6 +214,7 @@ function keyboardToInput(keysDown: KeyMap, keysPressed: KeyMap): PongInput {
 export type StartOpts = {
 	mode: ModeId;
 	aiLevel?: "easy" | "medium" | "hard" | "off";
+	tournament: boolean;
 }
 
 export type PongController = {
@@ -224,7 +227,7 @@ export type PongController = {
 export function startPong(
 	canvas: HTMLCanvasElement, 
 	ctx: CanvasRenderingContext2D,
-	opts: StartOpts = { mode: "1v1", aiLevel: "off" },
+	opts: StartOpts = { mode: "1v1", aiLevel: "off", tournament: false },
 	config: Partial<PongConfig> = {},
 	events?: PongEvents
 ): PongController {
@@ -254,7 +257,7 @@ export function startPong(
 
 		const input = inputSource(state, dt);
 		updateCore(state, input, dt, cfg, events);
-		render(ctx, canvas, state, cfg);
+		render(ctx, canvas, state, cfg, opts);
 
 		rafId = requestAnimationFrame(loop);
 	}

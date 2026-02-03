@@ -26,7 +26,7 @@ async function createLocalMatch(outer: HTMLDivElement)
 	canvas.height = rect.height || window.innerHeight;
 
 	await (document as any).fonts?.ready;
-	const controller = startPong(canvas, ctx, { mode: "1v1" });
+	const controller = startPong(canvas, ctx, { mode: "1v1", tournament: false });
 
 	const onResize = () => {
 		const r = outer.getBoundingClientRect();
