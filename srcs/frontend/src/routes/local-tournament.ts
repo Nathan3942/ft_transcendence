@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 16:32:13 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/02/03 18:28:19 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/02/04 19:18:16 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,6 @@ import { startPong } from "../game/pong";
 import type { PongInput, PongState } from "../game/pong_core";
 
 import { makeAIPolicyP2 } from "../game/ai/policy";
-import type { Genome, GAConfig } from "../game/ai/type";
-
-import hardGenome from "../game/ai/genomes/hard.json";
 
 import { loadHardGenome, genomeForDifficulty, createKeyMap, keyboardToInput, bindKeyboard, mergeKeyboardWithAIP2 } from "./game-local-ai";
 // import { creatTextInput } from "../components/TextInput/TextInput";
@@ -80,6 +77,42 @@ function createTextInput(id: string, placeholder: string): HTMLInputElement {
     return input;
 }
 
+function mirrorStateForP2(s: PongState): PongState {
+	
+	const m = structuredClone(s) as PongState;
+
+	const tmpScore = m.scoreP1;
+	m.scoreP1 = m.scoreP2;
+	m.scoreP2 = tmpScore;
+
+	const left = m.playX;
+	const right = m.playX + m.playW;
+
+	m.ballX = left + (right - m.ballX);
+	m.ballVX = -m.ballVX;
+
+	if (m.paddles.length >= 2) {
+		const pL = m.paddles[0];
+		const pR = m.paddles[1];
+
+		const tmpPos = pL.pos;
+		pL.pos = pR.pos;
+		pR.pos = tmpPos;
+	}
+	return (m);
+}
+
+function recenterPaddle(state: PongState, paddleIndex: 0 | 1, dead = 6): { up: boolean; down: boolean } {
+	const p = state.paddles[paddleIndex];
+	const target = (state.playH - p.len) / 2;
+	const d = p.pos - target;
+
+	if (d > dead)  return { up: true, down: false };
+	if (d < -dead) return { up: false, down: true };
+	return { up: false, down: false };
+}
+
+
 function chooseAiLvl(inner: HTMLDivElement, onPick: (lvl: AiLvl) => void) {
 	inner.innerHTML = "";
 	inner.className = "w-full flex flex-col items-center gap-6";
@@ -111,9 +144,20 @@ function chooseAiLvl(inner: HTMLDivElement, onPick: (lvl: AiLvl) => void) {
 	inner.appendChild(wrap);
 }
 
-function initTournamentFromInput(aiLvl: AiLvl | null): TournamentState {
-    const players = shuffle(getPlayersFromInputs(8));
-    const bracket = buildBracketFromPlayers(players);
+function initTournamentFromInput(players: Player[] ,aiLvl: AiLvl | null): TournamentState {
+    const seeded = shuffle(players);
+
+	for (let i = 0; i < seeded.length; i += 2) {
+		const p1 = seeded[i];
+		const p2 = seeded[i + 1];
+
+		if (p1.ai && !p2.ai) {
+			seeded[i] = p2;
+			seeded[i + 1] = p1;
+		}
+	}
+
+    const bracket = buildBracketFromPlayers(seeded);
 	
 	
     return {
@@ -148,7 +192,7 @@ function renderMatch(match: Match, title: string): HTMLDivElement {
 
 	const row1 = document.createElement("div");
 	row1.className = "flex items-center justify-between p-2 rounded-lg bg-white/5";
-	row1.textContent = match.score ? `${match.p1.name} (${match.score.s1})` : match.p1.name;;
+	row1.textContent = match.score ? `${match.p1.name} (${match.score.s1})` : match.p1.name;
 	row1.className = "p-1 rounded bg-white/5";
 
 	const row2 = document.createElement("div");
@@ -295,15 +339,18 @@ function buildBracket(inner: HTMLDivElement) {
 		const players = getPlayersFromInputs(8);
 		const hasBot = players.some(p => p.ai);
 
+		for (const p of players)
+			console.log(p.name);
+
 		if (hasBot) {
 			chooseAiLvl(inner, (lvl) => {
-				gTournament = initTournamentFromInput(lvl);
+				gTournament = initTournamentFromInput(players ,lvl);
 				buildBracket(inner);
 			});
 			return;
 		}
 		else {
-			gTournament = initTournamentFromInput(null);
+			gTournament = initTournamentFromInput(players ,null);
 		}
 	}
 	
@@ -376,12 +423,12 @@ function buildBracketFromPlayers(players: Player[]): Bracket {
 }
 
 
-async function CreateMatch(inner: HTMLDivElement, onDone: (res: GameResult) => void) {
+async function CreateMatch(inner: HTMLDivElement, match: Match, onDone: (res: GameResult) => void) {
     
     inner.innerHTML = "";
 
     const gameWrap = document.createElement("div");
-	gameWrap.className = "w-screen h-[80vh]";
+	gameWrap.className = "w-screen h-[92vh]";
 	inner.appendChild(gameWrap);
 
 	const canvas = document.createElement("canvas");
@@ -400,7 +447,7 @@ async function CreateMatch(inner: HTMLDivElement, onDone: (res: GameResult) => v
 	let unbindKeys: null | (() => void) = null;
 
 	const onResize = () => {
-		const r = inner.getBoundingClientRect();
+		const r = gameWrap.getBoundingClientRect();
 		controller?.reseize(r.width || window.innerWidth, r.height || window.innerHeight);
 	};
 
@@ -419,21 +466,56 @@ async function CreateMatch(inner: HTMLDivElement, onDone: (res: GameResult) => v
 	controller = startPong(canvas, ctx, { mode: "1v1", tournament: true }, {}, events);
 	
 	if (gTournament?.aiLvl) {
-
-		const keysDown = createKeyMap();
-		const keysPressed = createKeyMap();
-		unbindKeys = bindKeyboard(keysDown, keysPressed);
-
 		const hg = await loadHardGenome();
 		const genome = genomeForDifficulty(gTournament.aiLvl, hg);
-		const aiPolicy = makeAIPolicyP2(genome);
 
-		controller.setInputSource((state: PongState, dt: number) => {
-		const kb = keyboardToInput(keysDown, keysPressed);
-		const ai = aiPolicy(state, dt);
-		return mergeKeyboardWithAIP2(kb, ai);
-    });
-  }
+		const aiP2 = makeAIPolicyP2(genome);
+
+		const p1IsAI = match.p1.ai;
+		const p2IsAI = match.p2.ai;
+
+		// 1) Humain vs IA
+		if (!p1IsAI && p2IsAI) {
+			const keysDown = createKeyMap();
+			const keysPressed = createKeyMap();
+			unbindKeys = bindKeyboard(keysDown, keysPressed);
+
+			controller.setInputSource((state: PongState, dt: number) => {
+			const kb = keyboardToInput(keysDown, keysPressed);
+			const ai = aiP2(state, dt);
+			return mergeKeyboardWithAIP2(kb, ai);
+			});
+		}
+		// 3) IA vs IA
+		else if (p1IsAI && p2IsAI) {
+			controller.setInputSource((state: PongState, dt: number) => {
+				const autoStart = state.phase === "LOBBY";
+
+				const towardP2 = state.ballVX > 0;
+				const towardP1 = state.ballVX < 0;
+
+				const aiForP2 = aiP2(state, dt);
+
+				const mirrored = mirrorStateForP2(state);
+				const aiMirrored = aiP2(mirrored, dt);
+
+				const p2Move = towardP2
+				? { up: aiForP2.p2.up, down: aiForP2.p2.down }
+				: recenterPaddle(state, 1);
+
+				const p1Move = towardP1
+				? { up: aiMirrored.p2.up, down: aiMirrored.p2.down }
+				: recenterPaddle(state, 0);
+
+				return {
+				p1: { ...p1Move, start: autoStart, togglePause: false },
+				p2: { ...p2Move, start: autoStart, togglePause: false },
+				p3: { up: false, down: false, start: autoStart },
+				p4: { up: false, down: false, start: autoStart },
+				};
+			});
+		}
+	}
 
 	window.addEventListener("resize", onResize);
 
@@ -466,7 +548,7 @@ function playNextMatch(inner: HTMLDivElement) {
 		return;
 	}
 
-	CreateMatch(inner, (res) => {
+	CreateMatch(inner, next.match, (res) => {
 		applyResultAndAdvance(gTournament!, next.match, res);
 		buildBracket(inner);
 	})
