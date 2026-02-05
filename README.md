@@ -18,7 +18,7 @@ Open ports:
   - 80 (production)
 
 
-# Development Mode (DEV)
+## Development Mode (DEV)
 
 Purpose
   - Hot reload (Vite)
@@ -44,7 +44,7 @@ Full cleanup (including volumes)
 
 
 
-# Production Mode (PROD)
+## Production Mode (PROD)
 
 Purpose
   - Build the frontend (npm run build)
