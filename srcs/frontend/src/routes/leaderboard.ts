@@ -47,16 +47,29 @@ async function importUserData(): Promise<userInfo[]> {
 };
 
 function createLeaderboardCells(users: userInfo[]): HTMLDivElement {
-	const cells = document.createElement("div");
+
+	const tBody = document.createElement("tbody");
 
 	for (let i = 0; i < users.length; ++i) {
-		const cell = document.createElement("div");
+		const cell = document.createElement("tr");
 		const user = users.at(i);
-		
+
+		const userName = document.createElement("th");
+
+
+
+		cell.append(userName)
+		tBody.append(cell);
 	}
 
-	return cells;
+	return tBody;
 };
+
+function createThElement(head: string): HTMLDivElement {
+	const th = document.createElement("th")
+	th.append(head);
+	return th;
+}
 
 export async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 
@@ -115,41 +128,45 @@ export async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 
 	function buildBoardChooser(): HTMLDivElement {
 		const buttons = document.createElement("div");
+		const toReplace = document.getElementById("tableBody");
+		if (!toReplace) {
+			console.log("Page initialised incorrectly");
+		}
 		const genClasses = "";
 		buttons.append(createButton({
 				buttonText: "Easy AI",
 				extraClasses: genClasses,
-				f: () => leaderboard.replaceWith(buildLeaderboard("localAiE")),
+				f: () => toReplace?.replaceWith(buildLeaderboard("localAiE")),
 			}),
 			createButton({
 				buttonText: "Medium AI",
 				extraClasses: genClasses,
-				f: () => leaderboard.replaceWith(buildLeaderboard("localAiM")),
+				f: () => toReplace?.replaceWith(buildLeaderboard("localAiM")),
 			}),
 			createButton({
 				buttonText: "Hard AI",
 				extraClasses: genClasses,
-				f: () => leaderboard.replaceWith(buildLeaderboard("localAiH")),
+				f: () => toReplace?.replaceWith(buildLeaderboard("localAiH")),
 			}),
 			createButton({
 				buttonText: "Total AI",
 				extraClasses: genClasses,
-				f: () => leaderboard.replaceWith(buildLeaderboard("totalLocalScore")),
+				f: () => toReplace?.replaceWith(buildLeaderboard("totalLocalScore")),
 			}),
 			createButton({
 				buttonText: "Custom Matches",
 				extraClasses: genClasses,
-				f: () => leaderboard.replaceWith(buildLeaderboard("onlineCustom")),
+				f: () => toReplace?.replaceWith(buildLeaderboard("onlineCustom")),
 			}),
 			createButton({
 				buttonText: "Online Tournaments",
 				extraClasses: genClasses,
-				f: () => leaderboard.replaceWith(buildLeaderboard("onlineTournament")),
+				f: () => toReplace?.replaceWith(buildLeaderboard("onlineTournament")),
 			}),
 			createButton({
 				buttonText: "Total Online",
 				extraClasses: genClasses,
-				f: () => leaderboard.replaceWith(buildLeaderboard("totalOnlineScore"))
+				f: () => toReplace?.replaceWith(buildLeaderboard("totalOnlineScore"))
 			})
 		)
 
@@ -158,12 +175,31 @@ export async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 
 	// Function Proper
 	const outer = document.createElement("div");
-	const leaderboard = document.createElement("div");
 	const boardChooser = document.createElement("div");
+	const leaderboard = document.createElement("div");
+	const table = document.createElement("table");
+	const tHead = document.createElement("thead");
+	const tbody = document.createElement("tbody");
 	const backButton = createBackButton("", "/");
 	let users: userInfo[];
 	
+	// Setting metadata
 	outer.className = "flex flex-1 flex-col";
+	tbody.id = "tableBody";
+
+	// creating Table Head
+	const tr = document.createElement("tr");
+	tr.append(
+		createThElement("User Name"),
+		createThElement("Ai Easy"),
+		createThElement("Ai Medium"),
+		createThElement("Ai Hard"),
+		createThElement("Total Local"),
+		
+	)
+	
+	tHead.append(tr, tbody);
+	table.append(tHead);
 	
 	try {
 		users = await importUserData();
@@ -174,15 +210,21 @@ export async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 				user.totalOnlineScore = user.onlineCustom + user.onlineTournament;
 			}
 		}
-
-		leaderboard.replaceWith(buildLeaderboard("onlineCustom"));
+		
+		tbody.replaceWith(buildLeaderboard("onlineCustom"), );
 	} catch (e) {
 		console.log("Could not load users:", e);
 		leaderboard.append(`Could not load users: ${e}`);
 	}
 	
-	boardChooser.replaceWith(buildBoardChooser());
+	try {
+		boardChooser.replaceWith(buildBoardChooser());
+	} catch (e) {
 
+	}
+
+	leaderboard.append(table);
+	
 	outer.append(boardChooser, leaderboard, backButton);
 
 	return outer;
