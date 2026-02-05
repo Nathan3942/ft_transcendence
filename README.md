@@ -18,20 +18,7 @@ Open ports:
   - 80 (production)
 
 
-Docker Structure (simplified)
-.
-├── docker-compose.yml          # Production
-├── docker-compose.dev.yml      # Development
-└── frontend/
-    ├── Dockerfile              # Production build
-    ├── docker/
-    │   └── nginx/
-    │       └── default.conf
-    ├── vite.config.js
-    └── src/
-
-
-Development Mode (DEV)
+# Development Mode (DEV)
 
 Purpose
   - Hot reload (Vite)
@@ -57,7 +44,7 @@ Full cleanup (including volumes)
 
 
 
-Production Mode (PROD)
+# Production Mode (PROD)
 
 Purpose
   - Build the frontend (npm run build)
