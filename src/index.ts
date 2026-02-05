@@ -3,6 +3,7 @@ import cors from '@fastify/cors'
 import { initDatabase, checkDatabaseHealth, initTables } from './database'
 import v1Routes from './routes/v1'
 import { errorHandler, notFoundHandler} from './utils/ErrorHandler'
+import { env, isDev } from './config/env'
 
 // Create a Fastify server instance with logging enabled
 const server = Fastify({
@@ -12,9 +13,9 @@ const server = Fastify({
 // Start the server
 const start = async () => {
   try {
-    // Register CORS first
+    // Register CORS avec l'URL du frontend depuis .env
     await server.register(cors, {
-      origin: true  // En développement: accepte toutes les origines
+      origin: isDev ? true : env.FRONTEND_URL  // Dev: toutes origines, Prod: uniquement frontend
     })
 
     // Initialize database and tables before starting the server
@@ -32,10 +33,11 @@ const start = async () => {
     server.setErrorHandler(errorHandler)
     server.setNotFoundHandler(notFoundHandler)
 
-    // Listen on port 3000, accessible from any network interface
-    await server.listen({ port: 3000, host: '0.0.0.0' })
-    console.log('🚀 Server started on http://localhost:3000')
-    console.log('✅ CORS enabled for all origins')
+    // Listen on port from .env, accessible from any network interface
+    await server.listen({ port: env.PORT, host: '0.0.0.0' })
+    console.log(`🚀 Server started on http://localhost:${env.PORT}`)
+    console.log(`📍 Environment: ${env.NODE_ENV}`)
+    console.log(`✅ CORS enabled for: ${isDev ? 'all origins' : env.FRONTEND_URL}`)
   } catch (err) {
     // Log error and exit if server fails to start
     server.log.error(err)
