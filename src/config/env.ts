@@ -25,10 +25,10 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 
   // Port du serveur HTTP Fastify
-  PORT: z.string().transform(Number).default('3000'),
+  PORT: z.string().default('3000').transform(Number),
 
   // Port WebSocket pour le jeu Pong temps réel
-  WS_PORT: z.string().transform(Number).default('3001'),
+  WS_PORT: z.string().default('3001').transform(Number),
 
   // Chemin vers la base de données SQLite
   DATABASE_PATH: z.string().default('./data/transcendence.db'),

@@ -2,49 +2,13 @@
 import { FastifyInstance } from 'fastify'
 import { success, errorResponse } from '../../utils/response'
 import { getDatabase } from '../../database'
-import { NotFoundError, UnauthorizedError, BadRequestError } from '../../utils/appErrors'
+import { NotFoundError, BadRequestError } from '../../utils/appErrors'
 import { getAll, getById, createUser } from '../../repository/usersRepository'
 import { queryAll, queryOne, queryExecute } from '../../database/queryWrapper'
 import { z } from 'zod'
 
 
 export default async function usersRoutes(server : FastifyInstance){
-    /************************* ZOD TESTER **********************************/
-    server.post('/zodTest', async (request, reply) => {
-        const userSchema = z.object({
-            username: z.string().min(1, 'username requis')
-        })
-        const result = userSchema.safeParse(request.body)
-        if (!result.success) {
-            throw new BadRequestError("test zod error")
-        }
-        return success(result.data)
-    })
-
-server.get('/zodTest', async (request, reply) =>{
-
-    const userSchema = z.object({
-        username: z.string().min(1, 'username requis'),
-        test: z.number()
-    })
-
-    const username = userSchema.safeParse(request.query)
-    if(!username.success){
-        throw new BadRequestError("test zod error")
-    }
-    return success(username)
-})
-
-
-
- /************************* ME **********************************/
-
-    server.get('/me', async (request, reply) => {
-        //future authentication
-        throw new UnauthorizedError("Not authenticated")
-})
-
-
  /************************* POST USERS **********************************/
     server.post('/users', async (request, reply) => {
 
