@@ -27,7 +27,7 @@ function createLoginForm(formContainer: Element): HTMLDivElement {
 		f: () => console.log("Login Button has been pressed"),
 		buttonText: "Login",
 		extraClasses: "w-full bg-blue-500 p-2 hover:bg-blue-600 dark:bg-blue-900 dark:hover:bg-blue-950",
-		type: "button"
+		type: "submit"
 	}));
 
 	p.className = "mt-4 text-center";
