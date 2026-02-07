@@ -3,6 +3,7 @@ import cors from '@fastify/cors'
 import { initDatabase, checkDatabaseHealth, initTables } from './database'
 import v1Routes from './routes/v1'
 import { errorHandler, notFoundHandler } from './utils/ErrorHandler'
+import { registerRateLimit } from './plugins/rateLimit'
 import { env, isDev } from './config/env'
 
 /**
@@ -20,6 +21,9 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(cors, {
     origin: isDev ? true : env.FRONTEND_URL  // Dev: all origins, Prod: only frontend
   })
+
+  // Register rate limiting to protect against abuse
+  await registerRateLimit(app)
 
   // Initialize database and tables before registering routes
   initDatabase()

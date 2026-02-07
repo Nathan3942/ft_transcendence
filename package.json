@@ -23,6 +23,7 @@
   "homepage": "https://github.com/tmontani25/transcendence-backend-collab#readme",
   "dependencies": {
     "@fastify/cors": "^11.2.0",
+    "@fastify/rate-limit": "^10.3.0",
     "better-sqlite3": "^12.5.0",
     "dotenv": "^17.2.3",
     "fastify": "^5.6.2",
