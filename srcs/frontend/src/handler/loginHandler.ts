@@ -1,6 +1,6 @@
 import type { loginRequest, loginResponse } from "../interfaces/properties";
 
-const API_BASE = "/api";
+const API_BASE = "/api/v1";
 
 export async function loginHandler(payload: loginRequest): Promise<loginResponse> {
     const resp = await fetch(`${API_BASE}/auth/login`, {
