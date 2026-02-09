@@ -27,7 +27,7 @@ type scoreKey = keyof Pick<
 
 async function importUserData(): Promise<userInfo[]> {
 	try {
-		const response = await fetch("apiOrWhatever");
+		const response = await fetch("/api/users/score");
 		if (!response.ok) {
 			throw new Error(`Network error: ${response.status} ${response.statusText}`);
 		}
@@ -122,6 +122,7 @@ export async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 				break;
 			}
 		}
+		board.replaceWith(createLeaderboardCells(users));
 
 		return board;
 	}
@@ -168,6 +169,7 @@ export async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 				extraClasses: genClasses,
 				f: () => toReplace?.replaceWith(buildLeaderboard("totalOnlineScore"))
 			})
+
 		)
 
 		return buttons;
@@ -195,7 +197,9 @@ export async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 		createThElement("Ai Medium"),
 		createThElement("Ai Hard"),
 		createThElement("Total Local"),
-		
+		createThElement("Custom Matches"),
+		createThElement("Online Tournament"),
+		createThElement("Total Online")
 	)
 	
 	tHead.append(tr, tbody);
