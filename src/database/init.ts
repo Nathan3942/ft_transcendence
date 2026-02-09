@@ -43,10 +43,15 @@ export const initTables = (): void => {
   db.exec(`
     CREATE TABLE IF NOT EXISTS matches (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      tournament_id INTEGER NOT NULL,
-      round INTEGER NOT NULL,
+      tournament_id INTEGER,
+      round INTEGER,
+      status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'in_progress', 'finished')),
+      winner_id INTEGER,
+      started_at DATETIME,
+      finished_at DATETIME,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (tournament_id) REFERENCES tournaments(id)
+      FOREIGN KEY (tournament_id) REFERENCES tournaments(id),
+      FOREIGN KEY (winner_id) REFERENCES users(id)
     );
   `)
 

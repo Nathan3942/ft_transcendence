@@ -12,12 +12,16 @@ import {
     getMatchesByTournament as getMatchesByTournamentRepo,
     addPlayerToMatch as addPlayerToMatchRepo,
     updateMatchPlayerScore as updateMatchPlayerScoreRepo,
-    getMatchWithPlayers as getMatchWithPlayersRepo
+    getMatchWithPlayers as getMatchWithPlayersRepo,
+    updateMatchStatus as updateMatchStatusRepo,
+    startMatch as startMatchRepo,
+    finishMatch as finishMatchRepo,
+    getMatchesByStatus as getMatchesByStatusRepo
 } from '../repository/matchesRepository'
 import { getTournamentById } from '../repository/tournamentsRepository'
 import { getById as getUserById } from '../repository/usersRepository'
 import { NotFoundError, BadRequestError } from '../utils/appErrors'
-import { Match, MatchPlayer, MatchWithPlayers } from '../models/matchModel'
+import { Match, MatchPlayer, MatchWithPlayers, MatchStatus } from '../models/matchModel'
 
 /**
  * Get all matches
@@ -43,28 +47,42 @@ export function getMatchById(id: string | number): MatchWithPlayers {
 
 /**
  * Create a new match
- * @param tournamentId - Tournament ID
- * @param round - Round number
+ * @param tournamentId - Tournament ID (nullable for non-tournament matches)
+ * @param round - Round number (nullable for non-tournament matches)
+ * @param status - Match status (default: 'pending')
  * @returns Created match
  * @throws BadRequestError if data is invalid
- * @throws NotFoundError if tournament doesn't exist
+ * @throws NotFoundError if tournament is specified but doesn't exist
  */
-export function createMatch(tournamentId: number, round: number): Match {
-    if (!tournamentId || tournamentId <= 0) {
-        throw new BadRequestError('tournamentId must be a positive integer')
+export function createMatch(
+    tournamentId: number | null,
+    round: number | null,
+    status: MatchStatus = 'pending'
+): Match {
+    // Validate status
+    const validStatuses: MatchStatus[] = ['pending', 'in_progress', 'finished']
+    if (!validStatuses.includes(status)) {
+        throw new BadRequestError('status must be one of: pending, in_progress, finished')
     }
 
-    if (!round || round <= 0) {
-        throw new BadRequestError('round must be a positive integer')
+    // If tournamentId is provided, validate it
+    if (tournamentId !== null) {
+        if (tournamentId <= 0) {
+            throw new BadRequestError('tournamentId must be a positive integer or null')
+        }
+
+        const tournament = getTournamentById(tournamentId)
+        if (!tournament) {
+            throw new NotFoundError('Tournament not found')
+        }
     }
 
-    // Check tournament exists
-    const tournament = getTournamentById(tournamentId)
-    if (!tournament) {
-        throw new NotFoundError('Tournament not found')
+    // If round is provided, validate it
+    if (round !== null && round <= 0) {
+        throw new BadRequestError('round must be a positive integer or null')
     }
 
-    const match = createMatchRepo({ tournamentId, round })
+    const match = createMatchRepo({ tournamentId, round, status })
     return match
 }
 
@@ -201,4 +219,149 @@ export function updateMatchPlayerScore(
         userId,
         score
     }
+}
+
+/**
+ * Update match status
+ * @param matchId - Match ID
+ * @param status - New status
+ * @returns Success message
+ * @throws NotFoundError if match doesn't exist
+ * @throws BadRequestError if status is invalid or transition is not allowed
+ */
+export function updateMatchStatus(
+    matchId: string | number,
+    status: MatchStatus
+): { message: string; matchId: number; status: MatchStatus } {
+    const validStatuses: MatchStatus[] = ['pending', 'in_progress', 'finished']
+    if (!validStatuses.includes(status)) {
+        throw new BadRequestError('status must be one of: pending, in_progress, finished')
+    }
+
+    const match = getMatchByIdRepo(matchId)
+    if (!match) {
+        throw new NotFoundError('Match not found')
+    }
+
+    // Validate status transitions
+    if (match.status === 'finished') {
+        throw new BadRequestError('Cannot change status of a finished match')
+    }
+
+    const numericMatchId = typeof matchId === 'string' ? parseInt(matchId) : matchId
+    const updateResult = updateMatchStatusRepo(numericMatchId, status)
+
+    if (updateResult.changes === 0) {
+        throw new NotFoundError('Match not found')
+    }
+
+    return {
+        message: 'Match status updated',
+        matchId: numericMatchId,
+        status
+    }
+}
+
+/**
+ * Start a match (sets status to in_progress and records start time)
+ * @param matchId - Match ID
+ * @returns Updated match information
+ * @throws NotFoundError if match doesn't exist
+ * @throws BadRequestError if match is not in pending status
+ */
+export function startMatch(
+    matchId: string | number
+): { message: string; matchId: number; status: MatchStatus } {
+    const match = getMatchByIdRepo(matchId)
+    if (!match) {
+        throw new NotFoundError('Match not found')
+    }
+
+    if (match.status !== 'pending') {
+        throw new BadRequestError('Only pending matches can be started')
+    }
+
+    const numericMatchId = typeof matchId === 'string' ? parseInt(matchId) : matchId
+    const updateResult = startMatchRepo(numericMatchId)
+
+    if (updateResult.changes === 0) {
+        throw new NotFoundError('Match not found')
+    }
+
+    return {
+        message: 'Match started',
+        matchId: numericMatchId,
+        status: 'in_progress'
+    }
+}
+
+/**
+ * Finish a match (sets status to finished and records end time and winner)
+ * @param matchId - Match ID
+ * @param winnerId - Winner user ID (nullable for draws)
+ * @returns Updated match information
+ * @throws NotFoundError if match or winner doesn't exist
+ * @throws BadRequestError if match is not in progress or winner is invalid
+ */
+export function finishMatch(
+    matchId: string | number,
+    winnerId: number | null
+): { message: string; matchId: number; status: MatchStatus; winnerId: number | null } {
+    const match = getMatchByIdRepo(matchId)
+    if (!match) {
+        throw new NotFoundError('Match not found')
+    }
+
+    if (match.status !== 'in_progress') {
+        throw new BadRequestError('Only in-progress matches can be finished')
+    }
+
+    // If winnerId is provided, validate it
+    if (winnerId !== null) {
+        if (winnerId <= 0) {
+            throw new BadRequestError('winnerId must be a positive integer or null')
+        }
+
+        const winner = getUserById(winnerId)
+        if (!winner) {
+            throw new NotFoundError('Winner user not found')
+        }
+
+        // Verify winner is a player in this match
+        const matchWithPlayers = getMatchWithPlayersRepo(matchId)
+        const isPlayerInMatch = matchWithPlayers?.players.some(p => p.userId === winnerId)
+        if (!isPlayerInMatch) {
+            throw new BadRequestError('Winner must be a player in this match')
+        }
+    }
+
+    const numericMatchId = typeof matchId === 'string' ? parseInt(matchId) : matchId
+    const updateResult = finishMatchRepo(numericMatchId, winnerId)
+
+    if (updateResult.changes === 0) {
+        throw new NotFoundError('Match not found')
+    }
+
+    return {
+        message: 'Match finished',
+        matchId: numericMatchId,
+        status: 'finished',
+        winnerId
+    }
+}
+
+/**
+ * Get matches by status
+ * @param status - Match status
+ * @returns Array of matches with the specified status
+ * @throws BadRequestError if status is invalid
+ */
+export function getMatchesByStatus(status: MatchStatus): Match[] {
+    const validStatuses: MatchStatus[] = ['pending', 'in_progress', 'finished']
+    if (!validStatuses.includes(status)) {
+        throw new BadRequestError('status must be one of: pending, in_progress, finished')
+    }
+
+    const matches = getMatchesByStatusRepo(status)
+    return matches
 }

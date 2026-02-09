@@ -25,8 +25,16 @@ export default async function matchesRoutes(server: FastifyInstance) {
 
     /************************* CREATE MATCH **********************************/
     server.post('/matches', async (request, _reply) => {
-        const { tournamentId, round } = request.body as { tournamentId: number; round: number }
-        const match = matchService.createMatch(tournamentId, round)
+        const { tournamentId, round, status } = request.body as {
+            tournamentId: number | null;
+            round: number | null;
+            status?: 'pending' | 'in_progress' | 'finished';
+        }
+        const match = matchService.createMatch(
+            tournamentId ?? null,
+            round ?? null,
+            status ?? 'pending'
+        )
         return success(match)
     })
 
@@ -59,5 +67,35 @@ export default async function matchesRoutes(server: FastifyInstance) {
         const result = matchService.updateMatchPlayerScore(id, userId, score)
         return success(result)
     })
-    
+
+    /************************* UPDATE MATCH STATUS **********************************/
+    server.patch('/matches/:id/status', async (request, _reply) => {
+        const { id } = request.params as { id: string }
+        const { status } = request.body as { status: 'pending' | 'in_progress' | 'finished' }
+        const result = matchService.updateMatchStatus(id, status)
+        return success(result)
+    })
+
+    /************************* START MATCH **********************************/
+    server.post('/matches/:id/start', async (request, _reply) => {
+        const { id } = request.params as { id: string }
+        const result = matchService.startMatch(id)
+        return success(result)
+    })
+
+    /************************* FINISH MATCH **********************************/
+    server.post('/matches/:id/finish', async (request, _reply) => {
+        const { id } = request.params as { id: string }
+        const { winnerId } = request.body as { winnerId: number | null }
+        const result = matchService.finishMatch(id, winnerId ?? null)
+        return success(result)
+    })
+
+    /************************* GET MATCHES BY STATUS **********************************/
+    server.get('/matches/status/:status', async (request, _reply) => {
+        const { status } = request.params as { status: 'pending' | 'in_progress' | 'finished' }
+        const matches = matchService.getMatchesByStatus(status)
+        return success(matches)
+    })
+
 }

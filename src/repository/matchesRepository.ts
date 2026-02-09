@@ -1,28 +1,63 @@
 /* centralise toutes les requetes a la database qui concernent les matchs*/
 
 import { queryAll, queryOne, queryExecute } from '../database/queryWrapper'
-import { Match, MatchPlayer, MatchWithPlayers } from '../models/matchModel'
+import { Match, MatchPlayer, MatchWithPlayers, MatchStatus } from '../models/matchModel'
 
 
 export function getAllMatches(): Match[] {
-    return queryAll('SELECT id, tournament_id as tournamentId, round, created_at as createdAt FROM matches')
+    return queryAll(`
+        SELECT
+            id,
+            tournament_id as tournamentId,
+            round,
+            status,
+            winner_id as winnerId,
+            started_at as startedAt,
+            finished_at as finishedAt,
+            created_at as createdAt
+        FROM matches
+    `)
 }
 
 
 export function getMatchById(id: string | number): Match | null {
-    return queryOne('SELECT id, tournament_id as tournamentId, round, created_at as createdAt FROM matches WHERE id = ?', [id]) ?? null
+    return queryOne(`
+        SELECT
+            id,
+            tournament_id as tournamentId,
+            round,
+            status,
+            winner_id as winnerId,
+            started_at as startedAt,
+            finished_at as finishedAt,
+            created_at as createdAt
+        FROM matches
+        WHERE id = ?
+    `, [id]) ?? null
 }
 
 
-export function createMatch({ tournamentId, round }: { tournamentId: number; round: number }): Match {
+export function createMatch({
+    tournamentId,
+    round,
+    status = 'pending'
+}: {
+    tournamentId: number | null;
+    round: number | null;
+    status?: MatchStatus;
+}): Match {
     const result = queryExecute(
-        'INSERT INTO matches (tournament_id, round) VALUES (?, ?)',
-        [tournamentId, round]
+        'INSERT INTO matches (tournament_id, round, status) VALUES (?, ?, ?)',
+        [tournamentId, round, status]
     );
     return {
         id: result.lastInsertRowid as number,
         tournamentId,
         round,
+        status,
+        winnerId: null,
+        startedAt: null,
+        finishedAt: null,
         createdAt: new Date().toISOString()
     };
 }
@@ -34,10 +69,19 @@ export function deleteMatch(id: string | number) {
 
 
 export function getMatchesByTournament(tournamentId: string | number): Match[] {
-    return queryAll(
-        'SELECT id, tournament_id as tournamentId, round, created_at as createdAt FROM matches WHERE tournament_id = ?',
-        [tournamentId]
-    )
+    return queryAll(`
+        SELECT
+            id,
+            tournament_id as tournamentId,
+            round,
+            status,
+            winner_id as winnerId,
+            started_at as startedAt,
+            finished_at as finishedAt,
+            created_at as createdAt
+        FROM matches
+        WHERE tournament_id = ?
+    `, [tournamentId])
 }
 
 
@@ -83,4 +127,47 @@ export function getMatchWithPlayers(matchId: string | number): MatchWithPlayers 
         ...match,
         players
     }
+}
+
+
+export function updateMatchStatus(matchId: number, status: MatchStatus) {
+    return queryExecute(
+        'UPDATE matches SET status = ? WHERE id = ?',
+        [status, matchId]
+    )
+}
+
+
+export function startMatch(matchId: number) {
+    const now = new Date().toISOString()
+    return queryExecute(
+        'UPDATE matches SET status = ?, started_at = ? WHERE id = ?',
+        ['in_progress', now, matchId]
+    )
+}
+
+
+export function finishMatch(matchId: number, winnerId: number | null) {
+    const now = new Date().toISOString()
+    return queryExecute(
+        'UPDATE matches SET status = ?, finished_at = ?, winner_id = ? WHERE id = ?',
+        ['finished', now, winnerId, matchId]
+    )
+}
+
+
+export function getMatchesByStatus(status: MatchStatus): Match[] {
+    return queryAll(`
+        SELECT
+            id,
+            tournament_id as tournamentId,
+            round,
+            status,
+            winner_id as winnerId,
+            started_at as startedAt,
+            finished_at as finishedAt,
+            created_at as createdAt
+        FROM matches
+        WHERE status = ?
+    `, [status])
 }

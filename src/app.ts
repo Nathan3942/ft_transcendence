@@ -1,6 +1,6 @@
 import Fastify, { FastifyInstance } from 'fastify'
 import cors from '@fastify/cors'
-import { initDatabase, checkDatabaseHealth, initTables } from './database'
+import { initDatabase, checkDatabaseHealth, initTables, runMigrations } from './database'
 import v1Routes from './routes/v1'
 import { errorHandler, notFoundHandler } from './utils/ErrorHandler'
 import { registerRateLimit } from './plugins/rateLimit'
@@ -31,6 +31,9 @@ export async function buildApp(): Promise<FastifyInstance> {
     throw new Error('Database integrity check failed')
   }
   initTables()
+
+  // Run migrations to update schema for existing databases
+  runMigrations()
 
   // Register routes with /api/v1 prefix
   app.register(v1Routes, { prefix: '/api/v1' })
