@@ -3,25 +3,25 @@ import { config } from '../config/env' //import general config
 import { existsSync, mkdirSync } from 'fs'
 import { dirname } from 'path'
 
-// global variable db
+//variable globale db 1 seule connexion
 let db: Database.Database | null = null
 
 export const initDatabase = (): Database.Database => {
   if (db) {
     return db
   }
-    //creates data folder if it doesn't exist 
+    //creer un dossier pour la db
     const folder = dirname(config.database.path)
-  if (!existsSync(folder)){
+  if (!existsSync(folder)){ //check si dossier existe deja
     mkdirSync(folder, { recursive: true })
   }
     db = new Database(config.database.path)
-    db.pragma('foreign_keys = ON')
-    db.pragma("journal_mode = WAL")
+    db.pragma('foreign_keys = ON') //bloque les insertion de fausse data
+    db.pragma("journal_mode = WAL") //permet plusieurs requetes db simultanées les ecritures db vont dans fichier temp .wal ensuite fusion
     return db
 }
 
-//Fonction 2 gets the database
+//getter
 export const getDatabase = (): Database.Database => {
   if (!db) {
     return initDatabase()
@@ -29,11 +29,10 @@ export const getDatabase = (): Database.Database => {
   return db
 }
 
-//Fonction 3 : check the database
+// test db
 export const checkDatabaseHealth = (): boolean => {
-  //check if the database is ok : sqlite responds, db is accesible, structure ok
+
   const dbtemp = getDatabase();
-  // on a la db
   
   try {
     const raw = dbtemp.pragma("integrity_check");

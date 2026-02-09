@@ -6,7 +6,7 @@ import tournamentsRoutes from './tournaments'
 import matchesRoutes from './matches'
 import { healthCheckRoute } from './healthCheck'
 
-//register all v1 routes and add the prefix api/v1
+//register toutes les routes de ma v1
 export default async function v1Routes(server: FastifyInstance){
     server.register(healthCheckRoute)
     server.register(usersRoutes)

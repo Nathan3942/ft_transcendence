@@ -1,6 +1,4 @@
-/* ce fichier permet de centraliser toutes les methodes
-qu'on peut utilser sur users
-exemple getById, getAll, create etc */
+/* ce fichier permet de centraliser toutes les requetes a la database qui concernent les users*/
 
 
 import { queryAll, queryOne, queryExecute } from '../database/queryWrapper'

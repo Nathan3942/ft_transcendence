@@ -59,4 +59,5 @@ export default async function matchesRoutes(server: FastifyInstance) {
         const result = matchService.updateMatchPlayerScore(id, userId, score)
         return success(result)
     })
+    
 }

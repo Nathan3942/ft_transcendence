@@ -19,9 +19,9 @@ import { User } from '../models/userModel'
  * @throws NotFoundError if no users exist
  */
 export function getAllUsers(): User[] {
-    const users = getAllUsersRepo() as User[]
+    const users = getAllUsersRepo() as User[] //execute les fonctions du repo
     if (users.length === 0) {
-        throw new NotFoundError('No users in database')
+        throw new NotFoundError('No users in database') //ajoute la logique metier
     }
     return users
 }

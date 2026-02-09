@@ -14,7 +14,7 @@ export default async function usersRoutes(server: FastifyInstance) {
     server.post('/users', async (request, reply) => {
         const { username } = request.body as { username: string }
         const user = await userService.createUser(username)
-        return success(user)
+        return success(user)// equivalent ->return reply.status(200).send(success(user))
     })
 
     /************************* GET ALL USERS **********************************/

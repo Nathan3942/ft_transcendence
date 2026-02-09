@@ -37,7 +37,7 @@ export const initTables = (): void => {
       FOREIGN KEY (user_id) REFERENCES users(id),
       UNIQUE (tournament_id, user_id)
     );
-  `)
+  `)//UNIQUE empeche d'inscrire plusieurs fois meme joueur
 
   // Table des matchs
   db.exec(`
@@ -62,6 +62,8 @@ export const initTables = (): void => {
       UNIQUE (match_id, user_id)
     );
   `)
+
+
 
 }
 

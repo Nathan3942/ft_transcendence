@@ -1,19 +1,19 @@
-/* Tournaments repository - centralizes all database operations for tournaments */
+/* centralise toutes les requetes a la database qui concernent les tournois */
 
 import { queryAll, queryOne, queryExecute } from '../database/queryWrapper'
 import { Tournament, TournamentPlayer, TournamentWithPlayers } from '../models/tournamentModel'
 
-// Get all tournaments
+
 export function getAllTournaments(): Tournament[] {
     return queryAll('SELECT id, name, created_at as createdAt FROM tournaments')
 }
 
-// Get tournament by ID
+
 export function getTournamentById(id: string | number): Tournament | null {
     return queryOne('SELECT id, name, created_at as createdAt FROM tournaments WHERE id = ?', [id]) ?? null
 }
 
-// Create a new tournament
+
 export function createTournament({ name }: { name: string }): Tournament {
     try {
         const result = queryExecute(
@@ -33,12 +33,12 @@ export function createTournament({ name }: { name: string }): Tournament {
     }
 }
 
-// Delete a tournament
+
 export function deleteTournament(id: string | number) {
     return queryExecute('DELETE FROM tournaments WHERE id = ?', [id])
 }
 
-// Add a player to a tournament
+
 export function addPlayerToTournament(tournamentId: number, userId: number): TournamentPlayer {
     try {
         const result = queryExecute(
@@ -59,7 +59,7 @@ export function addPlayerToTournament(tournamentId: number, userId: number): Tou
     }
 }
 
-// Get all players in a tournament
+
 export function getTournamentPlayers(tournamentId: string | number) {
     return queryAll(
         'SELECT id, tournament_id as tournamentId, user_id as userId, joined_at as joinedAt FROM tournament_players WHERE tournament_id = ?',
@@ -67,7 +67,7 @@ export function getTournamentPlayers(tournamentId: string | number) {
     )
 }
 
-// Get tournament with players
+
 export function getTournamentWithPlayers(tournamentId: string | number): TournamentWithPlayers | null {
     const tournament = getTournamentById(tournamentId)
     if (!tournament) return null

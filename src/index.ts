@@ -5,12 +5,12 @@ import v1Routes from './routes/v1'
 import { errorHandler, notFoundHandler} from './utils/ErrorHandler'
 import { env, isDev } from './config/env'
 
-// Create a Fastify server instance with logging enabled
+// Cree une instance fastify avec logging
 const server = Fastify({
-  logger: true
+  logger: true //affichage console
 })
 
-// Start the server
+// Start mon server
 const start = async () => {
   try {
     // Register CORS avec l'URL du frontend depuis .env
