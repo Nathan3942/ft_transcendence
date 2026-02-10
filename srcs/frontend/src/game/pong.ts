@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 16:56:00 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/02/03 15:16:28 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/02/05 15:20:55 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ import { DEFAULT_CONFIG, clamp, creatInitialState, updateCore, paddleReact } fro
 
 // ================= Rendering ===================
 
-function drawScore(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, state: PongState) {
+function drawScore(ctx: CanvasRenderingContext2D, state: PongState) {
 	if (state.mod === "1v1" || state.mod === "2v2") {
 		ctx.font = "150px 'vt323'";
 		ctx.textAlign = "center";
@@ -95,7 +95,7 @@ function render(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, state:
 	ctx.fill();
 
 	ctx.fillStyle = "white";
-	drawScore(ctx, canvas, state);
+	drawScore(ctx, state);
 
 	ctx.beginPath();
 	for (const p of state.paddles) {

@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 12:47:55 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/01/19 16:33:29 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/02/05 15:20:29 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,10 +19,6 @@
 */
 
 import type { Genome, GAConfig, TrainProgress } from "./type";
-
-function clamp01(x: number) {
-	return (Math.max(0, Math.min(1, x)));
-}
 
 export function randomGenome(): Genome {
     return {
