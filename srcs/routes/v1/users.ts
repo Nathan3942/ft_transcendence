@@ -11,10 +11,13 @@ import * as userService from '../../services/userService'
 export default async function usersRoutes(server: FastifyInstance) {
 
     /************************* POST USERS **********************************/
+    /* Crée un user OU retourne le user existant si le username existe déjà.
+       Utilise getOrCreate pour que le frontend puisse appeler cette route
+       sans se soucier de savoir si le user existe déjà */
     server.post('/users', async (request, reply) => {
         const { username } = request.body as { username: string }
-        const user = await userService.createUser(username)
-        return success(user)// equivalent ->return reply.status(200).send(success(user))
+        const user = userService.getOrCreateUser(username)
+        return success(user)
     })
 
     /************************* GET ALL USERS **********************************/

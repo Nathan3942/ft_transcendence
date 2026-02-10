@@ -7,7 +7,8 @@
 import {
     getAll as getAllUsersRepo,
     getById as getUserByIdRepo,
-    createUser as createUserRepo
+    createUser as createUserRepo,
+    getOrCreateByUsername as getOrCreateByUsernameRepo
 } from '../repository/usersRepository'
 import { queryOne, queryExecute } from '../database/queryWrapper'
 import { NotFoundError, BadRequestError } from '../utils/appErrors'
@@ -60,6 +61,17 @@ export async function createUser(username: string): Promise<User> {
         }
         throw err
     }
+}
+
+/**
+ * Crée un user ou retourne le user existant si le username existe déjà
+ * Utilisé par le frontend local pour obtenir un user ID sans erreur de doublon
+ */
+export function getOrCreateUser(username: string): User {
+    if (!username) {
+        throw new BadRequestError('Missing username')
+    }
+    return getOrCreateByUsernameRepo(username)
 }
 
 /**

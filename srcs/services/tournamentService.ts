@@ -177,19 +177,19 @@ export function saveTournamentResult(input: TournamentResultInput) {
         throw new BadRequestError('Champion name is required')
     }
 
-    // Get or create all non-AI players, map names to user objects
+    /* On crée TOUS les joueurs en base (humains ET bots)
+       car la table match_player a une FK sur users(id)
+       Un bot est simplement un user avec un nom comme "Bot 1" */
     const userMap = new Map<string, { id: number; username: string }>()
     for (const p of players) {
-        if (!p.isAi) {
-            const user = getOrCreateByUsername(p.name.trim())
-            userMap.set(p.name.trim(), user)
-        }
+        const user = getOrCreateByUsername(p.name.trim())
+        userMap.set(p.name.trim(), user)
     }
 
-    // Resolve champion
+    // Résoudre le champion (peut être un bot ou un humain)
     const champion = userMap.get(championName.trim())
     if (!champion) {
-        throw new BadRequestError('Champion must be a non-AI player')
+        throw new BadRequestError('Champion not found in players list')
     }
 
     // Create tournament with status finished
@@ -210,11 +210,13 @@ export function saveTournamentResult(input: TournamentResultInput) {
         const p2User = userMap.get(m.player2Name.trim())
         const winnerUser = userMap.get(m.winnerName.trim())
 
+        /* Tous les joueurs (humains et bots) sont maintenant dans userMap,
+           donc p1User et p2User existent toujours */
         return createFinishedMatchWithPlayers(
             winnerUser?.id ?? null,
-            p1User?.id ?? 0,
+            p1User!.id,
             m.scorePlayer1,
-            p2User?.id ?? null,
+            p2User!.id,
             m.scorePlayer2
         )
     })
