@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 16:32:13 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/02/04 19:18:16 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/02/10 17:31:33 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,41 +75,6 @@ function createTextInput(id: string, placeholder: string): HTMLInputElement {
     `;
 
     return input;
-}
-
-function mirrorStateForP2(s: PongState): PongState {
-	
-	const m = structuredClone(s) as PongState;
-
-	const tmpScore = m.scoreP1;
-	m.scoreP1 = m.scoreP2;
-	m.scoreP2 = tmpScore;
-
-	const left = m.playX;
-	const right = m.playX + m.playW;
-
-	m.ballX = left + (right - m.ballX);
-	m.ballVX = -m.ballVX;
-
-	if (m.paddles.length >= 2) {
-		const pL = m.paddles[0];
-		const pR = m.paddles[1];
-
-		const tmpPos = pL.pos;
-		pL.pos = pR.pos;
-		pR.pos = tmpPos;
-	}
-	return (m);
-}
-
-function recenterPaddle(state: PongState, paddleIndex: 0 | 1, dead = 6): { up: boolean; down: boolean } {
-	const p = state.paddles[paddleIndex];
-	const target = (state.playH - p.len) / 2;
-	const d = p.pos - target;
-
-	if (d > dead)  return { up: true, down: false };
-	if (d < -dead) return { up: false, down: true };
-	return { up: false, down: false };
 }
 
 
@@ -425,6 +390,19 @@ function buildBracketFromPlayers(players: Player[]): Bracket {
 
 async function CreateMatch(inner: HTMLDivElement, match: Match, onDone: (res: GameResult) => void) {
     
+	if (match.p1.ai && match.p2.ai) {
+		const winnerSide: 1 | 2 = Math.random() < 0.5 ? 1 : 2;
+
+		const loserScore = Math.floor(Math.random() * 1);
+		const winScore = 1;
+
+		const s1 = winnerSide === 1 ? winScore : loserScore;
+		const s2 = winnerSide === 2 ? winScore : loserScore;
+
+		onDone({ winnerSide, s1, s2 });
+		return;
+  }
+	
     inner.innerHTML = "";
 
     const gameWrap = document.createElement("div");
@@ -484,35 +462,6 @@ async function CreateMatch(inner: HTMLDivElement, match: Match, onDone: (res: Ga
 			const kb = keyboardToInput(keysDown, keysPressed);
 			const ai = aiP2(state, dt);
 			return mergeKeyboardWithAIP2(kb, ai);
-			});
-		}
-		// 3) IA vs IA
-		else if (p1IsAI && p2IsAI) {
-			controller.setInputSource((state: PongState, dt: number) => {
-				const autoStart = state.phase === "LOBBY";
-
-				const towardP2 = state.ballVX > 0;
-				const towardP1 = state.ballVX < 0;
-
-				const aiForP2 = aiP2(state, dt);
-
-				const mirrored = mirrorStateForP2(state);
-				const aiMirrored = aiP2(mirrored, dt);
-
-				const p2Move = towardP2
-				? { up: aiForP2.p2.up, down: aiForP2.p2.down }
-				: recenterPaddle(state, 1);
-
-				const p1Move = towardP1
-				? { up: aiMirrored.p2.up, down: aiMirrored.p2.down }
-				: recenterPaddle(state, 0);
-
-				return {
-				p1: { ...p1Move, start: autoStart, togglePause: false },
-				p2: { ...p2Move, start: autoStart, togglePause: false },
-				p3: { up: false, down: false, start: autoStart },
-				p4: { up: false, down: false, start: autoStart },
-				};
 			});
 		}
 	}
