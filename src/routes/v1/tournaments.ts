@@ -51,4 +51,23 @@ export default async function tournamentsRoutes(server: FastifyInstance) {
         const players = tournamentService.getTournamentPlayers(id)
         return success(players)
     })
+
+    /************************* SAVE TOURNAMENT RESULT **********************************/
+    server.post('/tournaments/result', async (request, _reply) => {
+        const body = request.body as {
+            name: string;
+            players: { name: string; isAi: boolean }[];
+            matches: {
+                player1Name: string;
+                player2Name: string;
+                scorePlayer1: number;
+                scorePlayer2: number;
+                winnerName: string;
+                round: number;
+            }[];
+            championName: string;
+        }
+        const result = tournamentService.saveTournamentResult(body)
+        return success(result)
+    })
 }

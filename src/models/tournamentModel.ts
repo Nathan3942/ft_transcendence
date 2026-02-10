@@ -1,8 +1,12 @@
 /* Tournament models - defines TypeScript interfaces for tournaments and related entities */
 
+export type TournamentStatus = 'open' | 'in_progress' | 'finished';
+
 export interface Tournament {
   id: number;
   name: string;
+  status: TournamentStatus;
+  winnerId: number | null;
   createdAt: string;
 }
 

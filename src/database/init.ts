@@ -22,7 +22,10 @@ export const initTables = (): void => {
     CREATE TABLE IF NOT EXISTS tournaments (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL UNIQUE,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      status TEXT DEFAULT 'open' CHECK(status IN ('open', 'in_progress', 'finished')),
+      winner_id INTEGER,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (winner_id) REFERENCES users(id)
     );
   `)
 

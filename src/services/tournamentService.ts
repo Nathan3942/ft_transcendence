@@ -11,9 +11,11 @@ import {
     deleteTournament as deleteTournamentRepo,
     addPlayerToTournament as addPlayerToTournamentRepo,
     getTournamentPlayers as getTournamentPlayersRepo,
-    getTournamentWithPlayers as getTournamentWithPlayersRepo
+    getTournamentWithPlayers as getTournamentWithPlayersRepo,
+    createFinishedTournament as createFinishedTournamentRepo
 } from '../repository/tournamentsRepository'
-import { getById as getUserById } from '../repository/usersRepository'
+import { getById as getUserById, getOrCreateByUsername } from '../repository/usersRepository'
+import { createFinishedMatchWithPlayers } from '../repository/matchesRepository'
 import { NotFoundError, BadRequestError } from '../utils/appErrors'
 import { Tournament, TournamentPlayer, TournamentWithPlayers } from '../models/tournamentModel'
 
@@ -137,4 +139,89 @@ export function getTournamentPlayers(tournamentId: string | number): any[] {
 
     const players = getTournamentPlayersRepo(tournamentId)
     return players
+}
+
+interface TournamentMatchInput {
+    player1Name: string;
+    player2Name: string;
+    scorePlayer1: number;
+    scorePlayer2: number;
+    winnerName: string;
+    round: number;
+}
+
+interface TournamentResultInput {
+    name: string;
+    players: { name: string; isAi: boolean }[];
+    matches: TournamentMatchInput[];
+    championName: string;
+}
+
+/**
+ * Save a completed local tournament result
+ * Creates users (get-or-create), tournament, players, and all matches
+ */
+export function saveTournamentResult(input: TournamentResultInput) {
+    const { name, players, matches, championName } = input
+
+    if (!name || name.trim().length === 0) {
+        throw new BadRequestError('Tournament name is required')
+    }
+    if (!players || players.length < 2) {
+        throw new BadRequestError('At least 2 players are required')
+    }
+    if (!matches || matches.length === 0) {
+        throw new BadRequestError('At least 1 match is required')
+    }
+    if (!championName || championName.trim().length === 0) {
+        throw new BadRequestError('Champion name is required')
+    }
+
+    // Get or create all non-AI players, map names to user objects
+    const userMap = new Map<string, { id: number; username: string }>()
+    for (const p of players) {
+        if (!p.isAi) {
+            const user = getOrCreateByUsername(p.name.trim())
+            userMap.set(p.name.trim(), user)
+        }
+    }
+
+    // Resolve champion
+    const champion = userMap.get(championName.trim())
+    if (!champion) {
+        throw new BadRequestError('Champion must be a non-AI player')
+    }
+
+    // Create tournament with status finished
+    const tournament = createFinishedTournamentRepo(name.trim(), champion.id)
+
+    // Add all non-AI players to tournament_players
+    for (const [, user] of userMap) {
+        try {
+            addPlayerToTournamentRepo(tournament.id, user.id)
+        } catch {
+            // ignore duplicate player errors
+        }
+    }
+
+    // Save each match
+    const savedMatches = matches.map((m) => {
+        const p1User = userMap.get(m.player1Name.trim())
+        const p2User = userMap.get(m.player2Name.trim())
+        const winnerUser = userMap.get(m.winnerName.trim())
+
+        return createFinishedMatchWithPlayers(
+            winnerUser?.id ?? null,
+            p1User?.id ?? 0,
+            m.scorePlayer1,
+            p2User?.id ?? null,
+            m.scorePlayer2
+        )
+    })
+
+    return {
+        tournament,
+        champion: champion.username,
+        matchesCount: savedMatches.length
+    }
 }

@@ -14,6 +14,17 @@ export function getById(id: string | number){
 }
 
 
+export function getByUsername(username: string): User | undefined {
+    return queryOne('SELECT * FROM users WHERE username = ?', [username]) as User | undefined
+}
+
+export function getOrCreateByUsername(username: string): User {
+    const existing = getByUsername(username)
+    if (existing) return existing
+    const result = queryExecute('INSERT INTO users (username) VALUES (?)', [username])
+    return { id: result.lastInsertRowid as number, username }
+}
+
 // Création d'un utilisateur avec gestion de l'unicité
 export async function createUser({ username }: { username: string }): Promise<User> {
     try {

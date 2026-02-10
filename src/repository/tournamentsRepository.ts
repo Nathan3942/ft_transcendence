@@ -1,28 +1,30 @@
 /* centralise toutes les requetes a la database qui concernent les tournois */
 
 import { queryAll, queryOne, queryExecute } from '../database/queryWrapper'
-import { Tournament, TournamentPlayer, TournamentWithPlayers } from '../models/tournamentModel'
+import { Tournament, TournamentPlayer, TournamentWithPlayers, TournamentStatus } from '../models/tournamentModel'
 
 
 export function getAllTournaments(): Tournament[] {
-    return queryAll('SELECT id, name, created_at as createdAt FROM tournaments')
+    return queryAll('SELECT id, name, status, winner_id as winnerId, created_at as createdAt FROM tournaments')
 }
 
 
 export function getTournamentById(id: string | number): Tournament | null {
-    return queryOne('SELECT id, name, created_at as createdAt FROM tournaments WHERE id = ?', [id]) ?? null
+    return queryOne('SELECT id, name, status, winner_id as winnerId, created_at as createdAt FROM tournaments WHERE id = ?', [id]) ?? null
 }
 
 
-export function createTournament({ name }: { name: string }): Tournament {
+export function createTournament({ name, status = 'open' }: { name: string; status?: TournamentStatus }): Tournament {
     try {
         const result = queryExecute(
-            'INSERT INTO tournaments (name) VALUES (?)',
-            [name]
+            'INSERT INTO tournaments (name, status) VALUES (?, ?)',
+            [name, status]
         );
         return {
             id: result.lastInsertRowid as number,
             name,
+            status,
+            winnerId: null,
             createdAt: new Date().toISOString()
         };
     } catch (err: any) {
@@ -80,5 +82,23 @@ export function getTournamentWithPlayers(tournamentId: string | number): Tournam
     return {
         ...tournament,
         players: players.map((p: any) => p.user_id)
+    }
+}
+
+
+export function createFinishedTournament(
+    name: string,
+    winnerId: number
+): Tournament {
+    const result = queryExecute(
+        'INSERT INTO tournaments (name, status, winner_id) VALUES (?, ?, ?)',
+        [name, 'finished', winnerId]
+    )
+    return {
+        id: result.lastInsertRowid as number,
+        name,
+        status: 'finished',
+        winnerId,
+        createdAt: new Date().toISOString()
     }
 }
