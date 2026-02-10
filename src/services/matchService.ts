@@ -16,7 +16,8 @@ import {
     updateMatchStatus as updateMatchStatusRepo,
     startMatch as startMatchRepo,
     finishMatch as finishMatchRepo,
-    getMatchesByStatus as getMatchesByStatusRepo
+    getMatchesByStatus as getMatchesByStatusRepo,
+    createFinishedMatchWithPlayers as createFinishedMatchWithPlayersRepo
 } from '../repository/matchesRepository'
 import { getTournamentById } from '../repository/tournamentsRepository'
 import { getById as getUserById } from '../repository/usersRepository'
@@ -364,4 +365,85 @@ export function getMatchesByStatus(status: MatchStatus): Match[] {
 
     const matches = getMatchesByStatusRepo(status)
     return matches
+}
+
+/**
+ * Save a finished match result
+ * Creates a match with status 'finished' and associates players with their scores
+ * @param player1Id - Player 1 user ID
+ * @param player2Id - Player 2 user ID (null for AI matches)
+ * @param scorePlayer1 - Player 1 score
+ * @param scorePlayer2 - Player 2 score
+ * @param winnerId - Winner user ID (null for draws)
+ * @returns Created match with players
+ * @throws BadRequestError if data is invalid
+ * @throws NotFoundError if users don't exist
+ */
+export function saveMatchResult(
+    player1Id: number,
+    player2Id: number | null,
+    scorePlayer1: number,
+    scorePlayer2: number,
+    winnerId: number | null
+): MatchWithPlayers {
+    // Validate player1Id
+    if (!player1Id || player1Id <= 0) {
+        throw new BadRequestError('player1Id must be a positive integer')
+    }
+
+    // Validate scores
+    if (scorePlayer1 < 0) {
+        throw new BadRequestError('scorePlayer1 must be a non-negative integer')
+    }
+    if (scorePlayer2 < 0) {
+        throw new BadRequestError('scorePlayer2 must be a non-negative integer')
+    }
+
+    // Validate player2Id if provided
+    if (player2Id !== null && player2Id <= 0) {
+        throw new BadRequestError('player2Id must be a positive integer or null')
+    }
+
+    // Validate winnerId if provided
+    if (winnerId !== null && winnerId <= 0) {
+        throw new BadRequestError('winnerId must be a positive integer or null')
+    }
+
+    // Check player1 exists
+    const player1 = getUserById(player1Id)
+    if (!player1) {
+        throw new NotFoundError('Player 1 not found')
+    }
+
+    // Check player2 exists if provided
+    if (player2Id !== null) {
+        const player2 = getUserById(player2Id)
+        if (!player2) {
+            throw new NotFoundError('Player 2 not found')
+        }
+    }
+
+    // Validate winnerId is one of the players
+    if (winnerId !== null) {
+        if (winnerId !== player1Id && winnerId !== player2Id) {
+            throw new BadRequestError('winnerId must be either player1Id or player2Id')
+        }
+
+        // Check winner exists
+        const winner = getUserById(winnerId)
+        if (!winner) {
+            throw new NotFoundError('Winner not found')
+        }
+    }
+
+    // Create the finished match with players
+    const match = createFinishedMatchWithPlayersRepo(
+        winnerId,
+        player1Id,
+        scorePlayer1,
+        player2Id,
+        scorePlayer2
+    )
+
+    return match
 }

@@ -98,4 +98,23 @@ export default async function matchesRoutes(server: FastifyInstance) {
         return success(matches)
     })
 
+    /************************* SAVE MATCH RESULT **********************************/
+    server.post('/matches/result', async (request, _reply) => {
+        const { player1Id, player2Id, scorePlayer1, scorePlayer2, winnerId } = request.body as {
+            player1Id: number;
+            player2Id: number | null;
+            scorePlayer1: number;
+            scorePlayer2: number;
+            winnerId: number | null;
+        }
+        const match = matchService.saveMatchResult(
+            player1Id,
+            player2Id,
+            scorePlayer1,
+            scorePlayer2,
+            winnerId
+        )
+        return success(match)
+    })
+
 }

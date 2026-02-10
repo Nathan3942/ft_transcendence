@@ -171,3 +171,53 @@ export function getMatchesByStatus(status: MatchStatus): Match[] {
         WHERE status = ?
     `, [status])
 }
+
+
+export function createFinishedMatchWithPlayers(
+    winnerId: number | null,
+    player1Id: number,
+    scorePlayer1: number,
+    player2Id: number | null,
+    scorePlayer2: number
+): MatchWithPlayers {
+    const now = new Date().toISOString()
+
+    // Create match with status finished and finished_at set
+    const matchResult = queryExecute(
+        'INSERT INTO matches (tournament_id, round, status, winner_id, finished_at) VALUES (?, ?, ?, ?, ?)',
+        [null, null, 'finished', winnerId, now]
+    )
+
+    const matchId = matchResult.lastInsertRowid as number
+
+    // Insert player 1
+    queryExecute(
+        'INSERT INTO match_player (match_id, user_id, score) VALUES (?, ?, ?)',
+        [matchId, player1Id, scorePlayer1]
+    )
+
+    // Insert player 2 only if not null (not AI match)
+    const players: { userId: number; score: number | null }[] = [
+        { userId: player1Id, score: scorePlayer1 }
+    ]
+
+    if (player2Id !== null) {
+        queryExecute(
+            'INSERT INTO match_player (match_id, user_id, score) VALUES (?, ?, ?)',
+            [matchId, player2Id, scorePlayer2]
+        )
+        players.push({ userId: player2Id, score: scorePlayer2 })
+    }
+
+    return {
+        id: matchId,
+        tournamentId: null,
+        round: null,
+        status: 'finished',
+        winnerId,
+        startedAt: null,
+        finishedAt: now,
+        createdAt: now,
+        players
+    }
+}
