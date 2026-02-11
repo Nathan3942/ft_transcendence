@@ -46,6 +46,22 @@ async function importUserData(): Promise<userInfo[]> {
 	}
 };
 
+function createThElement(head: string): HTMLDivElement {
+	const th = document.createElement("th");
+	th.append(head);
+	return th;
+}
+
+function createTdElement(body: string | number): HTMLDivElement {
+	const td = document.createElement("td");
+	if (typeof body === "string")
+		td.append(body);
+	if (typeof body === "number")
+		td.append(body.toString());
+	return td;
+}
+
+// Creates the sorted cells and returns 
 function createLeaderboardCells(users: userInfo[]): HTMLDivElement {
 
 	const tBody = document.createElement("tbody");
@@ -54,22 +70,22 @@ function createLeaderboardCells(users: userInfo[]): HTMLDivElement {
 		const cell = document.createElement("tr");
 		const user = users.at(i);
 
-		const userName = document.createElement("th");
+		cell.append(
+			createTdElement(user?.userName || "Undefined"),
+			createTdElement(user?.localAiE || NaN),
+			createTdElement(user?.localAiM || NaN),
+			createTdElement(user?.localAiH || NaN),
+			createTdElement(user?.totalLocalScore || NaN),
+			createTdElement(user?.onlineCustom || NaN),
+			createTdElement(user?.onlineTournament || NaN),
+			createTdElement(user?.totalOnlineScore || NaN)
+		)
 
-
-
-		cell.append(userName)
 		tBody.append(cell);
 	}
 
 	return tBody;
 };
-
-function createThElement(head: string): HTMLDivElement {
-	const th = document.createElement("th")
-	th.append(head);
-	return th;
-}
 
 export async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 
@@ -129,45 +145,41 @@ export async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 
 	function buildBoardChooser(): HTMLDivElement {
 		const buttons = document.createElement("div");
-		const toReplace = document.getElementById("tableBody");
-		if (!toReplace) {
-			console.log("Page initialised incorrectly");
-		}
 		const genClasses = "";
 		buttons.append(createButton({
 				buttonText: "Easy AI",
 				extraClasses: genClasses,
-				f: () => toReplace?.replaceWith(buildLeaderboard("localAiE")),
+				f: () => tbody.replaceWith(buildLeaderboard("localAiE")),
 			}),
 			createButton({
 				buttonText: "Medium AI",
 				extraClasses: genClasses,
-				f: () => toReplace?.replaceWith(buildLeaderboard("localAiM")),
+				f: () => tbody.replaceWith(buildLeaderboard("localAiM")),
 			}),
 			createButton({
 				buttonText: "Hard AI",
 				extraClasses: genClasses,
-				f: () => toReplace?.replaceWith(buildLeaderboard("localAiH")),
+				f: () => tbody.replaceWith(buildLeaderboard("localAiH")),
 			}),
 			createButton({
 				buttonText: "Total AI",
 				extraClasses: genClasses,
-				f: () => toReplace?.replaceWith(buildLeaderboard("totalLocalScore")),
+				f: () => tbody.replaceWith(buildLeaderboard("totalLocalScore")),
 			}),
 			createButton({
 				buttonText: "Custom Matches",
 				extraClasses: genClasses,
-				f: () => toReplace?.replaceWith(buildLeaderboard("onlineCustom")),
+				f: () => tbody.replaceWith(buildLeaderboard("onlineCustom")),
 			}),
 			createButton({
 				buttonText: "Online Tournaments",
 				extraClasses: genClasses,
-				f: () => toReplace?.replaceWith(buildLeaderboard("onlineTournament")),
+				f: () => tbody.replaceWith(buildLeaderboard("onlineTournament")),
 			}),
 			createButton({
 				buttonText: "Total Online",
 				extraClasses: genClasses,
-				f: () => toReplace?.replaceWith(buildLeaderboard("totalOnlineScore"))
+				f: () => tbody.replaceWith(buildLeaderboard("totalOnlineScore"))
 			})
 
 		)
@@ -177,7 +189,6 @@ export async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 
 	// Function Proper
 	const outer = document.createElement("div");
-	const boardChooser = document.createElement("div");
 	const leaderboard = document.createElement("div");
 	const table = document.createElement("table");
 	const tHead = document.createElement("thead");
@@ -218,14 +229,10 @@ export async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 		tbody.replaceWith(buildLeaderboard("onlineCustom"), );
 	} catch (e) {
 		console.log("Could not load users:", e);
-		leaderboard.append(`Could not load users: ${e}`);
+		tbody.replaceWith(`Could not load users: ${e}`);
 	}
 	
-	try {
-		boardChooser.replaceWith(buildBoardChooser());
-	} catch (e) {
-
-	}
+	const boardChooser = buildBoardChooser();
 
 	leaderboard.append(table);
 	
