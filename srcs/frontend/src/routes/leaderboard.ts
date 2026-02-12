@@ -63,7 +63,7 @@ function createLeaderboardCells(users: userInfo[]): HTMLTableSectionElement {
 	const tBody = document.createElement("tbody");
 	tBody.className = "w-full"
 	tBody.id = "tableBody";
-	const classBase = "border-gray-200 dark:border-gray-700 border border-b hover:brightness-90 dark:hover:brightness-120 "
+	const classBase = "border border-gray-200 dark:border-gray-700 border border-b "
 
 	for (let i = 0; i < users.length; ++i) {
 		const cell = document.createElement("tr");
@@ -71,16 +71,16 @@ function createLeaderboardCells(users: userInfo[]): HTMLTableSectionElement {
 
 		switch (i) {
 			case 0:
-				cell.className = classBase + "bg-yellow-300 dark:bg-yellow-600 text-yellow-900 dark:text-yellow-400";
+				cell.className = classBase + "bg-yellow-300 hover:bg-yellow-400 dark:bg-yellow-600 dark:hover:bg-yellow-500 text-yellow-900 hover:text-yellow-950 dark:text-yellow-400 dark:hover:text-yellow-300";
 				break;
 			case 1:
-				cell.className = classBase + "bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-400"
+				cell.className = classBase + "bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-600 hover:text-gray:700 dark:text-gray-400 dark:hover:text-gray-300"
 				break;
 			case 2:
-				cell.className = classBase + "bg-amber-500 dark:bg-amber-900 text-amber-900 dark:text-amber-600"
+				cell.className = classBase + "bg-amber-500 hover:bg-amber-600 dark:bg-amber-900 dark:hover:bg-amber-800 text-amber-900 hover:text-amber-950 dark:text-amber-600 dark:hover:text-amber-500"
 				break
 			default:
-				cell.className = classBase + "bg-gray-100 dark:bg-gray-900";
+				cell.className = classBase + "bg-gray-100 hover:bg-gray-200 dark:bg-gray-900 dark:hover:bg-gray-800";
 		
 		}
 
