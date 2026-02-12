@@ -47,14 +47,9 @@ async function importUserData(): Promise<userInfo[]> {
 	}
 };
 
-function createThElement(head: string): HTMLDivElement {
-	const th = document.createElement("th");
-	th.append(head);
-	return th;
-}
-
-function createTdElement(body: string | number): HTMLDivElement {
+function createTdElement(body: string | number, ): HTMLDivElement {
 	const td = document.createElement("td");
+	td.className = "py-1.5 px-4"
 	if (typeof body === "string")
 		td.append(body);
 	if (typeof body === "number")
@@ -66,13 +61,31 @@ function createTdElement(body: string | number): HTMLDivElement {
 function createLeaderboardCells(users: userInfo[]): HTMLTableSectionElement {
 
 	const tBody = document.createElement("tbody");
+	tBody.className = "w-full"
 	tBody.id = "tableBody";
+	const classBase = "border-gray-200 dark:border-gray-700 border border-b hover:brightness-90 dark:hover:brightness-120 "
 
 	for (let i = 0; i < users.length; ++i) {
 		const cell = document.createElement("tr");
 		const user = users.at(i);
 
+		switch (i) {
+			case 0:
+				cell.className = classBase + "bg-yellow-300 dark:bg-yellow-600 text-yellow-900 dark:text-yellow-400";
+				break;
+			case 1:
+				cell.className = classBase + "bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-400"
+				break;
+			case 2:
+				cell.className = classBase + "bg-amber-500 dark:bg-amber-900 text-amber-900 dark:text-amber-600"
+				break
+			default:
+				cell.className = classBase + "bg-gray-100 dark:bg-gray-900";
+		
+		}
+
 		cell.append(
+			createTdElement(i),
 			createTdElement(user?.userName || "Undefined"),
 			createTdElement(user?.localAiE || NaN),
 			createTdElement(user?.localAiM || NaN),
@@ -93,8 +106,6 @@ export async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 
 	// Helper functions
 	function buildLeaderboard(key: scoreKey): HTMLTableSectionElement {
-		console.log(`sort triggered with ${key}`);
-
 		switch(key) {
 			case "localAiE": {
 				users.sort((a, b) => b.localAiE - a.localAiE);
@@ -149,54 +160,21 @@ export async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 		currentTbody?.replaceWith(buildLeaderboard(score));
 	}
 
-	function buildBoardChooser(): HTMLDivElement {
-		const buttons = document.createElement("div");
-		const genClasses = "";
-		buttons.append(createButton({
-				buttonText: "Easy AI",
-				extraClasses: genClasses,
-				f: () => replaceTableBody("localAiE"),
-			}),
-			createButton({
-				buttonText: "Medium AI",
-				extraClasses: genClasses,
-				f: () => replaceTableBody("localAiM"),
-			}),
-			createButton({
-				buttonText: "Hard AI",
-				extraClasses: genClasses,
-				f: () => replaceTableBody("localAiH"),
-			}),
-			createButton({
-				buttonText: "Total AI",
-				extraClasses: genClasses,
-				f: () => replaceTableBody("totalLocalScore"),
-			}),
-			createButton({
-				buttonText: "Custom Matches",
-				extraClasses: genClasses,
-				f: () => replaceTableBody("onlineCustom"),
-			}),
-			createButton({
-				buttonText: "Online Tournaments",
-				extraClasses: genClasses,
-				f: () => replaceTableBody("onlineTournament"),
-			}),
-			createButton({
-				buttonText: "Total Online",
-				extraClasses: genClasses,
-				f: () => replaceTableBody("totalOnlineScore")
-			})
-
-		)
-
-		return buttons;
-	}
+	function createThElement(text: string, id: string, key: scoreKey): HTMLDivElement {
+	const th = document.createElement("th");
+	th.className = "text-left py-3 px-1"
+	th.append(createButton({
+				buttonText: text,
+				id: id,
+				extraClasses: "",
+				f: () => replaceTableBody(key),
+			}))
+	return th;
+}
 
 	// Function Proper
 	const outer = document.createElement("div");
 	const leaderboard = document.createElement("div");
-	const boardChooser = buildBoardChooser();
 	const table = document.createElement("table");
 	const tHead = document.createElement("thead");
 	const tbody = document.createElement("tbody");
@@ -206,24 +184,39 @@ export async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 	// Setting metadata
 	outer.className = "flex flex-1 flex-col";
 	tbody.id = "tableBody";
+	leaderboard.id = "tableDiv";
+
+	// Setting styling
+	leaderboard.className = "flex flex-col w-full h-full items-center";
+	table.className = "m-10 w-3/4 overflow-y-auto overflow-x-auto table-fixed border border-gray-200";
+	tHead.className = "w-full dark:bg-gray-800 bg-gray-100 border border-gray-200 dark:border-gray-700 p2";
 
 	// creating Table Head
 	const tr = document.createElement("tr");
+	const userNames = document.createElement("th");
+	userNames.className = "text-left py-3 px-4";
+	userNames.append("User Name");
+	const pos = document.createElement("th");
+	pos.className = "text-left py-3 px-4 w-15";
+	pos.append("#")
+
+
 	tr.append(
-		createThElement("User Name"),
-		createThElement("Ai Easy"),
-		createThElement("Ai Medium"),
-		createThElement("Ai Hard"),
-		createThElement("Total Ai"),
-		createThElement("Custom Matches"),
-		createThElement("Online Tournament"),
-		createThElement("Total Online")
+		pos,
+		userNames,
+		createThElement("Ai Easy", "aiEasyButton", "localAiE"),
+		createThElement("Ai Medium", "aiMediumButton", "localAiM"),
+		createThElement("Ai Hard", "aiHardButton", "localAiH"),
+		createThElement("Total Ai", "toalAiButton", "totalLocalScore"),
+		createThElement("Custom Matches", "customOnlineButton", "onlineCustom"),
+		createThElement("Online Tournament", "onlineTournamentButton", "onlineTournament"),
+		createThElement("Total Online", "toalOnlineButton", "totalOnlineScore")
 	)
 	
 	tHead.append(tr);
 	table.append(tHead, tbody);
 	leaderboard.append(table);
-	outer.append(boardChooser, leaderboard, backButton);
+	outer.append(leaderboard, backButton);
 	
 	try {
 		users = await importUserData();
@@ -237,7 +230,7 @@ export async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 		
 		tbody.replaceWith(buildLeaderboard("onlineCustom"), );
 	} catch (e) {
-		console.log("Could not load users:", e);
+		console.error("Could not load users:", e);
 		tbody.replaceWith(`Could not load users: ${e}`);
 	}
 
