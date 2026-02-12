@@ -8,11 +8,8 @@ export async function loginHandler(payload: loginRequest): Promise<loginResponse
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify(payload)
-        /*
-        If we wanna do an http cookie
-        credintials: "include"
-        */
+        body: JSON.stringify(payload),
+        credentials: "include"
     });
 
     if (!resp.ok) {
