@@ -26,13 +26,14 @@ type scoreKey = keyof Pick<
 >;
 
 async function importUserData(): Promise<userInfo[]> {
-	try {
-		const response = await fetch("/api/users/score");
+	 try {
+		
+		const response = await fetch("/api/test/users.json");
 		if (!response.ok) {
 			throw new Error(`Network error: ${response.status} ${response.statusText}`);
 		}
 		const jsonData = await response.json();
-		
+
 		if (!Array.isArray(jsonData)) {
 			throw new Error(`Unexpected payload, expected an array`)
 		}
@@ -62,9 +63,10 @@ function createTdElement(body: string | number): HTMLDivElement {
 }
 
 // Creates the sorted cells and returns 
-function createLeaderboardCells(users: userInfo[]): HTMLDivElement {
+function createLeaderboardCells(users: userInfo[]): HTMLTableSectionElement {
 
 	const tBody = document.createElement("tbody");
+	tBody.id = "tableBody";
 
 	for (let i = 0; i < users.length; ++i) {
 		const cell = document.createElement("tr");
@@ -79,7 +81,7 @@ function createLeaderboardCells(users: userInfo[]): HTMLDivElement {
 			createTdElement(user?.onlineCustom || NaN),
 			createTdElement(user?.onlineTournament || NaN),
 			createTdElement(user?.totalOnlineScore || NaN)
-		)
+		);
 
 		tBody.append(cell);
 	}
@@ -90,22 +92,22 @@ function createLeaderboardCells(users: userInfo[]): HTMLDivElement {
 export async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 
 	// Helper functions
-	function buildLeaderboard(key: scoreKey): HTMLDivElement {
-		const board = document.createElement("div");
+	function buildLeaderboard(key: scoreKey): HTMLTableSectionElement {
+		console.log(`sort triggered with ${key}`);
 
 		switch(key) {
 			case "localAiE": {
-				users.sort((a, b) => a.localAiE - b.localAiE);
+				users.sort((a, b) => b.localAiE - a.localAiE);
 
 				break;
 			}
 			case "localAiM": {
-				users.sort((a, b) => a.localAiM - b.localAiM);
+				users.sort((a, b) => b.localAiM - a.localAiM);
 
 				break;
 			}
 			case "localAiH": {
-				users.sort((a, b) => a.localAiH - b.localAiH);
+				users.sort((a, b) => b.localAiH - a.localAiH);
 				
 				break;
 			}
@@ -113,18 +115,18 @@ export async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 				users.sort((a, b) => {
 					const aScore = a.totalLocalScore ?? Number.NEGATIVE_INFINITY;
 					const bScore = b.totalLocalScore ?? Number.NEGATIVE_INFINITY;
-					return aScore - bScore;
+					return bScore - aScore;
 				});
 
 				break;
 			}
 			case "onlineCustom": {
-				users.sort((a, b) => a.onlineCustom - b.onlineCustom);
+				users.sort((a, b) => b.onlineCustom - a.onlineCustom);
 
 				break;
 			}
 			case "onlineTournament": {
-				users.sort((a, b) => a.onlineTournament - b.onlineTournament);
+				users.sort((a, b) => b.onlineTournament - a.onlineTournament);
 
 				break;
 			}
@@ -132,15 +134,19 @@ export async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 				users.sort((a, b) => {
 					const aScore = a.totalOnlineScore ?? Number.NEGATIVE_INFINITY;
 					const bScore = b.totalOnlineScore ?? Number.NEGATIVE_INFINITY;
-					return aScore - bScore;
+					return bScore - aScore;
 				});
 
 				break;
 			}
 		}
-		board.replaceWith(createLeaderboardCells(users));
 
-		return board;
+		return createLeaderboardCells(users);
+	}
+
+	function replaceTableBody(score: scoreKey) {
+		const currentTbody = document.getElementById("tableBody")
+		currentTbody?.replaceWith(buildLeaderboard(score));
 	}
 
 	function buildBoardChooser(): HTMLDivElement {
@@ -149,37 +155,37 @@ export async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 		buttons.append(createButton({
 				buttonText: "Easy AI",
 				extraClasses: genClasses,
-				f: () => tbody.replaceWith(buildLeaderboard("localAiE")),
+				f: () => replaceTableBody("localAiE"),
 			}),
 			createButton({
 				buttonText: "Medium AI",
 				extraClasses: genClasses,
-				f: () => tbody.replaceWith(buildLeaderboard("localAiM")),
+				f: () => replaceTableBody("localAiM"),
 			}),
 			createButton({
 				buttonText: "Hard AI",
 				extraClasses: genClasses,
-				f: () => tbody.replaceWith(buildLeaderboard("localAiH")),
+				f: () => replaceTableBody("localAiH"),
 			}),
 			createButton({
 				buttonText: "Total AI",
 				extraClasses: genClasses,
-				f: () => tbody.replaceWith(buildLeaderboard("totalLocalScore")),
+				f: () => replaceTableBody("totalLocalScore"),
 			}),
 			createButton({
 				buttonText: "Custom Matches",
 				extraClasses: genClasses,
-				f: () => tbody.replaceWith(buildLeaderboard("onlineCustom")),
+				f: () => replaceTableBody("onlineCustom"),
 			}),
 			createButton({
 				buttonText: "Online Tournaments",
 				extraClasses: genClasses,
-				f: () => tbody.replaceWith(buildLeaderboard("onlineTournament")),
+				f: () => replaceTableBody("onlineTournament"),
 			}),
 			createButton({
 				buttonText: "Total Online",
 				extraClasses: genClasses,
-				f: () => tbody.replaceWith(buildLeaderboard("totalOnlineScore"))
+				f: () => replaceTableBody("totalOnlineScore")
 			})
 
 		)
@@ -190,6 +196,7 @@ export async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 	// Function Proper
 	const outer = document.createElement("div");
 	const leaderboard = document.createElement("div");
+	const boardChooser = buildBoardChooser();
 	const table = document.createElement("table");
 	const tHead = document.createElement("thead");
 	const tbody = document.createElement("tbody");
@@ -207,14 +214,16 @@ export async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 		createThElement("Ai Easy"),
 		createThElement("Ai Medium"),
 		createThElement("Ai Hard"),
-		createThElement("Total Local"),
+		createThElement("Total Ai"),
 		createThElement("Custom Matches"),
 		createThElement("Online Tournament"),
 		createThElement("Total Online")
 	)
 	
-	tHead.append(tr, tbody);
-	table.append(tHead);
+	tHead.append(tr);
+	table.append(tHead, tbody);
+	leaderboard.append(table);
+	outer.append(boardChooser, leaderboard, backButton);
 	
 	try {
 		users = await importUserData();
@@ -231,12 +240,6 @@ export async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 		console.log("Could not load users:", e);
 		tbody.replaceWith(`Could not load users: ${e}`);
 	}
-	
-	const boardChooser = buildBoardChooser();
-
-	leaderboard.append(table);
-	
-	outer.append(boardChooser, leaderboard, backButton);
 
 	return outer;
 }
