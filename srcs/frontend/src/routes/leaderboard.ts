@@ -162,7 +162,7 @@ export async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 
 	function createThElement(text: string, id: string, key: scoreKey): HTMLDivElement {
 	const th = document.createElement("th");
-	th.className = "text-left py-3 px-1"
+	th.className = "text-left py-3 px-2"
 	th.append(createButton({
 				buttonText: text,
 				id: id,
@@ -188,10 +188,10 @@ export async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 	
 	// Setting styling
 	outer.className = "flex flex-1 flex-col h-[calc(100vh-64px)] w-full overflow-hidden";
-	leaderboard.className = "flex flex-col flex-1 items-center justify-start p-4 w-full overflow-hidden";
+	leaderboard.className = "flex flex-col flex-1 items-center justify-start pt-5 w-full overflow-hidden";
 	tableContainer.className = "w-full max-w-4xl mx-auto h-full overflow-auto";
 	table.className = "w-full max-w-4xl h-5/6 mx-auto border border-gray-200";
-	tHead.className = "w-full dark:bg-gray-800 bg-gray-100 border border-gray-200 dark:border-gray-700 p-4 sticky top-0";
+	tHead.className = "w-full dark:bg-gray-800 bg-gray-100 border border-gray-200 dark:border-gray-700 sticky top-0";
 
 	// creating Table Head
 	const tr = document.createElement("tr");
