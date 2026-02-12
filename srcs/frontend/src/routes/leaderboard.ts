@@ -175,6 +175,7 @@ export async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 	// Function Proper
 	const outer = document.createElement("div");
 	const leaderboard = document.createElement("div");
+	const tableContainer = document.createElement("div");
 	const table = document.createElement("table");
 	const tHead = document.createElement("thead");
 	const tbody = document.createElement("tbody");
@@ -182,14 +183,15 @@ export async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 	let users: userInfo[];
 	
 	// Setting metadata
-	outer.className = "flex flex-1 flex-col";
 	tbody.id = "tableBody";
 	leaderboard.id = "tableDiv";
-
+	
 	// Setting styling
-	leaderboard.className = "flex flex-col w-full h-full items-center";
-	table.className = "m-10 w-3/4 overflow-y-auto overflow-x-auto table-fixed border border-gray-200";
-	tHead.className = "w-full dark:bg-gray-800 bg-gray-100 border border-gray-200 dark:border-gray-700 p2";
+	outer.className = "flex flex-1 flex-col h-[calc(100vh-64px)] w-full overflow-hidden";
+	leaderboard.className = "flex flex-col flex-1 items-center justify-start p-4 w-full overflow-hidden";
+	tableContainer.className = "w-full max-w-4xl mx-auto h-full overflow-auto";
+	table.className = "w-full max-w-4xl h-5/6 mx-auto border border-gray-200";
+	tHead.className = "w-full dark:bg-gray-800 bg-gray-100 border border-gray-200 dark:border-gray-700 p-4 sticky top-0";
 
 	// creating Table Head
 	const tr = document.createElement("tr");
@@ -215,7 +217,8 @@ export async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 	
 	tHead.append(tr);
 	table.append(tHead, tbody);
-	leaderboard.append(table);
+	tableContainer.append(table)
+	leaderboard.append(tableContainer);
 	outer.append(leaderboard, backButton);
 	
 	try {
