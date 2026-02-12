@@ -3,18 +3,19 @@ import createGameLocalPage from '../routes/game-local';
 import createLocalAIGamePage from '../routes/game-local-ai';
 import createGameOnlinePage from '../routes/game-online';
 import createHomePage from '../routes/home';
+import {buildLeaderboardPage} from '../routes/leaderboard';
 import createLoginPage from '../routes/login-page';
 import createTestPage from '../routes/test';
 import assemblePage from './pageHandler';
 
 type Route = {
     path: string;
-    component: () => HTMLDivElement;
+    component: () => HTMLDivElement | Promise<HTMLDivElement>;
 }
 
 const routes: Route[] = [
     { path: "/", component: () => assemblePage(createHomePage()) },
-    { path: "/leaderboard", component: () => assemblePage(document.createElement("div")) },
+    { path: "/leaderboard", component: async () => assemblePage(await buildLeaderboardPage()) },
     { path: "/user-profile", component: () => assemblePage(document.createElement("div")) },
     { path: "/login", component: () => assemblePage(createLoginPage()) },
     { path: "/test", component: () => assemblePage(createTestPage()) },
@@ -33,16 +34,11 @@ export class Router {
         this.setupEventListener();
     }
 
-    public start(): void {
-        const route = this.findRoute(window.location.pathname);
-        if (route) {
-            this.render(route);
-        } else {
-            this.rootElement.appendChild(assemblePage(create404page()))
-        }
+    public async start(): Promise<void> {
+        this.renderPath(window.location.pathname);
     }
 
-    public navigateTo(path: string): void {
+    public async navigateTo(path: string): Promise<void> {
         window.history.pushState({}, "", path);
         this.renderPath(path);
     }
@@ -51,15 +47,22 @@ export class Router {
         return this.routes.find((route) => route.path === path);
     }
 
-    private render(route: Route): void {
-        this.rootElement.innerHTML = "";
-        this.rootElement.appendChild(route.component());
+    private async render(route: Route): Promise<void> {
+        try {
+            this.rootElement.innerHTML = "";
+            const component = await route.component();
+            this.rootElement.appendChild(component);
+        } catch (e) {
+            console.error("Failed to render route:", e);
+            this.rootElement.innerHTML = "";
+            this.rootElement.appendChild(create404page());
+        }
     }
 
-    private renderPath(path: string) {
+    private async renderPath(path: string) {
         const route = this.findRoute(path);
         if (route) {
-            this.render(route);
+            await this.render(route);
         } else {
             console.log("Error rendering route: ", path)
             this.rootElement.innerHTML = "";
@@ -68,8 +71,8 @@ export class Router {
     }
 
     private setupPopStateListener(): void {
-        window.addEventListener("popstate", () => {
-            this.renderPath(window.location.pathname);
+        window.addEventListener("popstate", async () => {
+            await this.renderPath(window.location.pathname);
         });
         console.log("Popstate event triggered! Current path:", window.location.pathname);
     }
