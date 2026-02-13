@@ -1,4 +1,4 @@
-import type { loginRequest} from "../interfaces/properties";
+import type { loginRequest } from "../interfaces/properties";
 
 export const API_BASE = "/api/v1";
 
