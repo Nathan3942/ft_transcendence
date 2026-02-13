@@ -24,7 +24,7 @@ export async function logoutHandler() {
     await fetch(`${API_BASE}/auth/logout`)
 }
 
-async function refreshAcess(): Promise<void> {
+async function refreshAccess(): Promise<void> {
     const resp = await fetch(`${API_BASE}/auth/refresh`, {
         method: "POST",
         credentials: "include"
@@ -42,7 +42,7 @@ export async function fetchProtected(endpoint: string, opts: RequestInit = {}): 
     });
 
     if (resp.status === 401) {
-        refreshAcess();
+        refreshAccess();
     }
     return resp.json();
 }
