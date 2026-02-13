@@ -1,6 +1,6 @@
 import type { loginRequest} from "../interfaces/properties";
 
-const API_BASE = "/api/v1";
+export const API_BASE = "/api/v1";
 
 export async function loginHandler(payload: loginRequest): Promise<string> {
     const resp = await fetch(`${API_BASE}/auth/login`, {
@@ -24,7 +24,7 @@ export async function logoutHandler() {
     await fetch(`${API_BASE}/auth/logout`)
 }
 
-async function refreshAccess(): Promise<void> {
+export async function refreshAccess(): Promise<void> {
     const resp = await fetch(`${API_BASE}/auth/refresh`, {
         method: "POST",
         credentials: "include"
