@@ -1,8 +1,8 @@
-import type { loginRequest, loginResponse } from "../interfaces/properties";
+import type { loginRequest} from "../interfaces/properties";
 
 const API_BASE = "/api/v1";
 
-export async function loginHandler(payload: loginRequest): Promise<loginResponse> {
+export async function loginHandler(payload: loginRequest): Promise<string> {
     const resp = await fetch(`${API_BASE}/auth/login`, {
         method: "POST",
         headers: {
@@ -17,6 +17,32 @@ export async function loginHandler(payload: loginRequest): Promise<loginResponse
         throw new Error(`Login failed: ${resp.status}: ${err}`);
     }
 
-    const out = (await resp.json()) as loginResponse;
-    return out;
+    return await resp.json();
+}
+
+export async function logoutHandler() {
+    await fetch(`${API_BASE}/auth/logout`)
+}
+
+async function refreshAcess(): Promise<void> {
+    const resp = await fetch(`${API_BASE}/auth/refresh`, {
+        method: "POST",
+        credentials: "include"
+    });
+
+    if (!resp.ok) {
+        window.location.href = "/login";
+    }
+}
+
+export async function fetchProtected(endpoint: string, opts: RequestInit = {}): Promise<string> {
+    const resp = await fetch(`${API_BASE}${endpoint}`, {
+        ...opts,
+        credentials: "include"
+    });
+
+    if (resp.status === 401) {
+        refreshAcess();
+    }
+    return resp.json();
 }
