@@ -5,6 +5,7 @@ import createGameOnlinePage from '../routes/game-online';
 import createHomePage from '../routes/home';
 import createLoginPage from '../routes/login-page';
 import createTestPage from '../routes/test';
+import { authenticate } from './authHandler';
 import assemblePage from './pageHandler';
 
 type Route = {
@@ -33,12 +34,22 @@ export class Router {
         this.setupEventListener();
     }
 
-    public start(): void {
+    public async start(): Promise<void> {
         const route = this.findRoute(window.location.pathname);
         if (route) {
-            this.render(route);
+            const authRes = await authenticate();
+            if (authRes === true) {
+                this.render(route);
+            }
+            else if (authRes === false) {
+                window.location.href = "/login";
+            } else {
+                this.rootElement.appendChild(assemblePage(createLoginPage()));
+                // insert code to show an offline message her
+                console.warn("Offline");
+            }
         } else {
-            this.rootElement.appendChild(assemblePage(create404page()))
+            this.rootElement.appendChild(assemblePage(create404page()));
         }
     }
 
@@ -56,14 +67,24 @@ export class Router {
         this.rootElement.appendChild(route.component());
     }
 
-    private renderPath(path: string) {
+    private async renderPath(path: string) {
         const route = this.findRoute(path);
-        if (route) {
-            this.render(route);
-        } else {
+        if (!route) {
             console.log("Error rendering route: ", path)
             this.rootElement.innerHTML = "";
             this.rootElement.appendChild(assemblePage(create404page()))
+            return;
+        }
+
+        const authRes = await authenticate();
+
+        if (authRes === true) {
+            this.render(route);
+        } else if (authRes === false) {
+            window.location.href = "/login";
+        } else {
+            // insert code to show an offline message her
+            console.warn("Offline");
         }
     }
 

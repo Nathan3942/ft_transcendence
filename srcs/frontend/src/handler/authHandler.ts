@@ -1,15 +1,25 @@
-import { API_BASE, refreshAccess } from "./loginHandler"
+import { API_BASE } from "./loginHandler"
 
-export async function authenticate(): Promise<boolean> {
-    const resp = await fetch(`${API_BASE}/auth/me`, {
-        method: "POST",
-        credentials: "include"
-    });
+export async function authenticate(): Promise<boolean | null> {
+    try {
+        const resp = await fetch(`${API_BASE}/auth/me`, {
+            method: "POST",
+            credentials: "include"
+        });
+        
+        if (resp.status === 200) {
+            console.warn("authenticate called")
+            return true;
+        }
+        if (resp.status === 401) {
+            return false;
+        }
 
-    if (resp.status === 401) {
-        refreshAccess();
-        return (false);
+        console.warn("Unexpected auth/me status:", resp.status);
+        return null;
     }
-
-    return (true);
+    catch (err) {
+        console.error ("Error while checking auth:", err);
+        return null;
+    }
 }

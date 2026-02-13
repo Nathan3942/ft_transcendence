@@ -21,28 +21,56 @@ export async function loginHandler(payload: loginRequest): Promise<string> {
 }
 
 export async function logoutHandler() {
-    await fetch(`${API_BASE}/auth/logout`)
+    await fetch(`${API_BASE}/auth/logout`, {
+        credentials: "include"
+    })
+}
+
+let loginRedirectPending = false;
+export function redirectToLogin(): void {
+    if (loginRedirectPending)
+        return;
+    loginRedirectPending = true;
+    window.location.href = "/login";
 }
 
 export async function refreshAccess(): Promise<void> {
-    const resp = await fetch(`${API_BASE}/auth/refresh`, {
-        method: "POST",
-        credentials: "include"
-    });
-
-    if (!resp.ok) {
-        window.location.href = "/login";
+    try {
+        const resp = await fetch(`${API_BASE}/auth/refresh`, {
+            method: "POST",
+            credentials: "include"
+        });
+        
+        if (!resp.ok) {
+            redirectToLogin();
+        }
+    } catch (err) {
+        console.error("Refresh failed:", err);
+        redirectToLogin();
     }
 }
 
-export async function fetchProtected(endpoint: string, opts: RequestInit = {}): Promise<string> {
+export async function fetchProtected<T = unknown>(endpoint: string, opts: RequestInit = {}): Promise<T | null> {
     const resp = await fetch(`${API_BASE}${endpoint}`, {
         ...opts,
         credentials: "include"
     });
 
     if (resp.status === 401) {
-        refreshAccess();
+        await refreshAccess();
+        
+        const retry = await fetch(`${API_BASE}/auth/refresh`, {
+            ...opts,
+            credentials: "include"
+        });
+
+        if (!retry.ok)
+            return null;
+        return (await retry.json() as T)
     }
-    return resp.json();
+
+    if (!resp.ok)
+        return null;
+
+    return (await resp.json() as T);
 }
