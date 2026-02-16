@@ -1,7 +1,9 @@
 import { createButton } from "../components/button/button";
 import { loginHandler, registerHandler } from "../handler/loginHandler";
 
-function createLoginForm(formContainer: Element) {
+let defaultClasses = "w-1/3 items-center justify-center bg-gray-200 px-4 py-2 dark:bg-gray-950";
+
+function createLoginForm(): HTMLDivElement {
 
 	const outer = document.createElement("div");
 	const form = document.createElement("form");
@@ -10,6 +12,9 @@ function createLoginForm(formContainer: Element) {
 	const h1 = document.createElement("h1");
 	const p = document.createElement("p");
 	const errorMsg = document.createElement("p");
+
+	outer.id = "login-container";
+	outer.className = defaultClasses;
 	
 	h1.className = "mb-6 text-center text-2xl font-bold";
 	h1.append("Login");
@@ -37,8 +42,10 @@ function createLoginForm(formContainer: Element) {
 	p.append("Don't have an account? ", createButton({
 		id: "register-button",
 		f: () => {
-			if (formContainer) {
-				createRegistrationForm(formContainer);
+			const regCont = document.getElementById("register-container")
+			if (regCont) {
+				outer.classList.add("hidden");
+				regCont.classList.remove("hidden");
 			}
 		},
 		buttonText: "Register.",
@@ -76,11 +83,10 @@ function createLoginForm(formContainer: Element) {
 		}
 	});
 
-	formContainer.innerHTML = "";
-	formContainer.append(outer);
+	return outer;
 }
 
-function createRegistrationForm(formContainer: Element) {
+function createRegistrationForm(): HTMLDivElement {
 
 	const outer = document.createElement("div");
 	const h1 = document.createElement("h1");
@@ -90,6 +96,10 @@ function createRegistrationForm(formContainer: Element) {
 	const passConfirm = document.createElement("input");
 	const p = document.createElement("p");
 	const errorMsg = document.createElement("p");
+
+	outer.id = "register-container";
+	outer.classList = "w-1/3 items-center justify-center bg-gray-200 px-4 py-2 dark:bg-gray-950";
+	outer.classList.add("hidden");
 
 	h1.className = "mb-6 text-center text-2xl font-bold";
 	h1.append("Register");
@@ -124,8 +134,10 @@ function createRegistrationForm(formContainer: Element) {
 	p.append("Already have an account? ", createButton({
 		id: "login-button",
 		f: () => {
-			if (formContainer) {
-				createLoginForm(formContainer);
+			const loginCont = document.getElementById("login-container");
+			if (loginCont) {
+				outer.classList.add("hidden");
+				loginCont.classList.remove("hidden");
 			}
 		},
 		buttonText: "Login.",
@@ -166,22 +178,17 @@ function createRegistrationForm(formContainer: Element) {
 		}
 	})
 
-	formContainer.innerHTML = "";
-	formContainer.append(outer);
+	console.log(outer.innerHTML);
+	return outer;
 }
 
 
-export default function createLoginPage(): HTMLDivElement {
+export default async function createLoginPage(): Promise<HTMLDivElement> {
 	const outer = document.createElement("div");
-	const formContainer  = document.createElement("div");
 
 	outer.className = "flex h-screen w-screen items-center justify-center";
 
-	formContainer.id = "form-container";
-	formContainer.className = "w-1/3 items-center justify-center bg-gray-200 px-4 py-2 dark:bg-gray-950"
-	createLoginForm(formContainer); 
-
-	outer.append(formContainer);
+	outer.append(createLoginForm(), createRegistrationForm());
 
 	return outer;
 }
