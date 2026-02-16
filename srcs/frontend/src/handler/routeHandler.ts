@@ -18,7 +18,7 @@ const routes: Route[] = [
     { path: "/", component: () => assemblePage(createHomePage()) },
     { path: "/leaderboard", component: async () => assemblePage(await buildLeaderboardPage()) },
     { path: "/user-profile", component: () => assemblePage(document.createElement("div")) },
-    { path: "/login", component: () => assemblePage(createLoginPage()) },
+    { path: "/login", component: async () => assemblePage(await createLoginPage()) },
     { path: "/test", component: () => assemblePage(createTestPage()) },
     { path: "/game-local", component: () => assemblePage(createGameLocalPage()) },
     { path: "/game-local-ai", component: () => assemblePage(createLocalAIGamePage())},
@@ -63,7 +63,17 @@ export class Router {
     private async renderPath(path: string) {
         const route = this.findRoute(path);
         if (route) {
-            await this.render(route);
+			const authRes = await authenticate();
+			if (authRes === true) {
+				this.render(route);
+			}
+			else if (authRes === false) {
+				window.location.href = "/login";
+			} else {
+				this.rootElement.appendChild(assemblePage(await createLoginPage()));
+				// insert code to show an offline message here
+				console.warn("Offline");
+			}
         } else {
             console.log("Error rendering route: ", path)
             this.rootElement.innerHTML = "";
