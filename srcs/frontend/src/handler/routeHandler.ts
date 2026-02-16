@@ -3,25 +3,26 @@ import createGameLocalPage from '../routes/game-local';
 import createLocalAIGamePage from '../routes/game-local-ai';
 import createGameOnlinePage from '../routes/game-online';
 import createHomePage from '../routes/home';
+import {buildLeaderboardPage} from '../routes/leaderboard';
 import createLoginPage from '../routes/login-page';
 import createTestPage from '../routes/test';
 import { authenticate } from './loginHandler';
 import assemblePage from './pageHandler';
 
 type Route = {
-	path: string;
-	component: () => HTMLDivElement;
+    path: string;
+    component: () => HTMLDivElement | Promise<HTMLDivElement>;
 }
 
 const routes: Route[] = [
-	{ path: "/", component: () => assemblePage(createHomePage()) },
-	{ path: "/leaderboard", component: () => assemblePage(document.createElement("div")) },
-	{ path: "/user-profile", component: () => assemblePage(document.createElement("div")) },
-	{ path: "/login", component: () => assemblePage(createLoginPage()) },
-	{ path: "/test", component: () => assemblePage(createTestPage()) },
-	{ path: "/game-local", component: () => assemblePage(createGameLocalPage()) },
-	{ path: "/game-local-ai", component: () => assemblePage(createLocalAIGamePage())},
-	{ path: "/game-online", component: () => assemblePage(createGameOnlinePage()) }
+    { path: "/", component: () => assemblePage(createHomePage()) },
+    { path: "/leaderboard", component: async () => assemblePage(await buildLeaderboardPage()) },
+    { path: "/user-profile", component: () => assemblePage(document.createElement("div")) },
+    { path: "/login", component: () => assemblePage(createLoginPage()) },
+    { path: "/test", component: () => assemblePage(createTestPage()) },
+    { path: "/game-local", component: () => assemblePage(createGameLocalPage()) },
+    { path: "/game-local-ai", component: () => assemblePage(createLocalAIGamePage())},
+    { path: "/game-online", component: () => assemblePage(createGameOnlinePage()) }
 ];
 
 export class Router {
@@ -34,67 +35,48 @@ export class Router {
 		this.setupEventListener();
 	}
 
-	public async start(): Promise<void> {
-		const route = this.findRoute(window.location.pathname);
-		if (route) {
-			const authRes = await authenticate();
-			if (authRes === true) {
-				this.render(route);
-			}
-			else if (authRes === false) {
-				window.location.href = "/login";
-			} else {
-				this.rootElement.appendChild(assemblePage(createLoginPage()));
-				// insert code to show an offline message here
-				console.warn("Offline");
-			}
-		} else {
-			this.rootElement.appendChild(assemblePage(create404page()));
-		}
-	}
+    public async start(): Promise<void> {
+        this.renderPath(window.location.pathname);
+    }
 
-	public navigateTo(path: string): void {
-		window.history.pushState({}, "", path);
-		this.renderPath(path);
-	}
+    public async navigateTo(path: string): Promise<void> {
+        window.history.pushState({}, "", path);
+        this.renderPath(path);
+    }
     
 	private findRoute(path: string): Route | undefined {
 		return this.routes.find((route) => route.path === path);
 	}
 
-	private render(route: Route): void {
-		this.rootElement.innerHTML = "";
-		this.rootElement.appendChild(route.component());
-	}
+    private async render(route: Route): Promise<void> {
+        try {
+            this.rootElement.innerHTML = "";
+            const component = await route.component();
+            this.rootElement.appendChild(component);
+        } catch (e) {
+            console.error("Failed to render route:", e);
+            this.rootElement.innerHTML = "";
+            this.rootElement.appendChild(create404page());
+        }
+    }
 
-	private async renderPath(path: string) {
-		const route = this.findRoute(path);
-		if (route) {
-			const authRes = await authenticate();
-			if (authRes === true) {
-				this.render(route);
-			}
-			else if (authRes === false) {
-				window.location.href = "/login";
-			} else {
-				this.rootElement.appendChild(assemblePage(createLoginPage()));
-				// insert code to show an offline message here
-				console.warn("Offline");
-            }
-		} else {
-			console.log("Error rendering route: ", path)
-			this.rootElement.innerHTML = "";
-			this.rootElement.appendChild(assemblePage(create404page()))
-			return;
-		}
-	}
+    private async renderPath(path: string) {
+        const route = this.findRoute(path);
+        if (route) {
+            await this.render(route);
+        } else {
+            console.log("Error rendering route: ", path)
+            this.rootElement.innerHTML = "";
+            this.rootElement.appendChild(assemblePage(create404page()))
+        }
+    }
 
-	private setupPopStateListener(): void {
-		window.addEventListener("popstate", () => {
-			this.renderPath(window.location.pathname);
-		});
-		console.log("Popstate event triggered! Current path:", window.location.pathname);
-	}
+    private setupPopStateListener(): void {
+        window.addEventListener("popstate", async () => {
+            await this.renderPath(window.location.pathname);
+        });
+        console.log("Popstate event triggered! Current path:", window.location.pathname);
+    }
 
 	private setupEventListener(): void {
 		this.rootElement.addEventListener("click", (e) => {
