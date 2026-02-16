@@ -3,7 +3,7 @@ import { API_BASE } from "./loginHandler"
 export async function authenticate(): Promise<boolean | null> {
 	try {
 		const resp = await fetch(`${API_BASE}/auth/me`, {
-			method: "POST",
+			method: "GET",
 			credentials: "include"
 		});
 

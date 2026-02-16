@@ -22,6 +22,7 @@ export async function loginHandler(payload: loginRequest): Promise<string> {
 
 export async function logoutHandler() {
 	await fetch(`${API_BASE}/auth/logout`, {
+		method: "POST",
 		credentials: "include"
 	})
 }
