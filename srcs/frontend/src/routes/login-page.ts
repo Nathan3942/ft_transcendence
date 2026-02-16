@@ -1,7 +1,7 @@
 import { createButton } from "../components/button/button";
-import { loginHandler } from "../handler/loginHandler";
+import { loginHandler, registerHandler } from "../handler/loginHandler";
 
-function createLoginForm(formContainer: Element): HTMLDivElement {
+function createLoginForm(formContainer: Element) {
 
 	const outer = document.createElement("div");
 	const form = document.createElement("form");
@@ -38,8 +38,7 @@ function createLoginForm(formContainer: Element): HTMLDivElement {
 		id: "register-button",
 		f: () => {
 			if (formContainer) {
-				formContainer.innerHTML = "";
-				formContainer.append(createRegistrationForm(formContainer));
+				createRegistrationForm(formContainer);
 			}
 		},
 		buttonText: "Register.",
@@ -61,6 +60,11 @@ function createLoginForm(formContainer: Element): HTMLDivElement {
 		};
 
 		try {
+			if (payload.username.length === 0)
+				throw new Error("Username field empty");
+			else if (payload.password.trim().length === 0)
+				throw new Error("Password field empty");
+			
 			const result = await loginHandler(payload);
 			console.log("Login succeeded:", result);
 
@@ -72,10 +76,11 @@ function createLoginForm(formContainer: Element): HTMLDivElement {
 		}
 	});
 
-	return outer;
+	formContainer.innerHTML = "";
+	formContainer.append(outer);
 }
 
-function createRegistrationForm(formContainer: Element): HTMLDivElement {
+function createRegistrationForm(formContainer: Element) {
 
 	const outer = document.createElement("div");
 	const h1 = document.createElement("h1");
@@ -84,6 +89,7 @@ function createRegistrationForm(formContainer: Element): HTMLDivElement {
 	const pass = document.createElement("input");
 	const passConfirm = document.createElement("input");
 	const p = document.createElement("p");
+	const errorMsg = document.createElement("p");
 
 	h1.className = "mb-6 text-center text-2xl font-bold";
 	h1.append("Register");
@@ -105,11 +111,13 @@ function createRegistrationForm(formContainer: Element): HTMLDivElement {
 	passConfirm.placeholder = "Confirm password";
 	passConfirm.className = "mb-4 w-full border p-2";
 
-	form.append(text, pass, passConfirm, createButton({
+	errorMsg.className = "text-red-600 mb-2 hidden";
+
+	form.append(text, pass, passConfirm, errorMsg, createButton({
 		id: "register-button",
 		buttonText: "Register",
 		extraClasses: "w-full bg-blue-500 p-2 hover:bg-blue-600 dark:bg-blue-900 dark:hover:bg-blue-950",
-		type: "button"
+		type: "submit"
 	}));
 
 	p.className = "mt-4 text-center";
@@ -117,8 +125,7 @@ function createRegistrationForm(formContainer: Element): HTMLDivElement {
 		id: "login-button",
 		f: () => {
 			if (formContainer) {
-				formContainer.innerHTML = "";
-				formContainer.append(createLoginForm(formContainer));
+				createLoginForm(formContainer);
 			}
 		},
 		buttonText: "Login.",
@@ -128,7 +135,39 @@ function createRegistrationForm(formContainer: Element): HTMLDivElement {
 
 	outer.append(h1, form, p)
 
-	return outer;
+	form.addEventListener("submit", async (e) => {
+		e.preventDefault()
+
+		console.log("im here");
+
+		errorMsg.innerText = "";
+		errorMsg.classList.add("hidden");
+
+		const payload = {
+			username: text.value.trim(),
+			password: passConfirm.value,
+		}
+
+		try {
+			if (text.value.trim().length === 0)
+				throw new Error("Username field empty");
+			else if (pass.value.trim().length === 0 || passConfirm.value.trim().length === 0)
+				throw new Error("A password field is empty");
+			else if (pass.value != passConfirm.value)
+				throw new Error("Passwords do not match");
+
+			await registerHandler(payload);
+
+			window.location.href = "/dashboard";
+		} catch(err: any) {
+			console.log(err);
+			errorMsg.innerText = err ?? "Registration failed";
+			errorMsg.classList.remove("hidden");
+		}
+	})
+
+	formContainer.innerHTML = "";
+	formContainer.append(outer);
 }
 
 
@@ -140,7 +179,7 @@ export default function createLoginPage(): HTMLDivElement {
 
 	formContainer.id = "form-container";
 	formContainer.className = "w-1/3 items-center justify-center bg-gray-200 px-4 py-2 dark:bg-gray-950"
-	formContainer.append(createLoginForm(formContainer)); 
+	createLoginForm(formContainer); 
 
 	outer.append(formContainer);
 

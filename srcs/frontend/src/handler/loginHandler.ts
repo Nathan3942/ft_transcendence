@@ -20,6 +20,22 @@ export async function loginHandler(payload: loginRequest): Promise<string> {
 	return await resp.json();
 }
 
+export async function registerHandler(payload: loginRequest) {
+	const resp = await fetch(`${API_BASE}/auth/register`, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json"
+		},
+		body: JSON.stringify(payload),
+		credentials: "include"
+	});
+
+	if (!resp.ok) {
+		const err = await resp.text();
+		throw new Error(`Registration failed: ${resp.status}: ${err}`);
+	}
+}
+
 export async function logoutHandler() {
 	await fetch(`${API_BASE}/auth/logout`, {
 		method: "POST",
