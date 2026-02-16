@@ -5,7 +5,7 @@ import createGameOnlinePage from '../routes/game-online';
 import createHomePage from '../routes/home';
 import createLoginPage from '../routes/login-page';
 import createTestPage from '../routes/test';
-import { authenticate } from './authHandler';
+import { authenticate } from './loginHandler';
 import assemblePage from './pageHandler';
 
 type Route = {

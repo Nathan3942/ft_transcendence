@@ -1,4 +1,5 @@
 import { createButton } from "../components/button/button";
+import { loginHandler } from "../handler/loginHandler";
 
 function createLoginForm(formContainer: Element): HTMLDivElement {
 
@@ -8,6 +9,7 @@ function createLoginForm(formContainer: Element): HTMLDivElement {
 	const passInput = document.createElement("input"); 
 	const h1 = document.createElement("h1");
 	const p = document.createElement("p");
+	const errorMsg = document.createElement("p");
 	
 	h1.className = "mb-6 text-center text-2xl font-bold";
 	h1.append("Login");
@@ -22,9 +24,10 @@ function createLoginForm(formContainer: Element): HTMLDivElement {
 	passInput.placeholder = "Password";
 	passInput.className = "mb-4 w-full border p-2";
 
-	form.append(textInput, passInput, createButton({
+	errorMsg.className = "text-red-600 mb-2 hidden";
+
+	form.append(textInput, passInput, errorMsg, createButton({
 		id: "login-button",
-		f: () => console.log("Login Button has been pressed"),
 		buttonText: "Login",
 		extraClasses: "w-full bg-blue-500 p-2 hover:bg-blue-600 dark:bg-blue-900 dark:hover:bg-blue-950",
 		type: "submit"
@@ -45,6 +48,29 @@ function createLoginForm(formContainer: Element): HTMLDivElement {
 	}));
 	
 	outer.append(h1, form, p);
+
+	form.addEventListener("submit", async (e) => {
+		e.preventDefault();
+
+		errorMsg.textContent = "";
+		errorMsg.classList.add("hidden");
+
+		const payload = {
+			username: textInput.value.trim(),
+			password: passInput.value
+		};
+
+		try {
+			const result = await loginHandler(payload);
+			console.log("Login succeeded:", result);
+
+			window.location.href = "/dashboard";
+		} catch (err: any) {
+			console.error(err);
+			errorMsg.textContent = err ?? "Login failed";
+			errorMsg.classList.remove("hidden");
+		}
+	});
 
 	return outer;
 }
@@ -81,7 +107,6 @@ function createRegistrationForm(formContainer: Element): HTMLDivElement {
 
 	form.append(text, pass, passConfirm, createButton({
 		id: "register-button",
-		f: () => console.log("Registration button has been pressed"),
 		buttonText: "Register",
 		extraClasses: "w-full bg-blue-500 p-2 hover:bg-blue-600 dark:bg-blue-900 dark:hover:bg-blue-950",
 		type: "button"
@@ -114,7 +139,7 @@ export default function createLoginPage(): HTMLDivElement {
 	outer.className = "flex h-screen w-screen items-center justify-center";
 
 	formContainer.id = "form-container";
-	formContainer.className = "items-center justify-center bg-gray-200 px-4 py-2 dark:bg-gray-950"
+	formContainer.className = "w-1/3 items-center justify-center bg-gray-200 px-4 py-2 dark:bg-gray-950"
 	formContainer.append(createLoginForm(formContainer)); 
 
 	outer.append(formContainer);
