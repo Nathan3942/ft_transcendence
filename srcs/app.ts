@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   app.ts                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/02/17 16:40:49 by njeanbou          #+#    #+#             */
+/*   Updated: 2026/02/17 16:44:13 by njeanbou         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 import Fastify, { FastifyInstance } from 'fastify'
 import cors from '@fastify/cors'
 import { initDatabase, checkDatabaseHealth, initTables } from './database'
@@ -5,6 +17,9 @@ import v1Routes from './routes/v1'
 import { errorHandler, notFoundHandler } from './utils/ErrorHandler'
 import { registerRateLimit } from './plugins/rateLimit'
 import { env, isDev } from './config/env'
+
+import { wsPlugin } from './ws'
+
 
 /**
  * Builds and configures the Fastify application instance
@@ -31,6 +46,8 @@ export async function buildApp(): Promise<FastifyInstance> {
     throw new Error('Database integrity check failed')
   }
   initTables()
+
+  await app.register(wsPlugin);
 
   // Register routes with /api/v1 prefix
   app.register(v1Routes, { prefix: '/api/v1' })

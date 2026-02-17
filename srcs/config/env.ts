@@ -12,41 +12,46 @@
  * - TypeScript connaît le type exact de chaque variable
  */
 
-import { z } from 'zod'
+import { xid, z } from 'zod'
 import { config as dotenvConfig } from 'dotenv'
 
-//lis code du package dotenv -> charge parse .env et ajoute les variables a process.env
+// Charge le fichier .env dans process.env
 dotenvConfig()
 
-//schema zod check si .env conforme
+// Schéma de validation Zod
+// Chaque variable est décrite avec son type et ses contraintes
 const envSchema = z.object({
   // Environnement d'exécution
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 
-  PORT: z.string().default('3000').transform(Number), 
+  // Port du serveur HTTP Fastify
+  PORT: z.string().default('3000').transform(Number),
 
+  // Port WebSocket pour le jeu Pong temps réel
   WS_PORT: z.string().default('3001').transform(Number),
 
+  // Chemin vers la base de données SQLite
   DATABASE_PATH: z.string().default('./data/transcendence.db'),
 
-  // URL du frontend pour config CORS
+  // URL du frontend pour configurer CORS
   FRONTEND_URL: z.string().url().default('http://localhost:5173'),
+
+  // Secret utilisé pour signer/vérifier les JWT (auth)
+  JWT_SECRET: z.string().min(16),
 })
 
-
-//check si process.env conforme au schema zod en comparant
+// Valide process.env contre le schéma
+// Si validation échoue -> crash avec message d'erreur clair
 const parsed = envSchema.safeParse(process.env)
-console.log(process.env.HOME)   // "/Users/teo18"
-console.log(process.env.PATH)   // "/usr/bin:/bin:/usr/local/bin"
 
 if (!parsed.success) {
   console.error('❌ Configuration invalide:')
-  console.error(parsed.error)
+  console.error(parsed.error.format())
   process.exit(1)
 }
 
-// Export env puisqu'il est valide
-export const env = parsed.data 
+// Export l'objet validé et typé
+export const env = parsed.data
 
 // Helpers pour vérifier l'environnement
 export const isDev = env.NODE_ENV === 'development'
