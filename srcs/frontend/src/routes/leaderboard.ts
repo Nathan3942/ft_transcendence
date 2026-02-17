@@ -1,5 +1,6 @@
 import createBackButton from "../components/button/backButton";
 import { createButton } from "../components/button/button";
+import { API_BASE } from "../handler/loginHandler";
 
 // Variable names subject to change with proper backend integration
 type userInfo = {
@@ -28,7 +29,9 @@ type scoreKey = keyof Pick<
 async function importUserData(): Promise<userInfo[]> {
 	 try {
 		
-		const response = await fetch("/api/test/users.json");
+		const response = await fetch(`${API_BASE}/users/score`, {
+			method: "GET",
+		});
 		if (!response.ok) {
 			throw new Error(`Network error: ${response.status} ${response.statusText}`);
 		}
