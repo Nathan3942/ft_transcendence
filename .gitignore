@@ -27,3 +27,21 @@ claude.md
 
 .claude/
 
+clean-database.sh
+
+GET_MATCH_RESULTS.md
+TEST_PLAYER_VS_AI.md
+WORKFLOW_MATCH_LOCAL.md
+test-get-match-results.sh
+test-match-pvp-complet.sh
+test-player-vs-ai.sh
+verify-ai-matches.sh
+verify-matches.sh
+
+data/transcendence.db-shm
+data/transcendence.db-wal
+docs/CONTRACTS_ERRORS.MD
+docs/CONTRACT_API.MD
+
+transcendence.txt
+

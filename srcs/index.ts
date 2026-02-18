@@ -10,7 +10,7 @@ const server = Fastify({
   logger: true //affichage console
 })
 
-// Start mon server
+
 const start = async () => {
   try {
     // Register CORS avec l'URL du frontend depuis .env
@@ -45,5 +45,5 @@ const start = async () => {
   }
 }
 
-// start le server
+//lancement du server
 start()
