@@ -33,6 +33,7 @@ export class Router {
         this.rootElement = rootElement;
         this.setupPopStateListener();
         this.setupEventListener();
+        this.setupNavigateEvent();
     }
 
     public start(): void {
@@ -42,6 +43,14 @@ export class Router {
         } else {
             this.rootElement.appendChild(assemblePage(create404page()))
         }
+    }
+
+    private setupNavigateEvent(): void {
+        window.addEventListener("navigate", (e: Event) => {
+            const path = (e as CustomEvent<{ path: string }>).detail?.path;
+            if (path)
+                this.navigateTo(path);
+        })
     }
 
     public navigateTo(path: string): void {

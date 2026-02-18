@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/13 15:48:09 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/02/17 17:29:45 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/02/18 16:31:41 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ import type WebSocket from "ws";
 import { WsHub, type WsSocket } from "./hub";
 import type { WsClientEvent, WsEnvelope, WsRoom } from "./events";
 import { wsAuthenticate } from "./auth";
+import { GameManager } from "../game/gameManager";
 
 type WsConnection = { socket: WebSocket };
 
@@ -54,6 +55,8 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
     const hub = new WsHub(app.log);
     app.decorate("wsHub", hub);
 
+	const gameManager = new GameManager(app.log, (room, payload) => hub.broadcast(room as any, payload));
+
     /* 
     	endpoint websocket 
 		client co a l'url
@@ -83,7 +86,7 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 		app.log.info({ wsId: ws._wsId, ip: req.ip }, "WS connected");
 
 		hub.join(ws, "global");
-		hub.join(ws, `user:${ws._userId}`);
+		// hub.join(ws, `user:${ws._userId}`);
 
 		hub.send(ws, { type: "hello", serverTime: Date.now() });
 
@@ -105,11 +108,13 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 			if (msg.type === "subscribe") {
 
 				if (!ws._userId) {
+				
 					hub.send(ws, { type: "error", code: "UNAUTHORIZED", message: "Not authenticated" });
 					return;
 				}
 
 				if (msg.room.startsWith("user:")) {
+				
 					const target = msg.room.slice("user:".length);
 					if (target !== ws._userId) {
 						hub.send(ws, { type: "error", code: "FORBIDDEN", message: "Cannot subscribe to other user room" });
@@ -123,8 +128,22 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 			}
 
 			if (msg.type === "unsubscribe") {
+				
 				hub.leave(ws, msg.room as WsRoom);
 				hub.send(ws, { type: "unsubscribed", room: msg.room });
+				return;
+			}
+
+			if (msg.type === "join_game") {
+				
+				hub.join(ws, `game:${msg.gameId}`);
+				gameManager.joinGame(ws, msg.gameId);
+				return;
+			}
+
+			if (msg.type === "input") {
+
+				gameManager.input(msg.gameId, msg.slot, msg.input);
 				return;
 			}
 
