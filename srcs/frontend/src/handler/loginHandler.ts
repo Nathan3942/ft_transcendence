@@ -37,11 +37,21 @@ export async function registerHandler(payload: loginRequest) {
 }
 
 export async function logoutHandler() {
-	await fetch(`${API_BASE}/auth/logout`, {
-		method: "POST",
-		credentials: "include"
-	})
-	window.location.href = "/login";
+	try {
+		const resp = await fetch(`${API_BASE}/auth/logout`, {
+			method: "POST",
+			credentials: "include"
+		})
+
+		if (!resp.ok) {
+			const err = await resp.text();
+			throw new Error(`Logout failed: ${resp.status}: ${err}`);
+		}
+		window.location.href = "/login";
+	} catch (err) {
+		console.warn(err);
+		alert("Logout failed. Please try again or check console for more information");
+	}
 }
 
 let loginRedirectPending = false;
