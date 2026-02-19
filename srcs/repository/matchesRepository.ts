@@ -3,6 +3,12 @@
 import { queryAll, queryOne, queryExecute } from '../database/queryWrapper'
 import { Match, MatchPlayer, MatchWithPlayers, MatchStatus } from '../models/matchModel'
 
+function nowLocal(): string {
+    const d = new Date()
+    const pad = (n: number) => n.toString().padStart(2, '0')
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+}
+
 
 export function getAllMatches(): Match[] {
     return queryAll(`
@@ -58,7 +64,7 @@ export function createMatch({
         winnerId: null,
         startedAt: null,
         finishedAt: null,
-        createdAt: new Date().toISOString()
+        createdAt: nowLocal()
     };
 }
 
@@ -139,7 +145,7 @@ export function updateMatchStatus(matchId: number, status: MatchStatus) {
 
 
 export function startMatch(matchId: number) {
-    const now = new Date().toISOString()
+    const now = nowLocal()
     return queryExecute(
         'UPDATE matches SET status = ?, started_at = ? WHERE id = ?',
         ['in_progress', now, matchId]
@@ -148,7 +154,7 @@ export function startMatch(matchId: number) {
 
 
 export function finishMatch(matchId: number, winnerId: number | null) {
-    const now = new Date().toISOString()
+    const now = nowLocal()
     return queryExecute(
         'UPDATE matches SET status = ?, finished_at = ?, winner_id = ? WHERE id = ?',
         ['finished', now, winnerId, matchId]
@@ -180,12 +186,12 @@ export function createFinishedMatchWithPlayers(
     player2Id: number | null,
     scorePlayer2: number
 ): MatchWithPlayers {
-    const now = new Date().toISOString()
+    const now = nowLocal()
 
     // Create match with status finished and finished_at set
     const matchResult = queryExecute(
-        'INSERT INTO matches (tournament_id, round, status, winner_id, finished_at) VALUES (?, ?, ?, ?, ?)',
-        [null, null, 'finished', winnerId, now]
+        'INSERT INTO matches (tournament_id, round, status, winner_id, started_at, finished_at) VALUES (?, ?, ?, ?, ?, ?)',
+        [null, null, 'finished', winnerId, now, now]
     )
 
     const matchId = matchResult.lastInsertRowid as number
@@ -215,7 +221,7 @@ export function createFinishedMatchWithPlayers(
         round: null,
         status: 'finished',
         winnerId,
-        startedAt: null,
+        startedAt: now,
         finishedAt: now,
         createdAt: now,
         players
