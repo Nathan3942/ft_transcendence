@@ -4,6 +4,7 @@ import { API_BASE } from "../handler/loginHandler";
 
 // Variable names subject to change with proper backend integration
 type userInfo = {
+	userId: string;
 	userName: string;
 	localAiE: number;
 	localAiM: number;
@@ -29,7 +30,7 @@ type scoreKey = keyof Pick<
 async function importUserData(): Promise<userInfo[]> {
 	 try {
 		
-		const response = await fetch(`${API_BASE}/users/score`, {
+		const response = await fetch(`${API_BASE}/leaderboard`, {
 			method: "GET",
 		});
 		if (!response.ok) {
