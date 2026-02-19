@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/13 15:48:09 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/02/18 16:31:41 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/02/19 17:54:52 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -136,7 +136,19 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 
 			if (msg.type === "join_game") {
 				
-				hub.join(ws, `game:${msg.gameId}`);
+				const room = `game:${msg.gameId}` as WsRoom;
+
+				hub.join(ws, room);
+
+				const count = hub.count(room);
+
+				if (count < 2) {
+					hub.send(ws, { type: "match_waiting", gameId: msg.gameId, count });
+				}
+				else {
+					hub.broadcast(room, { type: "match_ready", gameId: msg.gameId, count });
+				}
+
 				gameManager.joinGame(ws, msg.gameId);
 				return;
 			}

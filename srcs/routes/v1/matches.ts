@@ -45,6 +45,12 @@ export default async function matchesRoutes(server: FastifyInstance) {
         return success(result)
     })
 
+    /************************* DELETE ALL MATCHES **********************************/
+    // server.delete('/matches', async (_request, _reply) => {
+    //     const result = matchService.deleteAllMatches();
+    //     return success(result);
+    // });
+
     /************************* GET MATCHES BY TOURNAMENT **********************************/
     server.get('/tournaments/:tournamentId/matches', async (request, _reply) => {
         const { tournamentId } = request.params as { tournamentId: string }

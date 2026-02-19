@@ -6,9 +6,11 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/13 14:47:51 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/02/18 16:36:24 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/02/19 17:53:49 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+import { number, string, stringbool } from "zod";
 
 export type WsRoom =
 	| `user:${string}`
@@ -28,7 +30,7 @@ export type WsClientEvent =
 	| { type: "subscribe"; room: WsRoom }
 	| { type: "unsubscribe"; room: WsRoom }
 	// Remote player
-	| { type: "join_game"; gameId: string; slot?: PlayerSlot }
+	| { type: "join_game"; gameId: string; clientId: string }
 	| { type: "leave_game"; gameId: string }
 	| { type: "input"; gameId: string; slot: PlayerSlot; input: PaddleInput };
 
@@ -53,6 +55,8 @@ export type WsServerEvent =
 	| { type: "game_sync"; state: GameState }
 	| { type: "game_tick"; state: GameState }
 	| { type: "game_event"; gameId: string; event: string; payload?: unknown }
-	| { type: "tournament:update"; tournamentId: string; payload: unknown };
+	| { type: "tournament:update"; tournamentId: string; payload: unknown }
+	| { type: "match_waiting"; gameId: string; count: number }
+	| { type: "match_ready"; gameId: string; count: number };
 
 export type WsEnvelope<T extends { type: string }> = T;

@@ -64,6 +64,8 @@ export function createMatch({
 
 
 export function deleteMatch(id: string | number) {
+
+    queryExecute("DELETE FROM match_player WHERE match_id = ?", [id]);
     return queryExecute('DELETE FROM matches WHERE id = ?', [id])
 }
 

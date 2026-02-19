@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/13 14:57:23 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/02/18 17:07:40 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/02/19 17:38:53 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,4 +121,8 @@ export class WsHub {
 			socketsTracked: this.socketRooms.size,
 		};
 	}
+
+    count(room: WsRoom): number {
+        return (this.rooms.get(room)?.size ?? 0);
+    }
 }

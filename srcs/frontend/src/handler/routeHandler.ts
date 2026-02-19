@@ -7,6 +7,8 @@ import createLoginPage from '../routes/login-page';
 import createTestPage from '../routes/test';
 import assemblePage from './pageHandler';
 import createLocalTournament from '../routes/local-tournament';
+import createBrowseGamesPage from '../routes/browse-games';
+import onlineMatch from '../routes/online-match';
 
 type Route = {
     path: string;
@@ -22,7 +24,9 @@ const routes: Route[] = [
     { path: "/game-local", component: () => assemblePage(createGameLocalPage()) },
     { path: "/game-local-ai", component: () => assemblePage(createLocalAIGamePage())},
     { path: "/game-online", component: () => assemblePage(createGameOnlinePage()) },
-    { path: "/local-tournament", component: () => assemblePage(createLocalTournament()) }
+    { path: "/local-tournament", component: () => assemblePage(createLocalTournament()) },
+    { path: "/browse-games", component: () => assemblePage(createBrowseGamesPage())},
+    { path: "/online-match", component: () => assemblePage(onlineMatch())}
 ];
 
 export class Router {
