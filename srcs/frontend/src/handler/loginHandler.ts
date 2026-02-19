@@ -41,6 +41,7 @@ export async function logoutHandler() {
 		method: "POST",
 		credentials: "include"
 	})
+	window.location.href = "/login";
 }
 
 let loginRedirectPending = false;

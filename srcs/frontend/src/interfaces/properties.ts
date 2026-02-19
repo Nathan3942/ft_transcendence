@@ -3,7 +3,7 @@ export interface standardProps {
 }
 
 export interface buttonProps extends standardProps {
-	f?: () => void;
+	f?: () => void | Promise<void>;
 	href?: string;
 	extraClasses?: string;
 	buttonText?: string;
