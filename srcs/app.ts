@@ -19,7 +19,8 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   // Cors setup
   await app.register(cors, {
-    origin: isDev ? true : env.FRONTEND_URL  // Dev: toutes origines, Prod: que frontend
+    origin: isDev ? true : env.FRONTEND_URL,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
   })
 
  //rate limit pour eviter trop de request
