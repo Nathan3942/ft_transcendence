@@ -20,7 +20,7 @@ export interface MatchPlayer {
   score: number | null;
 }
 
-export interface MatchWithPlayers extends Match {
+export interface MatchWithPlayers extends Match { // ajoute un tableau a la table matchPlayer
   players: {
     userId: number;
     score: number | null;

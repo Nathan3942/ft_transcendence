@@ -7,35 +7,32 @@ import { registerRateLimit } from './plugins/rateLimit'
 import { env, isDev } from './config/env'
 
 /**
- * Builds and configures the Fastify application instance
- * This factory function sets up all plugins, database, routes, and error handlers
- * @returns Configured Fastify instance ready to listen
+ * creation et config du server fastify
+ * plugind db error handler global et routes
+ * @returns l'instance fastify prete
  */
 export async function buildApp(): Promise<FastifyInstance> {
-  // Create a Fastify server instance with logging enabled
+  //creation server avec logger pour affichage console
   const app = Fastify({
     logger: true
   })
 
-  // Register CORS with frontend URL from .env
+  // Cors setup
   await app.register(cors, {
-    origin: isDev ? true : env.FRONTEND_URL  // Dev: all origins, Prod: only frontend
+    origin: isDev ? true : env.FRONTEND_URL  // Dev: toutes origines, Prod: que frontend
   })
 
-  // Register rate limiting to protect against abuse
+ //rate limit pour eviter trop de request
   await registerRateLimit(app)
 
-  // Initialize database and tables before registering routes
   initDatabase()
   if (!checkDatabaseHealth()) {
     throw new Error('Database integrity check failed')
   }
   initTables()
 
-  // Register routes with /api/v1 prefix
   app.register(v1Routes, { prefix: '/api/v1' })
 
-  // Set global error handlers
   app.setErrorHandler(errorHandler)
   app.setNotFoundHandler(notFoundHandler)
 
