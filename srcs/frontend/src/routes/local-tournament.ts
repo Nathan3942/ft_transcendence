@@ -20,7 +20,7 @@ import { makeAIPolicyP2 } from "../game/ai/policy";
 import { loadHardGenome, genomeForDifficulty, createKeyMap, keyboardToInput, bindKeyboard, mergeKeyboardWithAIP2 } from "./game-local-ai";
 
 /* MODIF 1 : URL de base de l'API backend pour sauvegarder le tournoi */
-const API_URL = "http://localhost:3000/api/v1";
+const API_URL = "/api/v1";
 
 type Player = {
     id: number;

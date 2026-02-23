@@ -6,7 +6,7 @@ import { startPong } from "../game/pong";
 import type { PongEvents } from "../game/pong_core";
 
 /* URL de base de l'API backend */
-const API_URL = "http://localhost:3000/api/v1";
+const API_URL = "/api/v1";
 
 /* MODIF 2 : createLocalMatch prend maintenant les noms des joueurs en paramètre
    et fait 2 appels API :
