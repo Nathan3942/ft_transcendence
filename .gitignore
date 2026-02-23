@@ -45,3 +45,5 @@ docs/CONTRACT_API.MD
 
 transcendence.txt
 
+data/transcendence.db-shm
+data/transcendence.db-wal
