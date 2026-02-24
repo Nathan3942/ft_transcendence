@@ -31,6 +31,14 @@ export class UnauthorizedError extends BaseError {
     }
 }
 
+export class ForbiddenError extends BaseError {
+    statusCode = 403;
+    constructor(message = "Forbidden", details: any[] = []) {
+        super(message, 403, details);
+        this.name = "ForbiddenError";
+    }
+}
+
 export class BadRequestError extends BaseError {
     statusCode = 400;
     constructor(message = "Error Bad Request", details: any[] = []) {

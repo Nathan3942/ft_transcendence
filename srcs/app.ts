@@ -1,5 +1,6 @@
 import Fastify, { FastifyInstance } from 'fastify'
 import cors from '@fastify/cors'
+import jwt from '@fastify/jwt'
 import { initDatabase, checkDatabaseHealth, initTables } from './database'
 import v1Routes from './routes/v1'
 import { errorHandler, notFoundHandler } from './utils/ErrorHandler'
@@ -21,6 +22,11 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(cors, {
     origin: isDev ? true : env.FRONTEND_URL,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
+  })
+
+  // JWT — disponible via server.jwt.sign() et request.jwtVerify()
+  await app.register(jwt, {
+    secret: env.JWT_SECRET
   })
 
  //rate limit pour eviter trop de request

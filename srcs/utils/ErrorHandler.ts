@@ -38,10 +38,20 @@ export function errorHandler(
         })
     }
 
+    // Handle HTTP errors from Fastify plugins (ex: @fastify/jwt)
+    // Ces erreurs ont un statusCode mais ne sont pas des BaseError
+    if (error instanceof Error && 'statusCode' in error) {
+        const statusCode = (error as any).statusCode as number
+        return reply.status(statusCode).send({
+            error: error.name || 'HttpError',
+            message: isProd ? getProductionMessage(statusCode) : error.message,
+            details: []
+        })
+    }
+
     // Handle unexpected errors (500 Internal Server Error)
     // In production, NEVER expose internal error details
-    const statusCode = 500
-    return reply.status(statusCode).send({
+    return reply.status(500).send({
         error: 'InternalServerError',
         message: isProd
             ? 'An unexpected error occurred. Please try again later.'

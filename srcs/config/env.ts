@@ -31,6 +31,9 @@ const envSchema = z.object({
 
   // URL du frontend pour config CORS
   FRONTEND_URL: z.string().url().default('http://localhost:5173'),
+
+  // Secret pour signer les JWT — doit être long et aléatoire en production
+  JWT_SECRET: z.string().min(16),
 })
 
 
