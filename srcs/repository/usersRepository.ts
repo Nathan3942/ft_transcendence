@@ -2,9 +2,8 @@
 
 
 import { queryAll, queryOne, queryExecute } from '../database/queryWrapper'
-import { User } from '../models/userModel' //importer l'interface user
+import { User } from '../models/userModel'
 
-// Retourne tous les utilisateurs de la table users
 export function getAll() {
 	return queryAll('SELECT * FROM users')
 }
@@ -25,7 +24,6 @@ export function getOrCreateByUsername(username: string): User {
     return { id: result.lastInsertRowid as number, username }
 }
 
-// Création d'un utilisateur avec gestion de l'unicité
 export async function createUser({ username }: { username: string }): Promise<User> {
     try {
         const result = await queryExecute(
@@ -42,4 +40,14 @@ export async function createUser({ username }: { username: string }): Promise<Us
         }
         throw err;
     }
+}
+
+export function updateUser(id: string | number, username: string): boolean {
+    const result = queryExecute('UPDATE users SET username = ? WHERE id = ?', [username, id])
+    return result.changes > 0
+}
+
+export function deleteUser(id: string | number): boolean {
+    const result = queryExecute('DELETE FROM users WHERE id = ?', [id])
+    return result.changes > 0
 }

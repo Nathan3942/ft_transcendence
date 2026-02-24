@@ -1,4 +1,4 @@
-//index file contains all routes from api/v1
+//register toutes les routes de la v1
 
 import type { FastifyInstance } from 'fastify'
 import usersRoutes from './users'
