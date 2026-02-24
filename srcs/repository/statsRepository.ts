@@ -1,35 +1,7 @@
 /* centralise toutes les requetes stats/leaderboard */
 
 import { queryOne, queryAll } from '../database/queryWrapper'
-
-interface UserStats {
-    userId: number;
-    username: string;
-    totalMatches: number;
-    wins: number;
-    losses: number;
-    winrate: number;
-    tournamentsWon: number;
-}
-
-interface MatchHistory {
-    matchId: number;
-    opponentId: number | null;
-    opponentName: string | null;
-    userScore: number | null;
-    opponentScore: number | null;
-    won: boolean;
-    finishedAt: string | null;
-}
-
-interface LeaderboardEntry {
-    userId: number;
-    username: string;
-    wins: number;
-    losses: number;
-    totalMatches: number;
-    winrate: number;
-}
+import { UserStats, MatchHistory, LeaderboardEntry } from '../models/statsModel'
 
 export function getUserStats(userId: number): UserStats | null {
     const row = queryOne(`

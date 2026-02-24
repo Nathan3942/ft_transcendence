@@ -3,8 +3,8 @@
 - tournament_players : qui participe à quel tournoi
 - matches : les matchs d'un tournoi
 - match_player : quels joueurs participent à un match et leur score
-
 */
+
 import { getDatabase } from './connection'
 
 export const initTables = (): void => {
