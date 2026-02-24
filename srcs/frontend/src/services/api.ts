@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 14:57:26 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/02/19 16:38:22 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/02/24 16:34:17 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,14 @@ type ApiError = { success?: false; error?: string, message?: string; details?: u
 
 export async function api<T>(path: string, opts?: RequestInit): Promise<T> {
 
+	const headers: Record<string, string> = {};
+
+	if (opts?.body) {
+		headers["Content-Type"] = "application/json";
+	}
+	
 	const res = await fetch(`${API_BASE}${path}`, {
-		headers: { "Content-Type": "application/json"},
+		headers,
 		...opts,
 	});
 

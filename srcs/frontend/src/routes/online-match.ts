@@ -6,13 +6,14 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 17:15:35 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/02/23 18:52:30 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/02/24 18:04:53 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import { getCurrentMatchId } from "../services/onlineStore";
 import { draw1v1 } from "../game/pong_render";
 import { toRenderState, type RenderState1v1, type ServerGameState } from "../game/server_state_adapter";
+
 
 type Dir = -1 | 0 | 1;
 
@@ -120,18 +121,20 @@ export default function onlineMatch(): HTMLDivElement {
 
 	const canvas = document.createElement("canvas");
 	canvas.className = "w-full h-full block";
-	canvas.width = 1200;
-	canvas.height = 800;
+	canvas.style.width = "100%";
+	canvas.style.height = "100%";
 	gameContainer.appendChild(canvas);
 
-	const ctx = canvas.getContext("2d");
-	if (!ctx) {
-		status.textContent = "Canvas error (no 2d context)";
-		return (page);
+	const ctxMaybe = canvas.getContext("2d");
+	if (!ctxMaybe) {
+	status.textContent = "Canvas error (no 2d context)";
+	return page;
 	}
+	const ctx: CanvasRenderingContext2D = ctxMaybe;
 
 	let lastServerState: ServerGameState | null = null;
 	let lastRenderState: RenderState1v1 | null = null;
+
 
 	let rafId = 0;
 	let running = true;
@@ -150,7 +153,7 @@ export default function onlineMatch(): HTMLDivElement {
 
 	const ws = new WebSocket(`ws://${window.location.hostname}:3000/ws`);
 
-	let myslot: "left" | "right" = "right";
+	let mySlot: "left" | "right" = "right";
 
 	let unbindInput: null | (() => void) = null;
 
@@ -266,62 +269,3 @@ export default function onlineMatch(): HTMLDivElement {
 	return page;
 }
 
-
-
-
-// export default function onlineMatch(): HTMLDivElement {
-
-//     const page = document.createElement("div");
-//     page.className = "flex flex-col flex-1 p-6 gap-4";
-
-//     const status = document.createElement("div");
-//     status.className = "text-xl font-semibold";
-//     status.textContent = "Connecting...";
-
-//     const gameContainer = document.createElement("div");
-//     gameContainer.className = "sflex-1 rounded bg-black/10 dark:bg-white/10";
-
-//     page.append(status, gameContainer);
-
-//     const ws = new WebSocket(`ws://${window.location.hostname}:3000/ws`);
-
-//     ws.onopen = () => {
-//         status.textContent = "Connected. Joining match...";
-//         const matchId = getCurrentMatchId();
-
-//         if (!matchId) {
-// 			status.textContent = "No matchId (creat a match first).";
-// 			return;
-// 		}
-
-// 		ws.send(JSON.stringify({ type: "join_game", gameId: matchId, clientId: getClientId() }));
-//     };
-
-// 	ws.onmessage = (e) => {
-// 		const msg = JSON.parse(e.data);
-
-// 		if (msg.type === "match_waiting") {
-// 			status.textContent = `Match #${msg.gameId}: waiting for 2nd player ${msg.count}/2...`;
-// 			// affiche pong pause
-// 			return;
-// 		}
-
-// 		if (msg.type === "match_ready") {
-// 			status.textContent = `Match #${msg.gameId}: player found! Starting...`;
-// 			StartMatch();
-// 			return;
-// 		}
-
-
-// 	};
-
-// 	ws.onerror = () => {
-// 		status.textContent = "WS error";
-// 	};
-
-// 	ws.onclose = () => {
-// 		status.textContent = "WS closed";
-// 	};
-
-// 	return (page);
-// }

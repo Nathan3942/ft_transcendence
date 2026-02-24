@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 15:46:01 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/02/18 16:02:14 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/02/24 17:41:25 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,4 +30,5 @@ export type GameState = {
 	};
 
 	lastTickMs: number;
+	play?: { x: number; y: number; w: number; h: number };
 };

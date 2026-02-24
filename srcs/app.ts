@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/17 16:40:49 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/02/17 16:44:13 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/02/24 16:18:50 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,8 +34,11 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   // Register CORS with frontend URL from .env
   await app.register(cors, {
-    origin: isDev ? true : env.FRONTEND_URL  // Dev: all origins, Prod: only frontend
-  })
+    origin: isDev ? true : env.FRONTEND_URL,  // Dev: all origins, Prod: only frontend
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  });
 
   // Register rate limiting to protect against abuse
   await registerRateLimit(app)

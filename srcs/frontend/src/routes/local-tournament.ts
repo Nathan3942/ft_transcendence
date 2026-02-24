@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 16:32:13 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/02/04 19:18:16 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/02/24 17:29:02 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ import { makeAIPolicyP2 } from "../game/ai/policy";
 import { loadHardGenome, genomeForDifficulty, createKeyMap, keyboardToInput, bindKeyboard, mergeKeyboardWithAIP2 } from "./game-local-ai";
 
 /* MODIF 1 : URL de base de l'API backend pour sauvegarder le tournoi */
-const API_URL = "http://localhost:3000/api/v1";
+const API_URL = `http://${window.location.hostname}:3000/api/v1`;
 
 type Player = {
     id: number;

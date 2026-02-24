@@ -1,5 +1,6 @@
 /* centralise toutes les requetes a la database qui concernent les matchs*/
 
+import { getDatabase } from '../database';
 import { queryAll, queryOne, queryExecute } from '../database/queryWrapper'
 import { Match, MatchPlayer, MatchWithPlayers, MatchStatus } from '../models/matchModel'
 
@@ -65,8 +66,24 @@ export function createMatch({
 
 export function deleteMatch(id: string | number) {
 
-    queryExecute("DELETE FROM match_player WHERE match_id = ?", [id]);
-    return queryExecute('DELETE FROM matches WHERE id = ?', [id])
+    const db = getDatabase(); // selon ton projet
+
+    db.exec("BEGIN");
+
+    try {
+        queryExecute("DELETE FROM match_player WHERE match_id = ?", [id]);
+        const result = queryExecute("DELETE FROM matches WHERE id = ?", [id]);
+
+        db.exec("COMMIT");
+        return result;
+    }
+    catch (err) {
+        db.exec("ROLLBACK");
+        throw err;
+    }
+
+    // queryExecute("DELETE FROM match_player WHERE match_id = ?", [id]);
+    // return queryExecute('DELETE FROM matches WHERE id = ?', [id])
 }
 
 
