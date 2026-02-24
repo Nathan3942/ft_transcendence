@@ -13,32 +13,31 @@ import {
     deleteUser as deleteUserRepo
 } from '../repository/usersRepository'
 import { NotFoundError, BadRequestError } from '../utils/appErrors'
-import { User } from '../models/userModel'
+import { PublicUser } from '../models/userModel'
 
-export function getAllUsers(): User[] {
-    const users = getAllUsersRepo() as User[] //execute les fonctions du repo
+export function getAllUsers(): PublicUser[] {
+    const users = getAllUsersRepo()
     if (users.length === 0) {
-        throw new NotFoundError('No users in database') //ajoute la logique metier
+        throw new NotFoundError('No users in database')
     }
     return users
 }
 
-export function getUserById(id: string | number): User {
-    const user = getUserByIdRepo(id) as User | undefined
+export function getUserById(id: string | number): PublicUser {
+    const user = getUserByIdRepo(id)
     if (!user) {
         throw new NotFoundError('User not found')
     }
     return user
 }
 
-export async function createUser(username: string): Promise<User> {
-    if (!username) {
-        throw new BadRequestError('Missing username')
+export async function createUser(username: string, email: string, password_hash: string): Promise<PublicUser> {
+    if (!username || !email || !password_hash) {
+        throw new BadRequestError('Missing username, email or password_hash')
     }
 
     try {
-        const user = await createUserRepo({ username })
-        return user
+        return await createUserRepo({ username, email, password_hash })
     } catch (err: any) {
         if (err.message.includes('already exists')) {
             throw new BadRequestError('User already exists')
@@ -47,16 +46,19 @@ export async function createUser(username: string): Promise<User> {
     }
 }
 
-export function getOrCreateUser(username: string): User {
+export function getOrCreateUser(username: string): PublicUser {
     if (!username) {
         throw new BadRequestError('Missing username')
     }
     return getOrCreateByUsernameRepo(username)
 }
 
-export function updateUser(id: string | number, username: string): { id: number; username: string } {
-    if (!id || !username) {
-        throw new BadRequestError('Missing id or username')
+export function updateUser(
+    id: string | number,
+    fields: { username?: string; display_name?: string; avatar_url?: string }
+): PublicUser {
+    if (!id || Object.keys(fields).length === 0) {
+        throw new BadRequestError('Missing id or fields to update')
     }
 
     const userExist = getUserByIdRepo(id)
@@ -64,15 +66,12 @@ export function updateUser(id: string | number, username: string): { id: number;
         throw new NotFoundError('User not found')
     }
 
-    const updated = updateUserRepo(id, username)
+    const updated = updateUserRepo(id, fields)
     if (!updated) {
         throw new Error('Failed to update user')
     }
 
-    return {
-        id: typeof id === 'string' ? parseInt(id) : id,
-        username
-    }
+    return getUserByIdRepo(id)!
 }
 
 export function deleteUser(id: string | number): { message: string; id: number } {

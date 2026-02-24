@@ -44,8 +44,8 @@ export default async function usersRoutes(server: FastifyInstance) {
     /************************* PATCH USER **********************************/
     server.patch('/users/:id', async (request, reply) => {
         const { id } = request.params as { id: string }
-        const { username } = request.body as { username: string }
-        const updatedUser = userService.updateUser(id, username)
+        const fields = request.body as { username?: string; display_name?: string; avatar_url?: string }
+        const updatedUser = userService.updateUser(id, fields)
         return success(updatedUser)
     })
 }

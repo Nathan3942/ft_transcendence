@@ -12,10 +12,31 @@ export const initTables = (): void => {
 
   // users
   db.exec(`
-  CREATE TABLE IF NOT EXISTS users (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  username TEXT NOT NULL
-);
+    CREATE TABLE IF NOT EXISTS users (
+      id            INTEGER PRIMARY KEY AUTOINCREMENT,
+      username      TEXT NOT NULL UNIQUE,
+      email         TEXT NOT NULL UNIQUE,
+      password_hash TEXT NOT NULL,
+      display_name  TEXT UNIQUE,
+      avatar_url    TEXT,
+      is_online     INTEGER NOT NULL DEFAULT 0,
+      created_at    DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+  `)
+
+  // friends (demandes d'amis et statut)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS friends (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      requester_id INTEGER NOT NULL,
+      addressee_id INTEGER NOT NULL,
+      status       TEXT NOT NULL DEFAULT 'pending'
+                   CHECK(status IN ('pending', 'accepted', 'blocked')),
+      created_at   DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (requester_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (addressee_id) REFERENCES users(id) ON DELETE CASCADE,
+      UNIQUE (requester_id, addressee_id)
+    );
   `)
   // Table des tournois
   db.exec(`
