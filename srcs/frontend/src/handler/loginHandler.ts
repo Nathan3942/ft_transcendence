@@ -105,7 +105,7 @@ export async function fetchProtected<T = unknown>(endpoint: string, opts: Reques
 	return (await resp.json() as T);
 }
 
-export async function authenticate(): Promise<boolean | null> {
+export async function authenticate(): Promise<boolean | string> {
 	try {
 		const resp = await fetch(`${API_BASE}/auth/me`, {
 			method: "GET",
@@ -121,10 +121,10 @@ export async function authenticate(): Promise<boolean | null> {
 		}
 
 		console.warn("Unexpected auth/me status:", resp.status);
-		return null;
+		return resp.status.toString();
 	}
 	catch (err) {
 		console.error ("Error while checking auth:", err);
-		return null;
+		return "Error while checking auth";
 	}
 }
