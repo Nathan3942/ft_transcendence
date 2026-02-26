@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 14:42:50 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/02/19 17:39:59 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/02/26 07:32:46 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,8 +53,8 @@ function matchRow(m: Match, onDeleted: () => void): HTMLDivElement {
 	delBtn.textContent = "Delete";
 	delBtn.onclick = async () => {
 		const ok = confirm(`Delete match #${m.id} ?`);
-		if (!ok) return;
-
+		if (!ok) 
+			return;
 		try {
 		await deleteMatch(m.id);
 		onDeleted(); // refresh list

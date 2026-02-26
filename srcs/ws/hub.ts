@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/13 14:57:23 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/02/19 17:38:53 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/02/26 06:44:24 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,9 @@ export type WsSocket = WebSocket & {
     
     _wsId?: string;
     _userId?: string;
+    _clientId?: string;
+    //surment en garder que un au final a voir avec l'auth
+    _slot?: "left" | "right";
 }
 
 // envoie msg au socket

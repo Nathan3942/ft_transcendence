@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 16:56:00 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/02/23 16:44:00 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/02/26 08:13:30 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,7 +78,7 @@ function render(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, state:
 	ctx.fillStyle = "white";
 	ctx.font = "120px 'VT323'";
 	ctx.textAlign = "center";
-	ctx.fillText("COCO_PONG", canvas.width / 2, state.playY - 35);
+	ctx.fillText("COCO_PONG", canvas.width / 2, state.playY - 20);
 
 	if (state.mod === "3p" || state.mod === "4p") {
 		ctx.beginPath();

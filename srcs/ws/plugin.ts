@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/13 15:48:09 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/02/19 17:54:52 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/02/26 07:57:57 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,10 @@ import { WsHub, type WsSocket } from "./hub";
 import type { WsClientEvent, WsEnvelope, WsRoom } from "./events";
 import { wsAuthenticate } from "./auth";
 import { GameManager } from "../game/gameManager";
+import { startOnlineMatch } from "../frontend/src/services/online";
+import { getCurrentMatchId } from "../frontend/src/services/onlineStore";
+
+import { updateMatchStatus } from "../services/matchService";
 
 type WsConnection = { socket: WebSocket };
 
@@ -138,18 +142,64 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 				
 				const room = `game:${msg.gameId}` as WsRoom;
 
+				const game = gameManager.getAndCreatGame(msg.gameId);
+
+				ws._clientId = msg.clientId;
+
+				const leftId  = game.players.left?.clientId;
+  				const rightId = game.players.right?.clientId;
+
+				const isLeft = leftId === ws._clientId;
+				const isRight = rightId === ws._clientId;
+
+				let slot: "left" | "right" | null = null;
+
+				if (isLeft)
+					slot = "left";
+				else if (isRight)
+					slot = "right";
+				else {
+					if (!leftId)
+						slot = "left";
+					else if (!rightId)
+						slot = "right";
+					else
+						slot = null;
+				}
+
+				if (!slot) {
+					hub.send(ws, { type: "match_full" });
+					setTimeout(() => ws.close(1008, "Match full"));
+					console.log("Match full");
+					
+					return;
+				}
+
+				ws._slot = slot;
+
+				gameManager.registerPlayer(msg.gameId, slot, ws._clientId, ws._userId);
+
 				hub.join(ws, room);
 
-				const count = hub.count(room);
+				let count = 0;
+				if (game.players.left?.clientId)
+					count++;
+				if (game.players.right?.clientId)
+					count++;
+		
+				hub.send(ws, { type: "assigned_slot", gameId: msg.gameId, slot });
 
 				if (count < 2) {
 					hub.send(ws, { type: "match_waiting", gameId: msg.gameId, count });
 				}
 				else {
+					updateMatchStatus(msg.gameId, "in_progress");
+
 					hub.broadcast(room, { type: "match_ready", gameId: msg.gameId, count });
 				}
 
 				gameManager.joinGame(ws, msg.gameId);
+				
 				return;
 			}
 

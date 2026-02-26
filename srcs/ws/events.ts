@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/13 14:47:51 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/02/19 17:53:49 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/02/26 07:15:46 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,8 @@ export type WsServerEvent =
 	| { type: "game_event"; gameId: string; event: string; payload?: unknown }
 	| { type: "tournament:update"; tournamentId: string; payload: unknown }
 	| { type: "match_waiting"; gameId: string; count: number }
-	| { type: "match_ready"; gameId: string; count: number };
+	| { type: "match_ready"; gameId: string; count: number }
+	| { type: "assigned_slot"; gameId: string; slot: "left" | "right" }
+	| { type: "match_full" };
 
 export type WsEnvelope<T extends { type: string }> = T;

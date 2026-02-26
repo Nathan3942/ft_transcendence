@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 16:53:19 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/02/19 15:40:22 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/02/26 07:47:35 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,19 @@ export async function createOnlineMatch(): Promise<Match> {
         method: "POST",
         body: JSON.stringify({ tournamentId: null, round: null, status: "pending" }),
         });
+    return res.data;
+}
+
+export async function startOnlineMatch(matchId: string): Promise<Match> {
+    
+	const res = await api<{ success: boolean; data: Match }>(
+        `/matches/${matchId}/status`,
+        {
+            method: "PATCH",
+            body: JSON.stringify({ status: "in_progress" }),
+        }
+    );
+
     return res.data;
 }
 

@@ -6,13 +6,18 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 17:15:35 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/02/24 18:04:53 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/02/26 07:34:35 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import { getCurrentMatchId } from "../services/onlineStore";
 import { draw1v1 } from "../game/pong_render";
 import { toRenderState, type RenderState1v1, type ServerGameState } from "../game/server_state_adapter";
+
+
+function navigate(path: string) {
+	window.dispatchEvent(new CustomEvent("navigate", { detail: { path } }));
+}
 
 
 type Dir = -1 | 0 | 1;
@@ -27,10 +32,12 @@ function randomId(): string {
 
 function getClientId(): string {
 	const key = "clientId";
-	let v = localStorage.getItem(key);
+	// a voir ce quon garde en pratique
+	// let v = localStorage.getItem(key);
+	let v = sessionStorage.getItem(key);
 	if (!v) {
 		v = randomId();
-		localStorage.setItem(key, v);
+		sessionStorage.setItem(key, v);
 	}
 	return (v);
 }
@@ -153,7 +160,7 @@ export default function onlineMatch(): HTMLDivElement {
 
 	const ws = new WebSocket(`ws://${window.location.hostname}:3000/ws`);
 
-	let mySlot: "left" | "right" = "right";
+	let mySlot: "left" | "right" = "left";
 
 	let unbindInput: null | (() => void) = null;
 
@@ -174,6 +181,7 @@ export default function onlineMatch(): HTMLDivElement {
 				clientId: getClientId(),
 			})
 		);
+		console.log(`client id = ${getClientId()}`)
 	};
 
 	ws.onmessage = (e) => {
@@ -194,22 +202,21 @@ export default function onlineMatch(): HTMLDivElement {
 		if (msg.type === "match_ready") {
 
 			status.textContent = `Match #${msg.gameId}: player found! Starting...`;
-
-			const matchId = getCurrentMatchId();
-			if (matchId && !unbindInput) {
-				unbindInput = bindInput(ws, String(matchId), mySlot);
-			}
 			return;
 		}
 		if (msg.type === "assigned_slot" && (msg.slot === "left" || msg.slot === "right")) {
 			
 			mySlot = msg.slot;
-			if (unbindInput) {
-				unbindInput();
-				const matchId = getCurrentMatchId();
-				if (matchId) unbindInput = bindInput(ws, String(matchId), mySlot);
+			const matchId = getCurrentMatchId();
+			if (matchId && !unbindInput) {
+				unbindInput = bindInput(ws, String(matchId), mySlot);
 			}
+			console.log("RECV assigned_slot =", msg.slot, "clientId =", getClientId());
 			return;
+		}
+		if (msg.type === "match_full") {
+			confirm("Match full");
+			navigate("/browse-games");
 		}
 
 		// --- tick serveur

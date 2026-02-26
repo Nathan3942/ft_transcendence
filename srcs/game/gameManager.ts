@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 15:45:30 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/02/24 18:12:27 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/02/26 07:25:32 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,10 +21,15 @@ const H = 700;
 const W = 1000;
 const PADDLE_H = 120;
 
+type Players = {
+	left?: { clientId: string, userId?: string };
+	right?: { clientId: string, userId?: string };
+}
+
 
 export class GameManager {
 	
-	private games = new Map<GameId, { state: GameState; loop: GameLoop }>();
+	private games = new Map<GameId, { state: GameState; loop: GameLoop; players: Players }>();
 
 	constructor(
 		private log: FastifyBaseLogger, 
@@ -51,11 +56,12 @@ export class GameManager {
 			(evt) => this.broadcastToRoom(`game:${id}`, { type: "game_event", evt })
 		);
 
-		this.games.set(id, { state, loop });
+
+		this.games.set(id, { state, loop, players: {} });
 	}
 
 	joinGame(ws: WsSocket, gameId: GameId) {
-		this.createGame(gameId);
+		// this.createGame(gameId);
 		const g = this.games.get(gameId)!;
 
 		ws.send(JSON.stringify({ type: "game_sync", state: g.state }));
@@ -83,9 +89,33 @@ export class GameManager {
 	}
 
 	input(gameId: GameId, slot: PlayerSlot, input: PaddleInput) {
+		
 		const g = this.games.get(gameId);
 		if (!g)
 			return;
 		g.loop.setInput(slot, input);
+	}
+
+	registerPlayer(gameId: GameId, slot: "left" | "right", clientId: string, userId?: string) {
+
+		const game = this.games.get(gameId)!;
+		game.players[slot] = { clientId, userId };
+	}
+
+	isCurentPlayer(gameId: GameId, slot: "left" | "right", clientId: string): boolean {
+		const game = this.games.get(gameId);
+		return (game?.players[slot]?.clientId === clientId);
+	}
+
+	getAndCreatGame(gameId: GameId) {
+		this.createGame(gameId);
+		return this.games.get(gameId)!;
+	}
+
+	IsRegister(gameId: GameId, clientId: string): boolean {
+		if (clientId === this.games.get(gameId)?.players.left?.clientId || clientId === this.games.get(gameId)?.players.left?.clientId)
+			return (true);
+		else
+			return (false);
 	}
 }
