@@ -2,7 +2,7 @@ import type { loginRequest } from "../interfaces/properties";
 
 export const API_BASE = "/api/v1";
 
-export async function loginHandler(payload: loginRequest): Promise<string> {
+export async function loginHandler(payload: loginRequest): Promise<void> {
 	const resp = await fetch(`${API_BASE}/auth/login`, {
 		method: "POST",
 		headers: {
@@ -16,11 +16,9 @@ export async function loginHandler(payload: loginRequest): Promise<string> {
 		const err = await resp.text();
 		throw new Error(`Login failed: ${resp.status}: ${err}`);
 	}
-
-	return await resp.json();
 }
 
-export async function registerHandler(payload: loginRequest) {
+export async function registerHandler(payload: loginRequest): Promise<void> {
 	const resp = await fetch(`${API_BASE}/auth/register`, {
 		method: "POST",
 		headers: {
@@ -87,19 +85,23 @@ export async function fetchProtected<T = unknown>(endpoint: string, opts: Reques
 	if (resp.status === 401) {
 		await refreshAccess();
 
-		const retry = await fetch(`${API_BASE}/auth/refresh`, {
+		const retry = await fetch(`${API_BASE}${endpoint}`, {
 			...opts,
 			credentials: "include"
-		});
-
-		if (!retry.ok)
+		})
+		
+		if (!retry.ok) {
+			console.error("Error while fetching resource:", resp.text)
 			return null;
-		return (await retry.json() as T)
+		}
+
+		return (retry as T);
 	}
 
-	if (!resp.ok)
+	if (!resp.ok) {
+		console.error("Error while fetching resource:", resp.text)
 		return null;
-
+	}
 	return (await resp.json() as T);
 }
 
