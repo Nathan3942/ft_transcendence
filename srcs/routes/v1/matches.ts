@@ -25,15 +25,17 @@ export default async function matchesRoutes(server: FastifyInstance) {
 
     /************************* CREATE MATCH **********************************/
     server.post('/matches', async (request, _reply) => {
-        const { tournamentId, round, status } = request.body as {
+        const { tournamentId, round, status, mode } = request.body as {
             tournamentId: number | null;
             round: number | null;
             status?: 'pending' | 'in_progress' | 'finished';
+            mode?: '1v1' | '2v2' | '3p' | '4p';
         }
         const match = matchService.createMatch(
             tournamentId ?? null,
             round ?? null,
-            status ?? 'pending'
+            status ?? 'pending',
+            mode ?? '1v1'
         )
         return success(match)
     })
@@ -106,19 +108,21 @@ export default async function matchesRoutes(server: FastifyInstance) {
 
     /************************* SAVE MATCH RESULT **********************************/
     server.post('/matches/result', async (request, _reply) => {
-        const { player1Id, player2Id, scorePlayer1, scorePlayer2, winnerId } = request.body as {
+        const { player1Id, player2Id, scorePlayer1, scorePlayer2, winnerId, mode } = request.body as {
             player1Id: number;
             player2Id: number | null;
             scorePlayer1: number;
             scorePlayer2: number;
             winnerId: number | null;
+            mode: '1v1' | '2v2' | '3p' | '4p';
         }
         const match = matchService.saveMatchResult(
             player1Id,
             player2Id,
             scorePlayer1,
             scorePlayer2,
-            winnerId
+            winnerId,
+            mode
         )
         return success(match)
     })

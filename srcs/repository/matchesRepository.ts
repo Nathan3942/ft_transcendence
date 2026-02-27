@@ -2,7 +2,7 @@
 
 import { getDatabase } from '../database';
 import { queryAll, queryOne, queryExecute } from '../database/queryWrapper'
-import { Match, MatchPlayer, MatchWithPlayers, MatchStatus } from '../models/matchModel'
+import { Match, MatchPlayer, MatchWithPlayers, MatchStatus, ModeStatus } from '../models/matchModel'
 
 
 export function getAllMatches(): Match[] {
@@ -12,6 +12,7 @@ export function getAllMatches(): Match[] {
             tournament_id as tournamentId,
             round,
             status,
+            mode,
             winner_id as winnerId,
             started_at as startedAt,
             finished_at as finishedAt,
@@ -28,6 +29,7 @@ export function getMatchById(id: string | number): Match | null {
             tournament_id as tournamentId,
             round,
             status,
+            mode,
             winner_id as winnerId,
             started_at as startedAt,
             finished_at as finishedAt,
@@ -41,21 +43,24 @@ export function getMatchById(id: string | number): Match | null {
 export function createMatch({
     tournamentId,
     round,
-    status = 'pending'
+    status = 'pending',
+    mode = '1v1',
 }: {
     tournamentId: number | null;
     round: number | null;
     status?: MatchStatus;
+    mode?: ModeStatus;
 }): Match {
     const result = queryExecute(
-        'INSERT INTO matches (tournament_id, round, status) VALUES (?, ?, ?)',
-        [tournamentId, round, status]
+    'INSERT INTO matches (tournament_id, round, status, mode) VALUES (?, ?, ?, ?)',
+    [tournamentId, round, status, mode]
     );
     return {
         id: result.lastInsertRowid as number,
         tournamentId,
         round,
         status,
+        mode,
         winnerId: null,
         startedAt: null,
         finishedAt: null,
@@ -182,6 +187,7 @@ export function getMatchesByStatus(status: MatchStatus): Match[] {
             tournament_id as tournamentId,
             round,
             status,
+            mode,
             winner_id as winnerId,
             started_at as startedAt,
             finished_at as finishedAt,
@@ -197,7 +203,8 @@ export function createFinishedMatchWithPlayers(
     player1Id: number,
     scorePlayer1: number,
     player2Id: number | null,
-    scorePlayer2: number
+    scorePlayer2: number,
+    mode: ModeStatus
 ): MatchWithPlayers {
     const now = new Date().toISOString()
 
@@ -233,6 +240,7 @@ export function createFinishedMatchWithPlayers(
         tournamentId: null,
         round: null,
         status: 'finished',
+        mode,
         winnerId,
         startedAt: null,
         finishedAt: now,

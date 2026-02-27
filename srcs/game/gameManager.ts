@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 15:45:30 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/02/26 07:25:32 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/02/27 12:34:55 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@ import type { WsSocket } from "../ws/hub";
 import type { GameId, GameState, PaddleInput, PlayerSlot } from "./types";
 import { GameLoop } from "./gameLoop";
 import { lookup } from "node:dns";
+import { ModeId } from "../frontend/src/game/pong_core";
 
 
 const H = 700;
@@ -36,13 +37,14 @@ export class GameManager {
 		private broadcastToRoom: (room: string, payload: any) => void
 	) {}
 
-	createGame(id: GameId) {
+	createGame(id: GameId, md: ModeId) {
 		if (this.games.has(id))
 			return;
 
 		const state: GameState = {
 			id, 
 			status: "waiting",
+			mode: md,
 			score: { left: 0, right: 0 },
 			ball: { x: (W / 2) + 100, y: (H / 2) + 100, vx: 200, vy: 120 },
 			paddle: { left: { y: H / 2 - PADDLE_H / 2, vy: 0 }, right: { y: H / 2 - PADDLE_H / 2, vy: 0 } },
@@ -107,8 +109,8 @@ export class GameManager {
 		return (game?.players[slot]?.clientId === clientId);
 	}
 
-	getAndCreatGame(gameId: GameId) {
-		this.createGame(gameId);
+	getAndCreatGame(gameId: GameId, mode: ModeId) {
+		this.createGame(gameId, mode);
 		return this.games.get(gameId)!;
 	}
 

@@ -6,11 +6,13 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/13 14:47:51 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/02/26 07:15:46 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/02/27 12:33:22 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import { number, string, stringbool } from "zod";
+import { ModeId } from "../frontend/src/game/pong_core";
+import { GameSlot, ModeStr } from "./plugin";
 
 export type WsRoom =
 	| `user:${string}`
@@ -30,7 +32,7 @@ export type WsClientEvent =
 	| { type: "subscribe"; room: WsRoom }
 	| { type: "unsubscribe"; room: WsRoom }
 	// Remote player
-	| { type: "join_game"; gameId: string; clientId: string }
+	| { type: "join_game"; gameId: string; clientId: string, mode: ModeId }
 	| { type: "leave_game"; gameId: string }
 	| { type: "input"; gameId: string; slot: PlayerSlot; input: PaddleInput };
 
@@ -56,9 +58,9 @@ export type WsServerEvent =
 	| { type: "game_tick"; state: GameState }
 	| { type: "game_event"; gameId: string; event: string; payload?: unknown }
 	| { type: "tournament:update"; tournamentId: string; payload: unknown }
-	| { type: "match_waiting"; gameId: string; count: number }
-	| { type: "match_ready"; gameId: string; count: number }
-	| { type: "assigned_slot"; gameId: string; slot: "left" | "right" }
-	| { type: "match_full" };
+	| { type: "match_waiting"; gameId: string; count: number, playerNeeded: number, mode: ModeStr}
+	| { type: "match_ready"; gameId: string; count: number, mode: ModeStr }
+	| { type: "assigned_slot"; gameId: string; slot: GameSlot }
+	| { type: "match_full", gameId: string };
 
 export type WsEnvelope<T extends { type: string }> = T;

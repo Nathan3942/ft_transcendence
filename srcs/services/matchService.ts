@@ -22,7 +22,7 @@ import {
 import { getTournamentById } from '../repository/tournamentsRepository'
 import { getById as getUserById } from '../repository/usersRepository'
 import { NotFoundError, BadRequestError } from '../utils/appErrors'
-import { Match, MatchPlayer, MatchWithPlayers, MatchStatus } from '../models/matchModel'
+import { Match, MatchPlayer, MatchWithPlayers, MatchStatus, ModeStatus } from '../models/matchModel'
 
 /**
  * Get all matches
@@ -58,7 +58,8 @@ export function getMatchById(id: string | number): MatchWithPlayers {
 export function createMatch(
     tournamentId: number | null,
     round: number | null,
-    status: MatchStatus = 'pending'
+    status: MatchStatus = 'pending',
+    mode: ModeStatus = '1v1'
 ): Match {
     // Validate status
     const validStatuses: MatchStatus[] = ['pending', 'in_progress', 'finished']
@@ -83,7 +84,7 @@ export function createMatch(
         throw new BadRequestError('round must be a positive integer or null')
     }
 
-    const match = createMatchRepo({ tournamentId, round, status })
+    const match = createMatchRepo({ tournamentId, round, status, mode })
     return match
 }
 
@@ -384,7 +385,8 @@ export function saveMatchResult(
     player2Id: number | null,
     scorePlayer1: number,
     scorePlayer2: number,
-    winnerId: number | null
+    winnerId: number | null,
+    mode: ModeStatus
 ): MatchWithPlayers {
     // Validate player1Id
     if (!player1Id || player1Id <= 0) {
@@ -442,7 +444,8 @@ export function saveMatchResult(
         player1Id,
         scorePlayer1,
         player2Id,
-        scorePlayer2
+        scorePlayer2,
+        mode
     )
 
     return match

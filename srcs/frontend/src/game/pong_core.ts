@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/19 10:11:49 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/02/03 15:17:22 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/02/27 10:54:06 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@ export type PongInput = {
 
 export type PongEvents = {
 	onScore?:		(player: 1 | 2, s1: number, s2: number) => void;
-	onGameOver?:	(winner: 1 | 2 | 3 | 4, s1: number, s2:number) => void;
+	onGameOver?:	(winner: 1 | 2 | 3 | 4, s1: number, s2:number, mode: ModeId) => void;
 	onStateChange?:	(phase: PongState["phase"]) => void;
 };
 
@@ -456,14 +456,14 @@ function applyScore(state: PongState, cfg: PongConfig, event?: PongEvents, playe
 	if (state.scoreP1 >= cfg.winningScore) {
 		state.phase = "GAMEOVER";
 		state.winner = 1;
-		event?.onGameOver?.(1, state.scoreP1, state.scoreP2);
+		event?.onGameOver?.(1, state.scoreP1, state.scoreP2, state.mod);
 		event?.onStateChange?.(state.phase);
 		return;
 	}
 	if (state.scoreP2 >= cfg.winningScore) {
 		state.phase = "GAMEOVER";
 		state.winner = 2;
-		event?.onGameOver?.(2, state.scoreP1, state.scoreP2);
+		event?.onGameOver?.(2, state.scoreP1, state.scoreP2, state.mod);
 		event?.onStateChange?.(state.phase);
 		return;
 	}
@@ -489,7 +489,7 @@ function applyScore4P(state: PongState, cfg: PongConfig, event?: PongEvents) {
 		const aliveIndex = state.paddles.findIndex(p => p.life > 0 && p.activate);
 		state.winner = (aliveIndex >= 0 ? (aliveIndex + 1) as 1 | 2 | 3 | 4 : null);
 		state.phase = "GAMEOVER";
-		event?.onGameOver?.(2, state.scoreP1, state.scoreP2);
+		event?.onGameOver?.(2, state.scoreP1, state.scoreP2, state.mod);
 		event?.onStateChange?.(state.phase);
 		return;
 	}

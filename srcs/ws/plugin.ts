@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/13 15:48:09 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/02/26 07:57:57 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/02/27 12:33:05 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,14 +21,20 @@ import type WebSocket from "ws";
 
 import { WsHub, type WsSocket } from "./hub";
 import type { WsClientEvent, WsEnvelope, WsRoom } from "./events";
-import { wsAuthenticate } from "./auth";
+
 import { GameManager } from "../game/gameManager";
-import { startOnlineMatch } from "../frontend/src/services/online";
-import { getCurrentMatchId } from "../frontend/src/services/onlineStore";
-
 import { updateMatchStatus } from "../services/matchService";
+import { getMatchById } from "../repository/matchesRepository";
 
-type WsConnection = { socket: WebSocket };
+
+export type ModeStr = "1v1" | "2v2" | "3p" | "4p";
+
+type Slot1v1 = "left" | "right";
+type Slot2v2 = "left1" | "left2" | "right1" | "right2";
+type Slot3p = "left" | "right" | "top";
+type Slot4p = "left" | "right" | "top" | "bottom";
+
+export type GameSlot = Slot1v1 | Slot2v2 | Slot3p | Slot4p;
 
 
 // etend le type FastifyInstance pour l'ajouter au wsHub
@@ -46,6 +52,61 @@ function parseJson<T>(raw: string): T | null {
     catch {
         return null;
     }
+}
+
+function normalizeMode(m: unknown): ModeStr {
+	if (m === "1v1" || m === "2v2" || m === "3p" || m === "4p") return m;
+	return "1v1";
+}
+
+function slotsForMode(mode: ModeStr): GameSlot[] {
+	switch (mode) {
+		case "2v2":
+		return ["left1", "left2", "right1", "right2"];
+		case "3p":
+		return ["left", "right", "top"];
+		case "4p":
+		return ["left", "right", "top", "bottom"];
+		default:
+		return ["left", "right"];
+	}
+}
+
+
+/**
+ * Retourne le slot si clientId est déjà enregistré.
+ * Sinon retourne le premier slot libre.
+ * Sinon null si match plein.
+ */
+function pickSlotForClient(game: any, mode: ModeStr, clientId: string): GameSlot | null {
+  const slots = slotsForMode(mode);
+
+  // 1) Reconnect : le clientId existe déjà -> on lui redonne son slot
+  for (const s of slots) {
+    if (game.players?.[s]?.clientId === clientId) return s;
+  }
+
+  // 2) Nouveau joueur : premier slot vide
+  for (const s of slots) {
+    if (!game.players?.[s]?.clientId) return s;
+  }
+
+  return null;
+}
+
+function countRegisteredPlayers(game: any, mode: ModeStr): number {
+  const slots = slotsForMode(mode);
+  let c = 0;
+  for (const s of slots) {
+    if (game.players?.[s]?.clientId) c++;
+  }
+  return c;
+}
+
+function randomId(): string {
+  const g: any = globalThis as any;
+  if (g.crypto?.randomUUID) return g.crypto.randomUUID();
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 }
 
 
@@ -142,36 +203,23 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 				
 				const room = `game:${msg.gameId}` as WsRoom;
 
-				const game = gameManager.getAndCreatGame(msg.gameId);
+				const match = getMatchById(msg.gameId);
+				const mode = normalizeMode(match?.mode);
+
+				const game = gameManager.getAndCreatGame(msg.gameId, mode);
 
 				ws._clientId = msg.clientId;
 
-				const leftId  = game.players.left?.clientId;
-  				const rightId = game.players.right?.clientId;
-
-				const isLeft = leftId === ws._clientId;
-				const isRight = rightId === ws._clientId;
-
-				let slot: "left" | "right" | null = null;
-
-				if (isLeft)
-					slot = "left";
-				else if (isRight)
-					slot = "right";
-				else {
-					if (!leftId)
-						slot = "left";
-					else if (!rightId)
-						slot = "right";
-					else
-						slot = null;
-				}
+				const slot = pickSlotForClient(game, mode, ws._clientId);
 
 				if (!slot) {
-					hub.send(ws, { type: "match_full" });
-					setTimeout(() => ws.close(1008, "Match full"));
-					console.log("Match full");
-					
+
+					hub.send(ws, { type: "match_full", gameId: msg.gameId });
+					setTimeout(() => {
+						try {
+						ws.close(1008, "Match full");
+						} catch {}
+					}, 30);
 					return;
 				}
 
@@ -180,32 +228,29 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 				gameManager.registerPlayer(msg.gameId, slot, ws._clientId, ws._userId);
 
 				hub.join(ws, room);
+				
+				hub.send(ws, { type: "assigned_slot", gameId: msg.gameId, slot, mode });
 
-				let count = 0;
-				if (game.players.left?.clientId)
-					count++;
-				if (game.players.right?.clientId)
-					count++;
+				const count = countRegisteredPlayers(game, mode);
+        		const playerNeeded = slotsForMode(mode).length;
+
 		
-				hub.send(ws, { type: "assigned_slot", gameId: msg.gameId, slot });
-
-				if (count < 2) {
-					hub.send(ws, { type: "match_waiting", gameId: msg.gameId, count });
+				if (count < playerNeeded) {
+					hub.send(ws, { type: "match_waiting", gameId: msg.gameId, count, playerNeeded, mode });
+					return;
 				}
-				else {
-					updateMatchStatus(msg.gameId, "in_progress");
-
-					hub.broadcast(room, { type: "match_ready", gameId: msg.gameId, count });
-				}
+				
+				updateMatchStatus(msg.gameId, "in_progress");
+				hub.broadcast(room, { type: "match_ready", gameId: msg.gameId, count, mode });
 
 				gameManager.joinGame(ws, msg.gameId);
-				
+
 				return;
 			}
 
 			if (msg.type === "input") {
 
-				gameManager.input(msg.gameId, msg.slot, msg.input);
+				gameManager.input(msg.gameId, msg.slot as any, msg.input as any);
 				return;
 			}
 
@@ -234,9 +279,4 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 
 });
 
-function randomId(): string {
-	const g: any = globalThis as any;
-	if (g.crypto?.randomUUID)
-		return (g.crypto.randomUUID());
-	return (`${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`);
-}
+

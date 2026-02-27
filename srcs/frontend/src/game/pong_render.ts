@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/23 16:55:07 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/02/26 08:16:51 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/02/27 08:36:34 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,8 @@ export function draw1v1(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement
 	ctx.strokeStyle = "white";
 	ctx.lineWidth = 2;
 	ctx.strokeRect(state.playX, state.playY, state.playW, state.playH);
+	// console.log("Playfield: ");
+	// console.log(state.playX, state.playY, state.playW, state.playH);
 
 	ctx.beginPath();
 	ctx.fillStyle = "black";

@@ -6,13 +6,17 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 17:15:35 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/02/26 07:34:35 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/02/27 11:52:29 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-import { getCurrentMatchId } from "../services/onlineStore";
+import { getCurrentMatchId, getCurrentMatchMode, setCurrentMatchId } from "../services/onlineStore";
 import { draw1v1 } from "../game/pong_render";
 import { toRenderState, type RenderState1v1, type ServerGameState } from "../game/server_state_adapter";
+// import { createOnlineMatch } from "../services/online";
+// import makeButtonBlock from "../components/button/buttonBlock";
+// import { createButton } from "../components/button/button";
+
 
 
 function navigate(path: string) {
@@ -26,7 +30,7 @@ function randomId(): string {
 	
 	const c: any = globalThis.crypto as any;
 	if (c && typeof	c.randomUUID === "function")
-		return (c.randomUUID);
+		return c.randomUUID;
 	return (`${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`);
 }
 
@@ -113,7 +117,7 @@ function bindInput(ws: WebSocket, gameId: string, slot: "left" | "right") {
 
 
 export default function onlineMatch(): HTMLDivElement {
-
+	
 	const page = document.createElement("div");
 	page.className = "flex flex-col flex-1 p-6 gap-4";
 
@@ -174,11 +178,14 @@ export default function onlineMatch(): HTMLDivElement {
 			return;
 		}
 
+		console.log(`curent match mode ${getCurrentMatchMode()}`);
+
 		ws.send(
 			JSON.stringify({
 				type: "join_game",
 				gameId: matchId,
 				clientId: getClientId(),
+				mode: getCurrentMatchMode(),
 			})
 		);
 		console.log(`client id = ${getClientId()}`)
@@ -195,7 +202,7 @@ export default function onlineMatch(): HTMLDivElement {
 		}
 
 		if (msg.type === "match_waiting") {
-			status.textContent = `Match #${msg.gameId}: waiting for 2nd player (${msg.count}/2)...`;
+			status.textContent = `Match #${msg.gameId}: waiting for 2nd player (${msg.count}/${msg.playerNeeded})...`;
 			return;
 		}
 
@@ -275,4 +282,16 @@ export default function onlineMatch(): HTMLDivElement {
 
 	return page;
 }
+
+
+
+// export function ModeOnlineMatch() {
+
+
+
+// 	const match = createOnlineMatch();
+// 	setCurrentMatchId(String(match.id));
+// 	onlineMatch();
+// }
+
 

@@ -3,7 +3,7 @@ import makeButtonBlock from "../components/button/buttonBlock";
 
 import { startPong } from "../game/pong";
 /* MODIF 1 : on importe PongEvents pour typer le callback onGameOver */
-import type { PongEvents } from "../game/pong_core";
+import type { ModeId, PongEvents } from "../game/pong_core";
 
 /* URL de base de l'API backend */
 const API_URL = `http://${window.location.hostname}:3000/api/v1`;
@@ -51,7 +51,7 @@ async function createLocalMatch(outer: HTMLDivElement, p1Name: string, p2Name: s
 	/* Etape B : callback appelé quand le match se termine
 	   → envoie le résultat au backend via POST /matches/result */
 	const events: PongEvents = {
-		onGameOver: async (winner: 1 | 2 | 3 | 4, s1: number, s2: number) => {
+		onGameOver: async (winner: 1 | 2 | 3 | 4, s1: number, s2: number, md: ModeId) => {
 			if (winner !== 1 && winner !== 2) return;
 			const winnerId = winner === 1 ? p1Id : p2Id;
 			try {
@@ -64,6 +64,7 @@ async function createLocalMatch(outer: HTMLDivElement, p1Name: string, p2Name: s
 						scorePlayer1: s1,
 						scorePlayer2: s2,
 						winnerId,
+						mode: md
 					}),
 				});
 				console.log(`Match sauvegardé : ${p1Name} ${s1} - ${s2} ${p2Name}`);

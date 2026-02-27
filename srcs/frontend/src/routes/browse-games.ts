@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 14:42:50 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/02/26 07:32:46 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/02/27 10:28:50 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ function matchRow(m: Match, onDeleted: () => void): HTMLDivElement {
 
 	const meta = document.createElement("div");
 	meta.className = "text-sm opacity-70";
-	meta.textContent = `Status: ${m.status}`;
+	meta.textContent = `Status: ${m.status}, Mode: ${m.mode}`;
 
 	left.append(title, meta);
 
