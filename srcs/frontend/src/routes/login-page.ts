@@ -24,18 +24,18 @@ function createLoginForm(): HTMLDivElement {
 
 	textInput.type = "text";
 	textInput.placeholder = "Username";
-	textInput.className = "mb-2 w-full border p-2";
+	textInput.className = "mb-2 w-full border p-2 boder-gray-50";
 
 	passInput.type = "password";
 	passInput.placeholder = "Password";
-	passInput.className = "mb-4 w-full border p-2";
+	passInput.className = "mb-4 w-full border p-2 boder-gray-50";
 
 	errorMsg.className = "text-red-600 mb-2 hidden";
 
 	form.append(textInput, passInput, errorMsg, createButton({
 		id: "login-button",
 		buttonText: "Login",
-		extraClasses: "w-full bg-blue-500 p-2 hover:bg-blue-600 dark:bg-blue-900 dark:hover:bg-blue-950",
+		extraClasses: "w-full bg-blue-500 p-2 hover:bg-blue-600 dark:bg-blue-900 dark:hover:bg-blue-950 transition-color duration-200",
 		type: "submit"
 	}));
 
@@ -50,7 +50,7 @@ function createLoginForm(): HTMLDivElement {
 			}
 		},
 		buttonText: "Register.",
-		extraClasses: "text-blue-500 underline hover:text-blue-700",
+		extraClasses: "text-blue-500 underline hover:text-blue-700 transition-color duration-200",
 		type: "button"
 	}));
 	
@@ -62,16 +62,31 @@ function createLoginForm(): HTMLDivElement {
 		errorMsg.textContent = "";
 		errorMsg.classList.add("hidden");
 
+		if (textInput.classList.contains("border-red-500")) {
+			textInput.classList.add("boder-gray-50");
+			textInput.classList.remove("border-red-500");
+		}
+
+		if (passInput.classList.contains("border-red-500")) {
+			passInput.classList.add("boder-gray-50");
+			passInput.classList.remove("border-red-500");
+		}
+
 		const payload = {
 			username: textInput.value.trim(),
 			password: passInput.value
 		};
 
 		try {
-			if (payload.username.length === 0)
+			if (payload.username.length === 0) {
+				textInput.classList.add("border-red-500");
+				textInput.classList.remove("boder-gray-50");
 				throw new Error("Username field empty");
-			else if (payload.password.trim().length === 0)
+			} else if (payload.password.trim().length === 0) {
+				passInput.classList.add("border-red-500");
+				passInput.classList.remove("boder-gray-50");
 				throw new Error("Password field empty");
+			}
 			
 			const result = await loginHandler(payload);
 			console.log("Login succeeded:", result);
@@ -127,7 +142,7 @@ function createRegistrationForm(): HTMLDivElement {
 	form.append(text, pass, passConfirm, errorMsg, createButton({
 		id: "register-button",
 		buttonText: "Register",
-		extraClasses: "w-full bg-blue-500 p-2 hover:bg-blue-600 dark:bg-blue-900 dark:hover:bg-blue-950",
+		extraClasses: "w-full bg-blue-500 p-2 hover:bg-blue-600 dark:bg-blue-900 dark:hover:bg-blue-950 transition-color duration-200",
 		type: "submit"
 	}));
 
@@ -142,7 +157,7 @@ function createRegistrationForm(): HTMLDivElement {
 			}
 		},
 		buttonText: "Login.",
-		extraClasses: "text-blue-500 underline hover:text-blue-700",
+		extraClasses: "text-blue-500 underline hover:text-blue-700 transition-color duration-200",
 		type: "button",
 	}))
 
@@ -154,18 +169,46 @@ function createRegistrationForm(): HTMLDivElement {
 		errorMsg.innerText = "";
 		errorMsg.classList.add("hidden");
 
+		if (text.classList.contains("border-red-500")) {
+			text.classList.add("boder-gray-50");
+			text.classList.remove("border-red-500");
+		}
+
+		if (pass.classList.contains("border-red-500")) {
+			pass.classList.add("boder-gray-50");
+			pass.classList.remove("border-red-500");
+		}
+
+		if (passConfirm.classList.contains("border-red-500")) {
+			passConfirm.classList.add("boder-gray-50");
+			passConfirm.classList.remove("border-red-500");
+		}
+
 		const payload = {
 			username: text.value.trim(),
 			password: passConfirm.value,
 		}
 
 		try {
-			if (text.value.trim().length === 0)
+			if (text.value.trim().length === 0) {
+				text.classList.remove("boder-gray-50");
+				text.classList.add("border-red-500");
 				throw new Error("Username field empty");
-			else if (pass.value.trim().length === 0 || passConfirm.value.trim().length === 0)
+			} else if (pass.value.trim().length === 0) {
+				pass.classList.remove("boder-gray-50");
+				pass.classList.add("border-red-500");
 				throw new Error("A password field is empty");
-			else if (pass.value != passConfirm.value)
+			} else if (passConfirm.value.trim().length === 0) {
+				passConfirm.classList.remove("boder-gray-50");
+				passConfirm.classList.add("border-red-500");
+				throw new Error("A password field is empty");
+			} else if (pass.value != passConfirm.value) {
+				pass.classList.remove("boder-gray-50");
+				pass.classList.add("border-red-500");
+				passConfirm.classList.remove("boder-gray-50");
+				passConfirm.classList.add("border-red-500");
 				throw new Error("Passwords do not match");
+			}
 
 			await registerHandler(payload);
 

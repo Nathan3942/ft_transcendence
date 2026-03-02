@@ -25,22 +25,25 @@ export default function createHeader(): HTMLHeadElement {
 		const bridge = document.createElement("div");
 		bridge.className = "absolute w-full h-4 right-0 z-10 group-hover:visible";
 
-		userDropdown.className = "invisible opacity-0 absolute mt-3.5 right-0 px-2 bg-white dark:bg-gray-700 shadow-lg py-2 transition-opacity duration-150 group-hover:visible group-hover:opacity-100 z-10";
+		userDropdown.className = "invisible opacity-0 absolute mt-3.5 right-0 px-2 bg-gray-200 dark:bg-gray-800 shadow-lg py-2 transition-opacity duration-150 group-hover:visible group-hover:opacity-100 z-10";
 		userDropdown.append((
 			createButton({
 				id: "user-profile-button",
 				href: "/user-profile",
-				buttonText: "Profile"
+				buttonText: "Profile",
+				extraClasses: "hover:opacity-80"
 			})),
 			createButton({
 				id: "user-settings-button",
 				href: "/user-settings",
-				buttonText: "Settings"
+				buttonText: "Settings",
+				extraClasses: "hover:opacity-80"
 			}),
 			createButton({
 				id: "logout-button",
 				f: () => logoutHandler(),
-				buttonText: "Logout"
+				buttonText: "Logout",
+				extraClasses: "hover:opacity-80"
 			})
 		);
 
@@ -77,12 +80,14 @@ export default function createHeader(): HTMLHeadElement {
 			createButton({
 				id: "leaderboard-header-button",
 				buttonText: "Leaderboard",
-				href: "/leaderboard"
+				href: "/leaderboard",
+				extraClasses: "hover:text-red-900 dark:hover:text-red-500 transition-colors duration-200"
 			}),
 			createButton({
 				id: "login-header-button",
 				buttonText: "Login",
-				href: "/login"
+				href: "/login",
+				extraClasses: "hover:text-blue-900 dark:hover:text-blue-400 transition-colors duration-200"
 			})
 		);
 	}
