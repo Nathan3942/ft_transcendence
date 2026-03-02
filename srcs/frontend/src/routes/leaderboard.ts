@@ -1,6 +1,7 @@
 import createBackButton from "../components/button/backButton";
 import { createButton } from "../components/button/button";
 import { API_BASE } from "../handler/loginHandler";
+import { getItem } from "../helpers/localStoragehelper";
 
 // Variable names subject to change with proper backend integration
 type userInfo = {
@@ -183,7 +184,6 @@ export default async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 	const table = document.createElement("table");
 	const tHead = document.createElement("thead");
 	const tbody = document.createElement("tbody");
-	const backButton = createBackButton("bg-red-300 dark:bg-red-900", "/");
 	let users: userInfo[];
 	
 	// Setting metadata
@@ -223,7 +223,11 @@ export default async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 	table.append(tHead, tbody);
 	tableContainer.append(table)
 	leaderboard.append(tableContainer);
-	outer.append(leaderboard, backButton);
+	outer.append(leaderboard);
+
+	if (getItem("loggedIn") === true) {
+		outer.append(createBackButton("bg-red-300 dark:bg-red-900", "/"));
+	}
 	
 	try {
 		users = await importUserData();

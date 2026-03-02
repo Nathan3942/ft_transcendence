@@ -14,7 +14,7 @@ export const routes: Route[] = [
 	{
 		path: "/leaderboard",
 		component: lazy(() => import("./leaderboard")),
-		guarded: [authGuard]
+		// guarded: [authGuard]
 	},
 	/* {
 		path: "/user-profile",

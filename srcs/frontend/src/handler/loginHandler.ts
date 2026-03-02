@@ -1,4 +1,4 @@
-import { modifyPopup, renderError, renderMessage } from "../components/popup/popup";
+import { renderError, renderMessage } from "../components/popup/popup";
 import { setItem } from "../helpers/localStoragehelper";
 import type { loginRequest } from "../interfaces/properties";
 

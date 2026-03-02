@@ -1,5 +1,6 @@
 import { createButton } from "../components/button/button";
 import { loginHandler, registerHandler } from "../handler/loginHandler";
+import { getItem } from "../helpers/localStoragehelper";
 
 let defaultClasses = "w-1/3 items-center justify-center bg-gray-200 px-4 py-2 dark:bg-gray-950";
 
@@ -182,8 +183,12 @@ function createRegistrationForm(): HTMLDivElement {
 
 export default async function createLoginPage(): Promise<HTMLDivElement> {
 	const outer = document.createElement("div");
-
 	outer.className = "flex h-screen w-screen items-center justify-center";
+	
+	if (getItem("loggedIn") === true) {
+		window.location.href = "/";
+		return outer;
+	}
 
 	outer.append(createLoginForm(), createRegistrationForm());
 
