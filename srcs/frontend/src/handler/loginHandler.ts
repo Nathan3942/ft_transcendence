@@ -58,13 +58,11 @@ export async function logoutHandler() {
 			renderError(`Logout failed: ${resp.status}: ${err}`);
 			throw new Error(`Logout failed: ${resp.status}: ${err}`);
 		}
+		setItem<boolean>("loggedIn", false);
 		window.location.href = "/login";
 	} catch (err) {
 		console.warn(err);
 	}
-
-	setItem<boolean>("loggedIn", false);
-
 }
 
 export function redirectToLogin(): void {
