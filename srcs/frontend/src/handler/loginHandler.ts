@@ -1,4 +1,5 @@
 import { modifyPopup, renderError, renderMessage } from "../components/popup/popup";
+import { setItem } from "../helpers/localStoragehelper";
 import type { loginRequest } from "../interfaces/properties";
 
 export const API_BASE = "/api/v1";
@@ -19,6 +20,9 @@ export async function loginHandler(payload: loginRequest): Promise<void> {
 			renderMessage("Login failed: You appear to be offline.");
 		throw new Error(`Login failed: ${resp.status}: ${err}`);
 	}
+
+	setItem<boolean>("loggedIn", true);
+	
 }
 
 export async function registerHandler(payload: loginRequest): Promise<void> {
@@ -37,6 +41,9 @@ export async function registerHandler(payload: loginRequest): Promise<void> {
 			renderMessage("Registration failed: You appear to be offline.");
 		throw new Error(`Registration failed: ${resp.status}: ${err}`);
 	}
+
+	setItem<boolean>("loggedIn", true);
+
 }
 
 export async function logoutHandler() {
@@ -55,13 +62,13 @@ export async function logoutHandler() {
 	} catch (err) {
 		console.warn(err);
 	}
+
+	setItem<boolean>("loggedIn", false);
+
 }
 
-let loginRedirectPending = false;
 export function redirectToLogin(): void {
-	if (loginRedirectPending)
-		return;
-	loginRedirectPending = true;
+	setItem<boolean>("loggedIn", false);
 	window.location.href = "/login";
 }
 
@@ -78,6 +85,9 @@ export async function refreshAccess(): Promise<void> {
 		if (!resp.ok) {
 			redirectToLogin();
 		}
+
+		setItem<boolean>("loggedIn", true);
+
 	} catch (err) {
 		console.error("Refresh failed:", err);
 		redirectToLogin();
@@ -125,7 +135,22 @@ export async function authenticate(): Promise<boolean | string> {
 			return true;
 		}
 		if (resp.status === 401) {
-			return false;
+			await refreshAccess();
+
+			const retry = await fetch(`${API_BASE}/auth/me`, {
+				method: "GET",
+				credentials: "include"
+			});
+
+			if (retry.status == 401) {
+				return false;
+			} else if (retry.status == 404) {
+				renderMessage("You appear to be offline. Some features may be unavailable")
+				return "offline";
+			} else {
+				renderMessage("Unexpected error while trying to authenticate user. Please try again later");
+				return "fail";				
+			}
 		}
 
 		if (resp.status === 404) {
