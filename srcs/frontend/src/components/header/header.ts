@@ -22,8 +22,10 @@ export default function createHeader(): HTMLHeadElement {
 	
 	if (getItem("loggedIn") === true) {
 		const userDropdown = document.createElement("div");
+		const bridge = document.createElement("div");
+		bridge.className = "absolute w-full h-4 right-0 z-10 group-hover:visible";
 
-		userDropdown.className = "invisible opacity-0 absolute right-0 mt-2 px-2 bg-white dark:bg-gray-700 shadow-lg py-2 transition-opacity duration-150 group-hover:visible group-hover:opacity-100 z-10";
+		userDropdown.className = "invisible opacity-0 absolute mt-3.5 right-0 px-2 bg-white dark:bg-gray-700 shadow-lg py-2 transition-opacity duration-150 group-hover:visible group-hover:opacity-100 z-10";
 		userDropdown.append((
 			createButton({
 				id: "user-profile-button",
@@ -51,7 +53,7 @@ export default function createHeader(): HTMLHeadElement {
 				iconBClass: "h-8 dark:invert"
 			});
 
-		userProfileBtn.append(userDropdown);
+		userProfileBtn.append(bridge, userDropdown);
 
 		navbar.append(
 			createButton({
