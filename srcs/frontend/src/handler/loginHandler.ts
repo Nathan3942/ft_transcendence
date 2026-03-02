@@ -1,3 +1,4 @@
+import { modifyPopup, renderError, renderMessage } from "../components/popup/popup";
 import type { loginRequest } from "../interfaces/properties";
 
 export const API_BASE = "/api/v1";
@@ -14,6 +15,8 @@ export async function loginHandler(payload: loginRequest): Promise<void> {
 
 	if (!resp.ok) {
 		const err = await resp.text();
+		if (resp.status == 404 && resp.text.length == 0)
+			renderMessage("Login failed: You appear to be offline.");
 		throw new Error(`Login failed: ${resp.status}: ${err}`);
 	}
 }
@@ -30,6 +33,8 @@ export async function registerHandler(payload: loginRequest): Promise<void> {
 
 	if (!resp.ok) {
 		const err = await resp.text();
+		if (resp.status == 404 && resp.text.length == 0)
+			renderMessage("Registration failed: You appear to be offline.");
 		throw new Error(`Registration failed: ${resp.status}: ${err}`);
 	}
 }
@@ -43,12 +48,12 @@ export async function logoutHandler() {
 
 		if (!resp.ok) {
 			const err = await resp.text();
+			renderError(`Logout failed: ${resp.status}: ${err}`);
 			throw new Error(`Logout failed: ${resp.status}: ${err}`);
 		}
 		window.location.href = "/login";
 	} catch (err) {
 		console.warn(err);
-		alert("Logout failed. Please try again or check console for more information");
 	}
 }
 
@@ -66,6 +71,9 @@ export async function refreshAccess(): Promise<void> {
 			method: "POST",
 			credentials: "include"
 		});
+
+		if (resp.status == 404 && resp.text.length == 0)
+			renderMessage("You appear to be offline. Some features may be unavailable")
 
 		if (!resp.ok) {
 			redirectToLogin();
@@ -121,6 +129,7 @@ export async function authenticate(): Promise<boolean | string> {
 		}
 
 		if (resp.status === 404) {
+			renderMessage("You appear to be offline. Some features may be unavailable")
 			return "offline";
 		}
 

@@ -1,6 +1,4 @@
-import createFooter from "../components/footer/footer";
-import createHeader from "../components/header/header";
-import { modifyPopup, showPopup } from "../components/popup/popup";
+import { renderError } from "../components/popup/popup";
 import type { Route } from "../interfaces/properties";
 import create404Page from "../routes/404page";
 import createTestPage from "../routes/test";
@@ -53,9 +51,8 @@ export class Router {
 					continue;
 				else if (res === false)
 					return this.redirectLogin();
-				else if (res === "offline")
-					return this.renderMessage("You appear to be offline. Some features may be unavailable");
-				return this.renderMessage(res);
+				else
+					return ;
 			}
 		}
 
@@ -64,7 +61,7 @@ export class Router {
 			this.replaceRoot(component);
 		} catch (err) {
 			console.error("Failed to load component for", path, err);
-			this.renderError(`Component for: ${path} failed to load...`);
+			renderError(`Component for: ${path} failed to load...`);
 		}
 	};
 
@@ -79,16 +76,6 @@ export class Router {
 	private redirectLogin(): void {
 		window.location.href = "/login";
 	};
-
-	private renderMessage(text: string): void {
-		modifyPopup(text, "fixed bottom-4 left-4 max-w-sm p-4 bg-yellow-100 dark:bg-yellow-700 text-yellow-800 dark:text-yellow-50");
-		showPopup();
-	};
-
-	private renderError(err: string): void {
-		modifyPopup(err, "fixed bottom-4 left-4 max-w-sm p-4 bg-red-100 text-red-800");
-		showPopup();
-	}
 
 	private setupListeners(): void {
 		window.addEventListener("popstate", () => this.handleLocation(window.location.pathname))

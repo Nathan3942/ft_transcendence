@@ -1,5 +1,15 @@
 import { createButton } from "../button/button";
 
+export function renderMessage(text: string): void {
+	modifyPopup(text, "fixed bottom-4 left-4 max-w-sm p-4 pr-6 bg-yellow-100 dark:bg-yellow-700 text-yellow-800 dark:text-yellow-50");
+	showPopup();
+}
+
+export function renderError(err: string): void {
+	modifyPopup(err, "fixed bottom-4 left-4 max-w-sm p-4 pr-6 bg-red-100 dark:bg-red-700 text-red-800 dark:text-red-200");
+	showPopup();
+}
+
 export function showPopup() {
 	const popup = document.getElementById("popup");
 	if (popup)
