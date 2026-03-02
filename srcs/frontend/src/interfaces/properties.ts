@@ -1,3 +1,5 @@
+import type { Guard } from "../handler/routeHandler";
+
 export interface standardProps {
 	id?: string;
 }
@@ -16,4 +18,10 @@ export interface buttonProps extends standardProps {
 export interface loginRequest {
 	username: string;
 	password: string;
+}
+
+export interface Route {
+	path: string;
+	component: () => HTMLDivElement | Promise<HTMLDivElement>;
+	guarded?: Guard[];
 }

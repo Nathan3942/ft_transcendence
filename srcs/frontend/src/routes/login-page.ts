@@ -150,8 +150,6 @@ function createRegistrationForm(): HTMLDivElement {
 	form.addEventListener("submit", async (e) => {
 		e.preventDefault()
 
-		console.log("im here");
-
 		errorMsg.innerText = "";
 		errorMsg.classList.add("hidden");
 
@@ -172,13 +170,12 @@ function createRegistrationForm(): HTMLDivElement {
 
 			window.location.href = "/dashboard";
 		} catch(err: any) {
-			console.log(err);
+			console.error(err);
 			errorMsg.innerText = err ?? "Registration failed";
 			errorMsg.classList.remove("hidden");
 		}
 	})
 
-	console.log(outer.innerHTML);
 	return outer;
 }
 

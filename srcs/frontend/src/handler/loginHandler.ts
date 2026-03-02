@@ -120,6 +120,10 @@ export async function authenticate(): Promise<boolean | string> {
 			return false;
 		}
 
+		if (resp.status === 404) {
+			return "offline";
+		}
+
 		console.warn("Unexpected auth/me status:", resp.status);
 		return resp.status.toString();
 	}

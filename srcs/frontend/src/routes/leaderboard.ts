@@ -106,7 +106,7 @@ function createLeaderboardCells(users: userInfo[]): HTMLTableSectionElement {
 	return tBody;
 };
 
-export async function buildLeaderboardPage(): Promise<HTMLDivElement> {
+export default async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 
 	// Helper functions
 	function buildLeaderboard(key: scoreKey): HTMLTableSectionElement {
@@ -174,7 +174,7 @@ export async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 				f: () => replaceTableBody(key),
 			}))
 	return th;
-}
+	}
 
 	// Function Proper
 	const outer = document.createElement("div");

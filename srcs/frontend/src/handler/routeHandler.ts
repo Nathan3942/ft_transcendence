@@ -1,101 +1,106 @@
-import create404page from '../routes/404page';
-import createGameLocalPage from '../routes/game-local';
-import createLocalAIGamePage from '../routes/game-local-ai';
-import createGameOnlinePage from '../routes/game-online';
-import createHomePage from '../routes/home';
-import {buildLeaderboardPage} from '../routes/leaderboard';
-import createLoginPage from '../routes/login-page';
-import createTestPage from '../routes/test';
-import { authenticate } from './loginHandler';
-import assemblePage from './pageHandler';
+import createFooter from "../components/footer/footer";
+import createHeader from "../components/header/header";
+import { modifyPopup, showPopup } from "../components/popup/popup";
+import type { Route } from "../interfaces/properties";
+import create404Page from "../routes/404page";
+import createTestPage from "../routes/test";
+import { authenticate } from "./loginHandler";
+import assemblePage from "./pageHandler";
 
-type Route = {
-    path: string;
-    component: () => HTMLDivElement | Promise<HTMLDivElement>;
+
+export type ComponentFactory<T extends HTMLElement = HTMLElement> = () => T | Promise<T>;
+
+type GuardTypes = true | false | "offline" | "string" | string;
+export type Guard = () => Promise<GuardTypes>;
+
+export const authGuard: Guard = async () => {
+	const result = await authenticate();
+
+	return result;
 }
 
-const routes: Route[] = [
-    { path: "/", component: () => assemblePage(createHomePage()) },
-    { path: "/leaderboard", component: async () => assemblePage(await buildLeaderboardPage()) },
-    { path: "/user-profile", component: () => assemblePage(document.createElement("div")) },
-    { path: "/login", component: async () => assemblePage(await createLoginPage()) },
-    { path: "/test", component: () => assemblePage(createTestPage()) },
-    { path: "/game-local", component: () => assemblePage(createGameLocalPage()) },
-    { path: "/game-local-ai", component: () => assemblePage(createLocalAIGamePage())},
-    { path: "/game-online", component: () => assemblePage(createGameOnlinePage()) }
-];
-
 export class Router {
-	private routes: Route[] = routes;
-	private rootElement: HTMLElement;
+	private readonly routeMap: Map<String, Route>;
+	private readonly root: HTMLElement;
 
-	constructor(rootElement: HTMLElement) {
-		this.rootElement = rootElement;
-		this.setupPopStateListener();
-		this.setupEventListener();
+	constructor(root: HTMLElement, routes: Route[]) {
+		this.root = root;
+		this.routeMap = new Map(routes.map(r => [r.path, r]));
+		this.setupListeners();
+	};
+
+	public async start(): Promise<void> {
+		this.root.replaceChildren(assemblePage(createTestPage()));
+		await this.handleLocation(window.location.pathname);
+	};
+
+	public async navigateTo(path: string): Promise<void> {
+		if (window.location.pathname !== path) {
+			window.history.pushState({}, "", path);
+			await this.handleLocation(path);
+		}
+	};
+
+	private async handleLocation(path: string): Promise<void> {
+		const route = this.routeMap.get(path) ?? this.routeMap.get("*");
+		if (!route)
+			return this.renderNotFound();
+
+		if (route.guarded) {
+			for (const g of route.guarded) {
+				const res = await g();
+				if (res === true)
+					continue;
+				else if (res === false)
+					return this.redirectLogin();
+				else if (res === "offline")
+					return this.renderMessage("You appear to be offline. Some features may be unavailable");
+				return this.renderMessage(res);
+			}
+		}
+
+		try {
+			const component = await route.component();
+			this.replaceRoot(component);
+		} catch (err) {
+			console.error("Failed to load component for", path, err);
+			this.renderError(`Component for: ${path} failed to load...`);
+		}
+	};
+
+	private replaceRoot(node: HTMLDivElement): void {
+		this.root.replaceChildren(assemblePage(node));
+	};
+
+	private renderNotFound(): void {
+		this.replaceRoot(create404Page());
+	};
+
+	private redirectLogin(): void {
+		window.location.href = "/login";
+	};
+
+	private renderMessage(text: string): void {
+		modifyPopup(text, "fixed bottom-4 left-4 max-w-sm p-4 bg-yellow-100 dark:bg-yellow-700 text-yellow-800 dark:text-yellow-50");
+		showPopup();
+	};
+
+	private renderError(err: string): void {
+		modifyPopup(err, "fixed bottom-4 left-4 max-w-sm p-4 bg-red-100 text-red-800");
+		showPopup();
 	}
 
-    public async start(): Promise<void> {
-        this.renderPath(window.location.pathname);
-    }
+	private setupListeners(): void {
+		window.addEventListener("popstate", () => this.handleLocation(window.location.pathname))
 
-    public async navigateTo(path: string): Promise<void> {
-        window.history.pushState({}, "", path);
-        this.renderPath(path);
-    }
-    
-	private findRoute(path: string): Route | undefined {
-		return this.routes.find((route) => route.path === path);
+		this.root.addEventListener("click", (e) => {
+			const target = (e.target as HTMLElement).closest("[data-href]");
+			if (!target)
+				return;
+			e.preventDefault();
+			const href = target.getAttribute("data-href");
+			if (href)
+				this.navigateTo(href);
+		})
 	}
-
-    private async render(route: Route): Promise<void> {
-        try {
-            this.rootElement.innerHTML = "";
-            const component = await route.component();
-            this.rootElement.appendChild(component);
-        } catch (e) {
-            console.error("Failed to render route:", e);
-            this.rootElement.innerHTML = "";
-            this.rootElement.appendChild(create404page());
-        }
-    }
-
-    private async renderPath(path: string) {
-        const route = this.findRoute(path);
-        if (route) {
-			const authRes = await authenticate();
-			if (authRes === true) {
-				this.render(route);
-			}
-			else if (authRes === false) {
-				window.location.href = "/login";
-			} else {
-				this.rootElement.appendChild(assemblePage(await createLoginPage()));
-				// insert code to show an offline message here
-				console.warn("Offline");
-			}
-        } else {
-            console.log("Error rendering route: ", path)
-            this.rootElement.innerHTML = "";
-            this.rootElement.appendChild(assemblePage(create404page()))
-        }
-    }
-
-    private setupPopStateListener(): void {
-        window.addEventListener("popstate", async () => {
-            await this.renderPath(window.location.pathname);
-        });
-        console.log("Popstate event triggered! Current path:", window.location.pathname);
-    }
-
-	private setupEventListener(): void {
-		this.rootElement.addEventListener("click", (e) => {
-			const target = (e.target as HTMLElement).closest("button[data-href]");
-			if (target) {
-				e.preventDefault();
-				const path = target.getAttribute("data-href");
-				if (path)
-					this.navigateTo(path);
-			}
-		})}
 }
