@@ -6,17 +6,13 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 17:15:35 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/02/27 11:52:29 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/02 18:03:46 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-import { getCurrentMatchId, getCurrentMatchMode, setCurrentMatchId } from "../services/onlineStore";
-import { draw1v1 } from "../game/pong_render";
-import { toRenderState, type RenderState1v1, type ServerGameState } from "../game/server_state_adapter";
-// import { createOnlineMatch } from "../services/online";
-// import makeButtonBlock from "../components/button/buttonBlock";
-// import { createButton } from "../components/button/button";
-
+import { getCurrentMatchId, getCurrentMatchMode } from "../services/onlineStore";
+import { drawPong } from "../game/pong_render";
+import { toRenderState, type RenderState, type ServerGameState, type GameSlot } from "../game/server_state_adapter";
 
 
 function navigate(path: string) {
@@ -30,7 +26,7 @@ function randomId(): string {
 	
 	const c: any = globalThis.crypto as any;
 	if (c && typeof	c.randomUUID === "function")
-		return c.randomUUID;
+		return c.randomUUID();
 	return (`${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`);
 }
 
@@ -47,56 +43,55 @@ function getClientId(): string {
 }
 
 
-function bindInput(ws: WebSocket, gameId: string, slot: "left" | "right") {
-	let upPressed = false;
-	let downPressed = false;
+function isHorizontal(slot: GameSlot) {
+	return slot === "top" || slot === "bottom";
+}
+
+
+function bindInput(ws: WebSocket, gameId: string, slot: GameSlot) {
+	let negPressed = false; // up / left
+	let posPressed = false; // down / right
 	let currentDir: Dir = 0;
 
 	function computeDir(): Dir {
-		if (upPressed && !downPressed)
-			return (-1);
-		if (!upPressed && downPressed)
-			return (1);
-		return (0);
+		if (negPressed && !posPressed) return -1;
+		if (!negPressed && posPressed) return 1;
+		return 0;
 	}
 
 	function sendDir(dir: Dir) {
-		if (ws.readyState !== WebSocket.OPEN)
-			return;
-		ws.send(
-			JSON.stringify({
-				type: "input",
-				gameId,
-				slot,
-				input: {dir, ts: Date.now() },
-			})
-		);
+		if (ws.readyState !== WebSocket.OPEN) return;
+		ws.send(JSON.stringify({ type: "input", gameId, slot, input: { dir, ts: Date.now() } }));
 	}
 
 	function onKeyDown(e: KeyboardEvent) {
+		if (e.repeat) return;
 
-		if (e.repeat)
-			return;
-		if (e.key === "w")
-			upPressed = true;
-		else if (e.key === "s")
-			downPressed = true;
-		else
-			return;
+		const horiz = isHorizontal(slot);
+		const negKey = horiz ? "a" : "w";
+		const posKey = horiz ? "d" : "s";
+
+		if (e.key === negKey) negPressed = true;
+		else if (e.key === posKey) posPressed = true;
+		else return;
 
 		const next = computeDir();
 		if (next !== currentDir) {
-			currentDir = next;
-			sendDir(currentDir);
+		currentDir = next;
+		sendDir(currentDir);
 		}
 	}
 
 	function onKeyUp(e: KeyboardEvent) {
-		if (e.key === "w")
-			upPressed = false;
-		else if (e.key === "s")
-			downPressed = false;
-		else
+		const horiz = isHorizontal(slot);
+		const negKey = horiz ? "a" : "w";
+		const posKey = horiz ? "d" : "s";
+
+		if (e.key === negKey) 
+			negPressed = false;
+		else if (e.key === posKey) 
+			posPressed = false;
+		else 
 			return;
 
 		const next = computeDir();
@@ -117,7 +112,7 @@ function bindInput(ws: WebSocket, gameId: string, slot: "left" | "right") {
 
 
 export default function onlineMatch(): HTMLDivElement {
-	
+
 	const page = document.createElement("div");
 	page.className = "flex flex-col flex-1 p-6 gap-4";
 
@@ -138,14 +133,23 @@ export default function onlineMatch(): HTMLDivElement {
 
 	const ctxMaybe = canvas.getContext("2d");
 	if (!ctxMaybe) {
-	status.textContent = "Canvas error (no 2d context)";
-	return page;
+		status.textContent = "Canvas error (no 2d context)";
+		return page;
 	}
 	const ctx: CanvasRenderingContext2D = ctxMaybe;
 
-	let lastServerState: ServerGameState | null = null;
-	let lastRenderState: RenderState1v1 | null = null;
+	// taille initiale (sinon 300x150 par défaut → rendu moche)
+	// {
+	// 	const rect = gameContainer.getBoundingClientRect();
+	// 	canvas.width = Math.max(300, Math.floor(rect.width));
+	// 	canvas.height = Math.max(300, Math.floor(rect.height));
+	// }
 
+	let lastServerState: ServerGameState | null = null;
+	let lastRenderState: RenderState | null = null;
+
+	// lastServerState = msg.state as ServerGameState;
+	// lastRenderState = toRenderState(lastServerState, canvas.width, canvas.height);
 
 	let rafId = 0;
 	let running = true;
@@ -153,132 +157,100 @@ export default function onlineMatch(): HTMLDivElement {
 	function loop() {
 		if (!running)
 			return;
-
-		if (lastRenderState) 
-			draw1v1(ctx, canvas, lastRenderState);
-
+		if (lastRenderState)
+			drawPong(ctx, canvas, lastRenderState);
 		rafId = requestAnimationFrame(loop);
 	}
-
 	rafId = requestAnimationFrame(loop);
 
 	const ws = new WebSocket(`ws://${window.location.hostname}:3000/ws`);
 
-	let mySlot: "left" | "right" = "left";
-
+	let mySlot: GameSlot = "left";
 	let unbindInput: null | (() => void) = null;
 
 	ws.onopen = () => {
-
 		status.textContent = "Connected. Joining match...";
-
 		const matchId = getCurrentMatchId();
 		if (!matchId) {
 			status.textContent = "No matchId (create match first).";
 			return;
 		}
 
-		console.log(`curent match mode ${getCurrentMatchMode()}`);
-
 		ws.send(
 			JSON.stringify({
-				type: "join_game",
-				gameId: matchId,
-				clientId: getClientId(),
-				mode: getCurrentMatchMode(),
-			})
-		);
-		console.log(`client id = ${getClientId()}`)
+			type: "join_game",
+			gameId: matchId,
+			clientId: getClientId(),
+			mode: getCurrentMatchMode(), // "1v1" | "2v2" | "3p" | "4p"
+		}));
 	};
 
 	ws.onmessage = (e) => {
 		let msg: any;
 		try {
-			msg = JSON.parse(e.data);
-		}
-		catch {
-			console.log("WS raw: ", e.data);
+			msg = JSON.parse(e.data); 
+		} 
+		catch { 
 			return;
 		}
 
 		if (msg.type === "match_waiting") {
-			status.textContent = `Match #${msg.gameId}: waiting for 2nd player (${msg.count}/${msg.playerNeeded})...`;
+			status.textContent = `Match #${msg.gameId}: waiting (${msg.count}/${msg.playerNeeded})...`;
 			return;
 		}
 
 		if (msg.type === "match_ready") {
-
-			status.textContent = `Match #${msg.gameId}: player found! Starting...`;
+			status.textContent = `Match #${msg.gameId}: starting...`;
 			return;
 		}
-		if (msg.type === "assigned_slot" && (msg.slot === "left" || msg.slot === "right")) {
-			
-			mySlot = msg.slot;
+
+		// accepte tous les slots
+		if (msg.type === "assigned_slot") {
+			mySlot = msg.slot as GameSlot;
+
 			const matchId = getCurrentMatchId();
-			if (matchId && !unbindInput) {
+			if (matchId) {
+				if (unbindInput) unbindInput();
 				unbindInput = bindInput(ws, String(matchId), mySlot);
 			}
-			console.log("RECV assigned_slot =", msg.slot, "clientId =", getClientId());
+
+			console.log("assigned_slot =", mySlot, "clientId =", getClientId());
 			return;
 		}
+
 		if (msg.type === "match_full") {
-			confirm("Match full");
-			navigate("/browse-games");
+			alert("Match full");
+			window.dispatchEvent(new CustomEvent("navigate", { detail: { path: "/browse-games" } }));
+			return;
 		}
 
-		// --- tick serveur
 		if (msg.type === "game_tick" && msg.state) {
 			lastServerState = msg.state as ServerGameState;
 			lastRenderState = toRenderState(lastServerState, canvas.width, canvas.height);
+			// console.log("SERVER paddle keys:", Object.keys(msg.state.paddle ?? msg.state.paddles ?? {}));
+  			// console.log("SERVER state:", msg.state);
 			return;
 		}
-	};
-
-	ws.onerror = () => {
-		status.textContent = "WS error";
-	};
-
-	ws.onclose = () => {
-		status.textContent = "WS closed";
 	};
 
 	const ro = new ResizeObserver(() => {
 		const rect = gameContainer.getBoundingClientRect();
-		const w = Math.max(300, Math.floor(rect.width));
-		const h = Math.max(300, Math.floor(rect.height));
-		canvas.width = w;
-		canvas.height = h;
-
-		// si on a déjà un state, on le reconvertit avec les nouvelles dimensions
-		if (lastServerState) {
-			lastRenderState = toRenderState(lastServerState, canvas.width, canvas.height);
-		}
+		canvas.width = Math.max(300, Math.floor(rect.width));
+		canvas.height = Math.max(300, Math.floor(rect.height));
+		if (lastServerState) lastRenderState = toRenderState(lastServerState, canvas.width, canvas.height);
 	});
-
 	ro.observe(gameContainer);
 
-	// --- cleanup SPA : stop raf + remove listeners + close ws
 	const cleanup = () => {
 		running = false;
 		cancelAnimationFrame(rafId);
-
 		ro.disconnect();
-
-		if (unbindInput) {
-			unbindInput();
-			unbindInput = null;
-		}
-
-		try {
-			ws.close(1000, "leave");
-		} 
-		catch {}
+		if (unbindInput) unbindInput();
+		try { ws.close(1000, "leave"); } catch {}
 	};
 
 	window.addEventListener("beforeunload", cleanup);
-
-	const onNavigate = () => cleanup();
-	window.addEventListener("navigate", onNavigate as any);
+	window.addEventListener("navigate", cleanup as any);
 
 	return page;
 }

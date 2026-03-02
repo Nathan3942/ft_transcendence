@@ -6,25 +6,99 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 15:45:30 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/02/27 12:34:55 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/02 19:55:54 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import type { FastifyBaseLogger } from "fastify";
 import type { WsSocket } from "../ws/hub";
-import type { GameId, GameState, PaddleInput, PlayerSlot } from "./types";
+import type { GameId, GameState, PaddleInput, ModeId, GameSlot } from "./types";
 import { GameLoop } from "./gameLoop";
-import { lookup } from "node:dns";
-import { ModeId } from "../frontend/src/game/pong_core";
 
 
 const H = 700;
 const W = 1000;
+const H_CARRE = 800;
+const W_CARRE = 800;
 const PADDLE_H = 120;
 
-type Players = {
-	left?: { clientId: string, userId?: string };
-	right?: { clientId: string, userId?: string };
+type PlayerInfo = { clientId: string, userId?: string };
+
+type Players = Partial<Record<GameSlot, PlayerInfo>>;
+
+export function slotsForMode(mode: ModeId): GameSlot[] {
+	
+	switch (mode) {
+		case "2v2":
+			return ["left1", "left2", "right1", "right2"];
+		case "3p":
+			return ["left", "right", "top"];
+		case "4p":
+			return ["left", "right", "top", "bottom"];
+		default:
+			return ["left", "right"];
+	}
+}
+
+
+function initPaddles(mode: ModeId) {
+
+	const midY = H / 2 - PADDLE_H / 2;
+	const midY_carre = H_CARRE / 2 - PADDLE_H / 2;
+	const midX_carre = W_CARRE / 2 - PADDLE_H / 2;
+
+	switch (mode) {
+		case "2v2":
+			return {
+				left1: { axis: "y", pos: midY, vel: 0 },
+				left2: { axis: "y", pos: midY, vel: 0 },
+				right1: { axis: "y", pos: midY, vel: 0 },
+				right2: { axis: "y", pos: midY, vel: 0 },
+			};
+		case "3p":
+			return {
+				left: { axis: "y", pos: midY_carre, vel: 0 },
+				right: { axis: "y", pos: midY_carre, vel: 0 },
+				top: { axis: "x", pos: midX_carre, vel: 0 },
+			} as any;
+		case "4p":
+			return {
+				left: { axis: "y", pos: midY_carre, vel: 0 },
+				right: { axis: "y", pos: midY_carre, vel: 0 },
+				top: { axis: "x", pos: midX_carre, vel: 0 },
+				bottom: { axis: "x", pos: midX_carre, vel: 0 },
+			} as any;
+		default:
+			return {
+				left: { axis: "y", pos: midY, vel: 0 },
+  				right: { axis: "y", pos: midY, vel: 0 },
+			};
+	}
+}
+
+function initPlay(mode: ModeId) {
+	
+	if (mode === "1v1" || mode === "2v2") {
+		return { x: 100, y: 100, w: W, h: H };
+	}
+	else {
+		return { x: 100, y: 10, w: 800, h: 800 };
+	}
+}
+
+function randomSign() {
+	return Math.random() < 0.5 ? -1 : 1;
+}
+
+function initBall(mode: ModeId) {
+
+	// ajouter random pour debut de partie sur vx vy
+	if (mode === "1v1" || mode === "2v2") {
+		return { x: W / 2 + 100, y: H / 2 + 100, vx: 420 * randomSign(), vy: 420 * 0.6 * randomSign() };
+	}
+	else {
+		return { x: W_CARRE / 2 + 100, y: H_CARRE / 2 + 10, vx: 420 * randomSign(), vy: 420 * 0.6 * randomSign() };
+	}
 }
 
 
@@ -38,6 +112,7 @@ export class GameManager {
 	) {}
 
 	createGame(id: GameId, md: ModeId) {
+		
 		if (this.games.has(id))
 			return;
 
@@ -46,10 +121,10 @@ export class GameManager {
 			status: "waiting",
 			mode: md,
 			score: { left: 0, right: 0 },
-			ball: { x: (W / 2) + 100, y: (H / 2) + 100, vx: 200, vy: 120 },
-			paddle: { left: { y: H / 2 - PADDLE_H / 2, vy: 0 }, right: { y: H / 2 - PADDLE_H / 2, vy: 0 } },
+			ball: initBall(md),
+			paddles: initPaddles(md),
 			lastTickMs: Date.now(), 
-			play: { x: 100, y: 100, w: W, h: H },
+			play: initPlay(md),
 		};
 
 		const loop = new GameLoop(
@@ -62,12 +137,18 @@ export class GameManager {
 		this.games.set(id, { state, loop, players: {} });
 	}
 
+	getAndCreatGame(gameId: GameId, mode: ModeId) {
+		
+		this.createGame(gameId, mode);
+		return this.games.get(gameId)!;
+	}
+
 	joinGame(ws: WsSocket, gameId: GameId) {
-		// this.createGame(gameId);
+
 		const g = this.games.get(gameId)!;
-
+		if (!g)
+			return;
 		ws.send(JSON.stringify({ type: "game_sync", state: g.state }));
-
 		g.loop.start();
 	}
 
@@ -78,46 +159,42 @@ export class GameManager {
 		game.ball.vx = 0;
 		game.ball.vy = 0;
 
-		game.paddle.left.y = H / 2 - PADDLE_H / 2;
-		game.paddle.right.y = H / 2 - PADDLE_H / 2;
-
-		game.paddle.left.vy = 0;
-		game.paddle.right.vy = 0;
+		game.paddles = initPaddles(game.mode);
 
 		game.status = "waiting"; // ou countdown
-		game.play = { x: width / 10, y: height / 10, w: width, h: height};
+		game.play = initPlay(game.mode);
 
 		// return (game);
 	}
 
-	input(gameId: GameId, slot: PlayerSlot, input: PaddleInput) {
+	input(gameId: GameId, slot: GameSlot, input: PaddleInput) {
 		
 		const g = this.games.get(gameId);
 		if (!g)
 			return;
-		g.loop.setInput(slot, input);
+		g.loop.setInput(slot as any, input);
 	}
 
-	registerPlayer(gameId: GameId, slot: "left" | "right", clientId: string, userId?: string) {
+	registerPlayer(gameId: GameId, slot: GameSlot, clientId: string, userId?: string) {
 
 		const game = this.games.get(gameId)!;
 		game.players[slot] = { clientId, userId };
 	}
 
 	isCurentPlayer(gameId: GameId, slot: "left" | "right", clientId: string): boolean {
+
 		const game = this.games.get(gameId);
 		return (game?.players[slot]?.clientId === clientId);
 	}
 
-	getAndCreatGame(gameId: GameId, mode: ModeId) {
-		this.createGame(gameId, mode);
-		return this.games.get(gameId)!;
-	}
+	isRegistered(gameId: GameId, clientId: string): boolean {
+		const g = this.games.get(gameId);
+		if (!g)
+			return false;
 
-	IsRegister(gameId: GameId, clientId: string): boolean {
-		if (clientId === this.games.get(gameId)?.players.left?.clientId || clientId === this.games.get(gameId)?.players.left?.clientId)
-			return (true);
-		else
-			return (false);
+		for (const s of slotsForMode(g.state.mode)) {
+		if (g.players[s]?.clientId === clientId) return true;
+		}
+		return false;
 	}
 }

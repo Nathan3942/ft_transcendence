@@ -6,33 +6,50 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 15:46:01 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/02/27 11:18:12 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/02 16:11:13 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+import { number } from "zod";
+
 export type GameId = string;
-export type PlayerSlot = "left" | "right";
+
+
+export type ModeId = "1v1" | "2v2" | "3p" | "4p";
+
+export type GameSlot =
+  | "left"
+  | "right"
+  | "left1"
+  | "left2"
+  | "right1"
+  | "right2"
+  | "top"
+  | "bottom";
+
 
 export type PaddleInput = {
 	dir: -1 | 0 | 1; // -1 up, 0 stop, 1 down
 	ts: number; // client timestamp
 }
 
+export type PaddleState = {
+	axis: "y" | "x";
+	pos: number;
+	vel: number;
+}
+
 export type GameState = {
 	id: GameId;
 	status: "waiting" | "running" | "ended";
-	mode: "1v1" | "2v2" | "3p" | "4p";
+	mode: ModeId;
 	score: { left: number; right: number };
-
 	ball: { x: number; y: number; vx: number; vy: number };
-	paddle: {
-		left: { y: number; vy: number };
-		right: { y: number; vy: number };
-	};
-
+	paddles: Partial<Record<GameSlot, PaddleState>>;
 	lastTickMs: number;
 	play?: { x: number; y: number; w: number; h: number };
 };
+
 
 
 

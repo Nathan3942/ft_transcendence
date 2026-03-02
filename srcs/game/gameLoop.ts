@@ -6,23 +6,35 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 15:45:48 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/02/27 09:24:11 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/02 19:55:27 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-import type { GameState, PaddleInput, PlayerSlot } from "./types";
+import type { GameState, PaddleInput, GameSlot, ModeId } from "./types";
+import { slotsForMode } from "./gameManager";
 
 const H = 700;
+const W = 1000;
+const H_CARRE = 800;
+const W_CARRE = 800;
+
+const PADDLE_LEN = 120;
 const PADDLE_SPEED = 500;
 const TICK_MS = 10;
+
+function clamp(v: number, min: number, max: number) {
+	return Math.max(min, Math.min(max, v));
+}
+
+function axisForSlot(slot: GameSlot): "y" | "x" {
+	return slot === "top" || slot === "bottom" ? "x" : "y";
+}
 
 export class GameLoop {
 	
 	private timer: NodeJS.Timeout | null = null;
-	private inputs: Record<PlayerSlot, PaddleInput> = {
-		left: { dir: 0, ts: 0},
-		right: { dir: 0, ts: 0},
-	};
+	
+	private inputs: Partial<Record<GameSlot, PaddleInput>> = {};
 
 	constructor(
 		private state: GameState,
@@ -30,7 +42,10 @@ export class GameLoop {
 		private onEvent: (evt: any) => void
 	) {}
 
-	setInput(slot: PlayerSlot, input: PaddleInput) {
+	setInput(slot: GameSlot, input: PaddleInput) {
+		const allowed = slotsForMode(this.state.mode);
+		if (!allowed.includes(slot))
+			return;
 		this.inputs[slot] = input;
 	}
 
@@ -40,7 +55,10 @@ export class GameLoop {
 		this.state.status = "running";
 		this.state.lastTickMs = Date.now();
 
-		
+		for (const s of slotsForMode(this.state.mode)) {
+			if (!this.inputs[s])
+				this.inputs[s] = { dir: 0, ts: 0 };
+		}
 
 		this.timer = setInterval(() => this.step(), TICK_MS);
 	}
@@ -58,105 +76,56 @@ export class GameLoop {
 		const dt = (now - this.state.lastTickMs) / 1000;
 		this.state.lastTickMs = now;
 
-		this.state.paddle.left.vy = this.inputs.left.dir * PADDLE_SPEED;
-		this.state.paddle.right.vy = this.inputs.right.dir * PADDLE_SPEED;
+		let playX = 0;
+		let playY = 0;
+		let playW = 0;
+		let playH = 0;
 
-		this.state.paddle.left.y += this.state.paddle.left.vy * dt;
-		this.state.paddle.right.y += this.state.paddle.right.vy * dt;
+		if (this.state.mode === "1v1" || this.state.mode === "2v2") {
+			playX = this.state.play?.x ?? 100;
+			playY = this.state.play?.y ?? 100;
+			playW = this.state.play?.w ?? W;
+			playH = this.state.play?.h ?? H;
+		}
+		else {
+			playX = this.state.play?.x ?? 100;
+			playY = this.state.play?.y ?? 10;
+			playW = this.state.play?.w ?? W_CARRE;
+			playH = this.state.play?.h ?? H_CARRE;
+		}
+		
 
-		this.state.paddle.left.y = Math.max(0, Math.min(H, this.state.paddle.left.y));
-		this.state.paddle.right.y = Math.max(0, Math.min(H, this.state.paddle.right.y));
+		const slots = slotsForMode(this.state.mode);
+
+		for (const slot of slots) {
+			const paddle = this.state.paddles[slot];
+
+			if (!paddle)
+				continue;
+
+			const input = this.inputs[slot] ?? { dir: 0, ts: 0 };
+
+			paddle.vel = input.dir * PADDLE_SPEED;
+
+			paddle.pos += paddle.vel * dt;
+
+			if (paddle.axis === "y") {
+				const min = 0;
+				const max = playH - PADDLE_LEN;
+				paddle.pos = clamp(paddle.pos, min, max);
+			}
+			else {
+				const min = 0;
+				const max = playW - PADDLE_LEN;
+				paddle.pos = clamp(paddle.pos, min, max);
+			}
+		}
+
+		this.state.ball.x += this.state.ball.vx * dt;
+		this.state.ball.y += this.state.ball.vy * dt;
 
 		// TODO: ball phisic score
-
 		this.onTick(this.state);
 	}
 
-	// private PaddleGestion(dt: number) {
-	// 	this.state.paddle.left.vy = this.inputs.left.dir * PADDLE_SPEED;
-	// 	this.state.paddle.right.vy = this.inputs.right.dir * PADDLE_SPEED;
-
-	// 	this.state.paddle.left.y += this.state.paddle.left.vy * dt;
-	// 	this.state.paddle.right.y += this.state.paddle.right.vy * dt;
-
-	// 	this.state.paddle.left.y = Math.max(0, Math.min(H - 150, this.state.paddle.left.y));
-	// 	this.state.paddle.right.y = Math.max(0, Math.min(H - 150, this.state.paddle.right.y));
-	// }
-
-	// private handleWallBounce() {
-	// 	const top = this.state.play?.y + 10;
-	// 	const bottom = this.state.play.y + this.state.play.h - 10;
-
-	// 	if (this.state.ball.y <= top) {
-	// 		this.state.ball.y = top;
-	// 		this.state.ball.vy *= -1;
-	// 	}
-	// 	if (this.state.ball.y >= bottom) {
-	// 		this.state.ball.y = bottom;
-	// 		this.state.ball.vy *= -1;
-	// 	}
-	// }
-
-	// private ballIntersectsPaddle() {
-		
-	// }
-
-	// applyBounceFromPaddle() {
-	// 	const max = this.state.ball.speed * 1.0;
-	// 	const half = 120 / 2;
-	// 	if (half <= 1e-6)
-	// 		return;
-	
-	// 	// balle playfield
-	// 	const localBallX = this.state.ball.x - this.state.play.x;
-	// 	const localBallY = this.state.ball.y - this.state.play.y;
-	
-	// 	const center = p.pos + half;
-	
-	// 	if (p.side === "LEFT" || p.side === "RIGHT") {
-	// 		const hit = clamp(localBallY, p.pos, p.pos + p.len);
-	// 		let norm = (hit - center) / half;
-	// 		norm = clamp(norm, -0.9, 0.9);
-	
-	// 		state.ballVX = Math.abs(state.ballVX) * (p.side === "LEFT" ? 1 : -1);
-	// 		state.ballVY = norm * max;
-	// 	} else {
-	// 		const hit = clamp(localBallX, p.pos, p.pos + p.len);
-	// 		let norm = (hit - center) / half;
-	// 		norm = clamp(norm, -0.9, 0.9);
-	
-	// 		state.ballVY = Math.abs(state.ballVY) * (p.side === "TOP" ? 1 : -1);
-	// 		state.ballVX = norm * max;
-	// 	}
-	
-	// 	setBallSpeed(state, cfg.ballSpeed);
-	// }
-
-	// private step() {
-	// 	const now = Date.now();
-	// 	const dt = (now - this.state.lastTickMs) / 1000;
-	// 	this.state.lastTickMs = now;
-
-	// 	this.PaddleGestion(dt);
-
-	// 	this.state.ball.x += this.state.ball.vx * dt;
-	// 	this.state.ball.y += this.state.ball.vy * dt;
-
-	// 	this.handleWallBounce();
-
-	// 	for (const p of this.state.paddle) {
-	// 			if (p.activate === false)
-	// 				continue;
-	// 			const r = paddleReact(p, state, cfg);
-	// 			if (ballIntersectsRect(state.ballX, state.ballY, cfg.ballRadius, r)) {
-	// 				applyBounceFromPaddle(state, p, cfg);
-	// 				//att au 4p pour les colision paddle
-	// 				break;
-	// 			}
-	// 	}
-
-	// 	// TODO: ball phisic score
-
-	// 	this.onTick(this.state);
-	// }
 }
