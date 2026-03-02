@@ -183,7 +183,7 @@ export default async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 	const table = document.createElement("table");
 	const tHead = document.createElement("thead");
 	const tbody = document.createElement("tbody");
-	const backButton = createBackButton("", "/");
+	const backButton = createBackButton("bg-red-300 dark:bg-red-900", "/");
 	let users: userInfo[];
 	
 	// Setting metadata
