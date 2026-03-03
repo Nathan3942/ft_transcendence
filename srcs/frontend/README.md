@@ -1,6 +1,6 @@
 # Overview
 
-This is the frontend section of the SPA (Single Page Application), it is written in **Typescript** and uses **TailwindCSS** for styling. It is compiled using `npm run build` with the output being stored in a Docker container at:
+This is the frontend section of the SPA (Single Page Application), it is written in **Typescript** and uses **TailwindCSS** for styling. It is compiled using `pnpm run build` with the output being stored in a Docker container at:
 ```
 /var/www/pong-frontend
 ```
@@ -24,8 +24,31 @@ The frontend is structured as follows:
 
 ---
 
+# Dependancies
+To build / work on the project, you will need the following dependancies.
+
+## Package managers
+
+| Manager  | Reccomendation |
+| -------- | --------- |
+| **pnpm** | Preferred |
+| **npm**  | Fallback  |
+
+
+## Dev Dependencies
+
+Use `[manager] install` in the `/srcs/frontend` directory to automatically install the dev dependancies.
+
+| Dependency     | Version |
+| -------------- | ------- |
+| **TypeScript** | 5.7.3   |
+| **Vite**       | 7.3.1   |
+
+
+---
+
 # Debugging
 To run the SPA in dev mode, to avoid having to set up a webserver each time, the repo comes with `vite` which has a built in dev server. To launch the dev server, make sure you are in the `srcs/fontend` directory, and run the command:
 ```bash
-npm run dev
+pnpm run dev
 ```
