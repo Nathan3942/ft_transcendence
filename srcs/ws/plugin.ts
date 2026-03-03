@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/13 15:48:09 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/02 19:53:29 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/03 10:34:00 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -202,6 +202,7 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 			if (msg.type === "join_game") {
 				
 				const room = `game:${msg.gameId}` as WsRoom;
+				ws._gameId = msg.gameId;
 
 				const match = getMatchById(msg.gameId);
 				const mode = normalizeMode(match?.mode);
@@ -209,6 +210,7 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 				const game = gameManager.getAndCreatGame(msg.gameId, mode);
 
 				ws._clientId = msg.clientId;
+				
 
 				const slot = pickSlotForClient(game, mode, ws._clientId);
 
@@ -239,6 +241,10 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 					hub.send(ws, { type: "match_waiting", gameId: msg.gameId, count, playerNeeded, mode });
 					return;
 				}
+				else {
+					if (game.state.status === "paused")
+						gameManager.resumeGame(msg.gameId);
+				}
 				
 				updateMatchStatus(msg.gameId, "in_progress");
 				hub.broadcast(room, { type: "match_ready", gameId: msg.gameId, count, mode });
@@ -254,12 +260,28 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 				return;
 			}
 
+			if (msg.type === "leave_game") {
+				const room = `game:${msg.gameId}` as WsRoom;
+				hub.leave(ws, room);
+				console.log("leave game");
+				if (ws._slot && ws._clientId)
+					gameManager.pauseGame(msg.gameId, ws._clientId);
+				return;
+			}
+
 			hub.send(ws, { type: "error", code: "UNKNOWN_EVENT", message: "Unknown event type" });
 		});
 		
 
 		ws.on("close", (code, reason) => {
 			hub.leaveAll(ws);
+
+			const gameId = ws._gameId;
+			const slot = ws._slot;
+
+			if (gameId && slot)
+				gameManager.pauseGame(gameId, `disconnect:${slot}`, ws._clientId);
+
 			app.log.info({ wsId: ws._wsId, code, reason: reason.toString() }, "WS disconnected");
 		});	
 

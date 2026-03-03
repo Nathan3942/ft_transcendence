@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 17:15:35 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/02 18:03:46 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/03 10:33:12 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -158,7 +158,7 @@ export default function onlineMatch(): HTMLDivElement {
 		if (!running)
 			return;
 		if (lastRenderState)
-			drawPong(ctx, canvas, lastRenderState);
+			drawPong(ctx, canvas, lastRenderState, mySlot);
 		rafId = requestAnimationFrame(loop);
 	}
 	rafId = requestAnimationFrame(loop);
@@ -204,6 +204,15 @@ export default function onlineMatch(): HTMLDivElement {
 			return;
 		}
 
+		if (msg.type === "game_paused") {
+			status.textContent = `Paused (player ${msg.clientId} disconnected)`
+			return;
+		}
+			if (msg.type === "game_resumed") {
+			
+			return;
+		}
+
 		// accepte tous les slots
 		if (msg.type === "assigned_slot") {
 			mySlot = msg.slot as GameSlot;
@@ -224,6 +233,16 @@ export default function onlineMatch(): HTMLDivElement {
 			return;
 		}
 
+		if (msg.type === "game_over") {
+			const winner = msg.winnerName ?? msg.winnerUserId ?? msg.winnerSlot;
+			status.textContent = `Winner: ${winner}`;
+			if (unbindInput) {
+				unbindInput();
+				unbindInput = null;
+			}
+			return;
+		}
+
 		if (msg.type === "game_tick" && msg.state) {
 			lastServerState = msg.state as ServerGameState;
 			lastRenderState = toRenderState(lastServerState, canvas.width, canvas.height);
@@ -241,17 +260,54 @@ export default function onlineMatch(): HTMLDivElement {
 	});
 	ro.observe(gameContainer);
 
-	const cleanup = () => {
+	 // --- cleanup SPA / back / leave ---
+  	const onNavigate = (ev: any) => {
+		// optionnel: ne cleanup que si on quitte la page online-match
+		// si tu n'as pas l'info du path courant, enlève ce if
+		const nextPath = ev?.detail?.path as string | undefined;
+		if (!nextPath) {
+			cleanup();
+			return;
+		}
+		// si tu veux : cleanup seulement quand on sort de /online-match
+		if (nextPath !== "/online-match") 
+			cleanup();
+  	};
+
+ 	const onPageHide = () => cleanup(); // super important pour "back" / bfcache
+
+ 	const cleanup = () => {
+		if (!running)
+			return; // éviter double-call
 		running = false;
+
 		cancelAnimationFrame(rafId);
 		ro.disconnect();
-		if (unbindInput) unbindInput();
+
+		if (unbindInput) {
+			unbindInput();
+			unbindInput = null;
+		}
+
+    // optionnel mais top: prévenir le serveur avant close
+		try {
+			const matchId = getCurrentMatchId();
+			if (matchId) {
+				ws.send(JSON.stringify({ type: "leave_game", gameId: matchId, clientId: getClientId() }));
+			}
+		}
+		catch {}
+
 		try { ws.close(1000, "leave"); } catch {}
+
+		window.removeEventListener("beforeunload", cleanup);
+		window.removeEventListener("pagehide", onPageHide);
+		window.removeEventListener("navigate", onNavigate as any);
 	};
 
 	window.addEventListener("beforeunload", cleanup);
-	window.addEventListener("navigate", cleanup as any);
-
+	window.addEventListener("pagehide", onPageHide);
+	window.addEventListener("navigate", onNavigate as any);
 	return page;
 }
 

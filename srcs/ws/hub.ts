@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/13 14:57:23 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/02/27 12:33:46 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/03 10:10:54 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ export type WsSocket = WebSocket & {
     _wsId?: string;
     _userId?: string;
     _clientId?: string;
+    _gameId?: string;
     //surment en garder que un au final a voir avec l'auth
     _slot?: GameSlot;
 }

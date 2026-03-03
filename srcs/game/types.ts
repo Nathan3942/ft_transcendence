@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 15:46:01 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/02 16:11:13 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/03 10:04:19 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,9 @@ export type GameSlot =
   | "top"
   | "bottom";
 
+export type GamePhase = "LOBBY" | "COUNTDOWN" | "RUNNING" | "ENDED";
+
+export type GameStatus = "waiting" | "running" | "paused" | "ended";
 
 export type PaddleInput = {
 	dir: -1 | 0 | 1; // -1 up, 0 stop, 1 down
@@ -37,17 +40,30 @@ export type PaddleState = {
 	axis: "y" | "x";
 	pos: number;
 	vel: number;
+	life: number;
+	activate: boolean;
 }
 
 export type GameState = {
 	id: GameId;
-	status: "waiting" | "running" | "ended";
+	status: GameStatus;
 	mode: ModeId;
 	score: { left: number; right: number };
 	ball: { x: number; y: number; vx: number; vy: number };
 	paddles: Partial<Record<GameSlot, PaddleState>>;
 	lastTickMs: number;
-	play?: { x: number; y: number; w: number; h: number };
+	play: { x: number; y: number; w: number; h: number };
+
+	winnerSlot?: GameSlot | null;
+
+	phase: GamePhase;
+	countdownAcc: number;
+	countdown: number;
+	// winnerName?: string | null;
+
+	// initPaddles: (mode: ModeId) => PaddleState[];
+	// checkScore: () => 1 | 2 | null;
+	// handleWallBounce: () => void;
 };
 
 

@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 15:45:30 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/02 19:55:54 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/03 10:35:59 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,8 @@ const W = 1000;
 const H_CARRE = 800;
 const W_CARRE = 800;
 const PADDLE_H = 120;
+
+
 
 type PlayerInfo = { clientId: string, userId?: string };
 
@@ -57,16 +59,17 @@ function initPaddles(mode: ModeId) {
 			};
 		case "3p":
 			return {
-				left: { axis: "y", pos: midY_carre, vel: 0 },
-				right: { axis: "y", pos: midY_carre, vel: 0 },
-				top: { axis: "x", pos: midX_carre, vel: 0 },
+				left: { axis: "y", pos: midY_carre, vel: 0, life: 3, activate: true },
+				right: { axis: "y", pos: midY_carre, vel: 0, life: 3, activate: true },
+				top: { axis: "x", pos: midX_carre, vel: 0, life: 3, activate: true },
+				bottom: { axis: "x", pos: midX_carre, vel: 0, life: 0, activate: false },
 			} as any;
 		case "4p":
 			return {
-				left: { axis: "y", pos: midY_carre, vel: 0 },
-				right: { axis: "y", pos: midY_carre, vel: 0 },
-				top: { axis: "x", pos: midX_carre, vel: 0 },
-				bottom: { axis: "x", pos: midX_carre, vel: 0 },
+				left: { axis: "y", pos: midY_carre, vel: 0, life: 3, activate: true },
+				right: { axis: "y", pos: midY_carre, vel: 0, life: 3, activate: true },
+				top: { axis: "x", pos: midX_carre, vel: 0, life: 3, activate: true },
+				bottom: { axis: "x", pos: midX_carre, vel: 0, life: 3, activate: true },
 			} as any;
 		default:
 			return {
@@ -86,7 +89,7 @@ function initPlay(mode: ModeId) {
 	}
 }
 
-function randomSign() {
+export function randomSign() {
 	return Math.random() < 0.5 ? -1 : 1;
 }
 
@@ -100,6 +103,8 @@ function initBall(mode: ModeId) {
 		return { x: W_CARRE / 2 + 100, y: H_CARRE / 2 + 10, vx: 420 * randomSign(), vy: 420 * 0.6 * randomSign() };
 	}
 }
+
+
 
 
 export class GameManager {
@@ -125,12 +130,30 @@ export class GameManager {
 			paddles: initPaddles(md),
 			lastTickMs: Date.now(), 
 			play: initPlay(md),
+			phase: "LOBBY",
+			countdownAcc: 0,
+			countdown: 3,
 		};
 
 		const loop = new GameLoop(
 			state,
 			(s) => this.broadcastToRoom(`game:${id}`, { type: "game_tick", state: s }),
-			(evt) => this.broadcastToRoom(`game:${id}`, { type: "game_event", evt })
+			(evt) => {
+				if (evt.type === "game_over") {
+					const winnerSlot = evt.winnerSlot as GameSlot;
+					const winnerUserId = this.games.get(id)?.players[winnerSlot]?.clientId ?? null;
+					
+
+					this.broadcastToRoom(`game:${id}`, {
+						type: "game_over",
+						gameId: id,
+						winnerSlot,
+						winnerUserId,
+					});
+					return;
+				}
+				this.broadcastToRoom(`game:${id}`, { type: "game_event", evt })
+			}
 		);
 
 
@@ -148,8 +171,29 @@ export class GameManager {
 		const g = this.games.get(gameId)!;
 		if (!g)
 			return;
+		g.state.phase = "COUNTDOWN";
+		g.state.countdown = 3;
+		g.state.countdownAcc = 0;
+
 		ws.send(JSON.stringify({ type: "game_sync", state: g.state }));
 		g.loop.start();
+	}
+
+	pauseGame(gameId: GameId, reason = "player_disconnect", clientId: string | null = null) {
+		const g = this.games.get(gameId);
+		if (!g)
+			return;
+		g.loop.pause();
+		this.broadcastToRoom(`game:${gameId}`, { type: "game_paused", reason,  clientId});
+		this.broadcastToRoom(`game:${gameId}`, { type: "game_tick", state: g.state });
+	}
+
+	resumeGame(gameId: GameId) {
+		const g = this.games.get(gameId);
+		if (!g)
+			return;
+		g.loop.resume();
+		this.broadcastToRoom(`game:${gameId}`, { type: "game_resumed" });
 	}
 
 	resetGameState(game: GameState, width: number, height: number) {

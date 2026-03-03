@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/23 17:28:04 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/02 19:48:23 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/03 09:40:30 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,12 +26,16 @@ export type ServerPaddle = {
 	axis: "x" | "y";
 	pos: number;
 	vel: number;
+	life: number;
+	activate: boolean;
 }
 
 export type ServerGameState = {
 	
 	id: string;
-	status: "waiting" | "running" | "finished";
+	status: "waiting" | "running" | "ended";
+	phase: "LOBBY" | "COUNTDOWN" | "RUNNING" | "ENDED";
+  	
 	mode: ModeId;
 
 	score: { left: number; right: number };
@@ -40,6 +44,9 @@ export type ServerGameState = {
 	paddles: Partial<Record<GameSlot, ServerPaddle>>;
 	
 	play?: { x: number; y: number; w: number; h: number };
+
+	countdown: number;
+
 };
 
 
@@ -49,6 +56,8 @@ export type RenderPaddleRect = {
 	y: number;
 	w: number;
 	h: number;
+	activate: boolean;
+	life: number;
 };
 
 export type RenderState = {
@@ -58,7 +67,9 @@ export type RenderState = {
 	ballX: number; ballY: number;
 	scoreLeft: number; scoreRight: number;
 
-	phase: "LOBBY" | "RUNNING";
+	phase: "LOBBY" | "COUNTDOWN" | "RUNNING" | "ENDED";
+	countdown: number;
+
 	paddles: RenderPaddleRect[];
 }
 
@@ -66,7 +77,7 @@ const PADDLE_THICK = 10;
 const PADDLE_LEN = 120;
 const MARGIN = 10;
 
-const GAP = PADDLE_LEN + 8;
+const GAP = PADDLE_THICK + 8;
 
 function axisLocalToAbs(
   axis: "x" | "y",
@@ -109,31 +120,34 @@ export function toRenderState(s: ServerGameState, canvasW: number, canvasH: numb
 	console.log(`State = ${playW}, ${playH}, ${playX}, ${playY}`);
 
 	const paddles: RenderPaddleRect[] = [];
-
 	const wantedSlot = slotsForMode(s.mode);
+
 	for (const slot of wantedSlot) {
 		const p = s.paddles?.[slot];
 		if (!p)
 			continue;
+
+		const activate = p.activate ?? true;
+		const life = p.life ?? 0;
 		
 		const abs = axisLocalToAbs(p.axis, p.pos, playX, playY);
 
 		if (slot === "left")
-			paddles.push({ slot, x: playX + MARGIN, y: abs, w: PADDLE_THICK, h: PADDLE_LEN });
+			paddles.push({ slot, x: playX + MARGIN, y: abs, w: PADDLE_THICK, h: PADDLE_LEN, activate, life });
 		else if (slot === "right")
-			paddles.push({ slot, x: playX + playW - MARGIN - PADDLE_THICK, y: abs, w: PADDLE_THICK, h: PADDLE_LEN });
+			paddles.push({ slot, x: playX + playW - MARGIN - PADDLE_THICK, y: abs, w: PADDLE_THICK, h: PADDLE_LEN, activate, life });
 		else if (slot === "left1")
-			paddles.push({ slot, x: playX + MARGIN + 0 * GAP, y: abs, w: PADDLE_THICK, h: PADDLE_LEN });
+			paddles.push({ slot, x: playX + MARGIN + 0 * GAP, y: abs, w: PADDLE_THICK, h: PADDLE_LEN, activate, life });
 		else if (slot === "left2")
-			paddles.push({ slot, x: playX + MARGIN + 1 * GAP, y: abs, w: PADDLE_THICK, h: PADDLE_LEN });
+			paddles.push({ slot, x: playX + MARGIN + 1 * GAP, y: abs, w: PADDLE_THICK, h: PADDLE_LEN, activate, life });
 		else if (slot === "right1")
-			paddles.push({ slot, x: playX + playW - MARGIN - PADDLE_THICK - 0 * GAP, y: abs, w: PADDLE_THICK, h: PADDLE_LEN });
+			paddles.push({ slot, x: playX + playW - MARGIN - PADDLE_THICK - 0 * GAP, y: abs, w: PADDLE_THICK, h: PADDLE_LEN, activate, life });
 		else if (slot === "right2")
-			paddles.push({ slot, x: playX + playW - MARGIN - PADDLE_THICK - 1 * GAP, y: abs, w: PADDLE_THICK, h: PADDLE_LEN });
+			paddles.push({ slot, x: playX + playW - MARGIN - PADDLE_THICK - 1 * GAP, y: abs, w: PADDLE_THICK, h: PADDLE_LEN, activate, life });
 		else if (slot === "top")
-			paddles.push({ slot, x: abs, y: playY + MARGIN, w: PADDLE_LEN, h: PADDLE_THICK });
+			paddles.push({ slot, x: abs, y: playY + MARGIN, w: PADDLE_LEN, h: PADDLE_THICK, activate, life });
 		else if (slot === "bottom")
-			paddles.push({ slot, x: abs, y: playY + playH - MARGIN - PADDLE_THICK, w: PADDLE_LEN, h: PADDLE_THICK });
+			paddles.push({ slot, x: abs, y: playY + playH - MARGIN - PADDLE_THICK, w: PADDLE_LEN, h: PADDLE_THICK, activate, life });
 
 	}
 
@@ -145,7 +159,8 @@ export function toRenderState(s: ServerGameState, canvasW: number, canvasH: numb
 		ballY: s.ball.y,
 		scoreLeft: s.score.left,
 		scoreRight: s.score.right,
-		phase: s.status === "running" ? "RUNNING" : "LOBBY",
+		phase: s.phase,
 		paddles,
+		countdown: s.countdown,
 	};
 }
