@@ -46,3 +46,11 @@ export class BadRequestError extends BaseError {
         this.name = "BadRequestError";
     }
 }
+
+export class ConflictError extends BaseError {
+    statusCode = 409;
+    constructor(message = "Resource already exists", details: any[] = []) {
+        super(message, 409, details);
+        this.name = "ConflictError";
+    }
+}

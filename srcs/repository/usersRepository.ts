@@ -2,6 +2,7 @@
 
 import { queryAll, queryOne, queryExecute } from '../database/queryWrapper'
 import { User, PublicUser } from '../models/userModel'
+import { ConflictError } from '../utils/appErrors'
 
 const PUBLIC_FIELDS = `
     id, username, email, display_name, avatar_url, is_online, created_at
@@ -63,7 +64,7 @@ export async function createUser({ username, email, password_hash }: {
         }
     } catch (err: any) {
         if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
-            throw new Error('user already exists')
+            throw new ConflictError('Username or email already exists')
         }
         throw err
     }
