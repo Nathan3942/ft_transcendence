@@ -15,12 +15,18 @@ import {
 import { NotFoundError, BadRequestError } from '../utils/appErrors'
 import { PublicUser } from '../models/userModel'
 
+const DEFAULT_AVATAR = '/uploads/avatars/default.svg'
+
+function withDefaultAvatar(user: PublicUser): PublicUser {
+    return { ...user, avatar_url: user.avatar_url ?? DEFAULT_AVATAR }
+}
+
 export function getAllUsers(): PublicUser[] {
     const users = getAllUsersRepo()
     if (users.length === 0) {
         throw new NotFoundError('No users in database')
     }
-    return users
+    return users.map(withDefaultAvatar)
 }
 
 export function getUserById(id: string | number): PublicUser {
@@ -28,7 +34,7 @@ export function getUserById(id: string | number): PublicUser {
     if (!user) {
         throw new NotFoundError('User not found')
     }
-    return user
+    return withDefaultAvatar(user)
 }
 
 export async function createUser(username: string, email: string, password_hash: string): Promise<PublicUser> {
@@ -55,7 +61,7 @@ export function getOrCreateUser(username: string): PublicUser {
 
 export function updateUser(
     id: string | number,
-    fields: { username?: string; display_name?: string; avatar_url?: string }
+    fields: { username?: string; email?: string; display_name?: string; avatar_url?: string }
 ): PublicUser {
     if (!id || Object.keys(fields).length === 0) {
         throw new BadRequestError('Missing id or fields to update')
@@ -71,7 +77,7 @@ export function updateUser(
         throw new Error('Failed to update user')
     }
 
-    return getUserByIdRepo(id)!
+    return withDefaultAvatar(getUserByIdRepo(id)!)
 }
 
 export function deleteUser(id: string | number): { message: string; id: number } {

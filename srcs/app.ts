@@ -1,6 +1,9 @@
 import Fastify, { FastifyInstance } from 'fastify'
 import cors from '@fastify/cors'
 import jwt from '@fastify/jwt'
+import multipart from '@fastify/multipart'
+import staticFiles from '@fastify/static'
+import path from 'path'
 import { initDatabase, checkDatabaseHealth, initTables } from './database'
 import v1Routes from './routes/v1'
 import { errorHandler, notFoundHandler } from './utils/ErrorHandler'
@@ -29,7 +32,16 @@ export async function buildApp(): Promise<FastifyInstance> {
     secret: env.JWT_SECRET
   })
 
- //rate limit pour eviter trop de request
+  // Multipart — parsing fichiers uploadés (avatars)
+  await app.register(multipart, { limits: { fileSize: 5 * 1024 * 1024 } }) // 5 MB max
+
+  // Static — sert les fichiers uploadés depuis /uploads
+  await app.register(staticFiles, {
+    root: path.join(process.cwd(), 'uploads'),
+    prefix: '/uploads/'
+  })
+
+  //rate limit pour eviter trop de request
   await registerRateLimit(app)
 
   initDatabase()

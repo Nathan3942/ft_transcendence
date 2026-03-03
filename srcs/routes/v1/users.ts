@@ -5,10 +5,17 @@
  */
 
 import { FastifyInstance } from 'fastify'
+import { pipeline } from 'stream/promises'
+import { createWriteStream } from 'fs'
+import { mkdir } from 'fs/promises'
+import path from 'path'
 import { success } from '../../utils/response'
 import * as userService from '../../services/userService'
 import { authenticate } from '../../plugins/authenticate'
-import { ForbiddenError } from '../../utils/appErrors'
+import { BadRequestError, ForbiddenError } from '../../utils/appErrors'
+
+const AVATAR_DIR = path.join(process.cwd(), 'uploads', 'avatars')
+const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
 
 export default async function usersRoutes(server: FastifyInstance) {
 
@@ -25,7 +32,7 @@ export default async function usersRoutes(server: FastifyInstance) {
         return success(user)
     })
 
-    /************************* PATCH USER — requiert auth + ownership **********************************/
+    /************************* PATCH USER — update email / display_name **********************************/
     server.patch('/users/:id', { preHandler: authenticate }, async (request, _reply) => {
         const { id } = request.params as { id: string }
         const { id: tokenId } = request.user as { id: number; username: string }
@@ -34,8 +41,39 @@ export default async function usersRoutes(server: FastifyInstance) {
             throw new ForbiddenError('You can only update your own profile')
         }
 
-        const fields = request.body as { username?: string; display_name?: string; avatar_url?: string }
+        const fields = request.body as { username?: string; email?: string; display_name?: string; avatar_url?: string }
         const updatedUser = userService.updateUser(id, fields)
+        return success(updatedUser)
+    })
+
+    /************************* POST /users/:id/avatar — upload image multipart **********************************/
+    server.post('/users/:id/avatar', { preHandler: authenticate }, async (request, _reply) => {
+        const { id } = request.params as { id: string }
+        const { id: tokenId } = request.user as { id: number; username: string }
+
+        if (parseInt(id) !== tokenId) {
+            throw new ForbiddenError('You can only update your own avatar')
+        }
+
+        const data = await request.file()
+        if (!data) {
+            throw new BadRequestError('No file provided')
+        }
+        if (!ALLOWED_MIME.includes(data.mimetype)) {
+            throw new BadRequestError('Invalid file type. Allowed: jpeg, png, gif, webp')
+        }
+
+        // Crée le dossier si inexistant
+        await mkdir(AVATAR_DIR, { recursive: true })
+
+        const ext = path.extname(data.filename) || '.jpg'
+        const filename = `avatar-${id}-${Date.now()}${ext}`
+        const filepath = path.join(AVATAR_DIR, filename)
+
+        await pipeline(data.file, createWriteStream(filepath))
+
+        const avatar_url = `/uploads/avatars/${filename}`
+        const updatedUser = userService.updateUser(id, { avatar_url })
         return success(updatedUser)
     })
 

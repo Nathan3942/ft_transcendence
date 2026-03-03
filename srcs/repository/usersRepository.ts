@@ -70,7 +70,7 @@ export async function createUser({ username, email, password_hash }: {
     }
 }
 
-export function updateUser(id: string | number, fields: Partial<Pick<User, 'username' | 'display_name' | 'avatar_url'>>): boolean {
+export function updateUser(id: string | number, fields: Partial<Pick<User, 'username' | 'email' | 'display_name' | 'avatar_url'>>): boolean {
     const entries = Object.entries(fields).filter(([, v]) => v !== undefined)
     if (entries.length === 0) return false
     const setClauses = entries.map(([k]) => `${k} = ?`).join(', ')
