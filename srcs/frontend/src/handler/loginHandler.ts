@@ -22,7 +22,6 @@ export async function loginHandler(payload: loginRequest): Promise<void> {
 	}
 
 	setItem<boolean>("loggedIn", true);
-	
 }
 
 export async function registerHandler(payload: loginRequest): Promise<void> {
@@ -43,7 +42,6 @@ export async function registerHandler(payload: loginRequest): Promise<void> {
 	}
 
 	setItem<boolean>("loggedIn", true);
-
 }
 
 export async function logoutHandler() {
@@ -78,7 +76,7 @@ export async function refreshAccess(): Promise<void> {
 		});
 
 		if (resp.status == 404 && resp.text.length == 0)
-			renderMessage("You appear to be offline. Some features may be unavailable")
+			renderMessage("You appear to be offline. Some features may be unavailable");
 
 		if (!resp.ok) {
 			redirectToLogin();

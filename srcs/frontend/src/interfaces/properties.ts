@@ -20,6 +20,12 @@ export interface loginRequest {
 	password: string;
 }
 
+export interface APIErrMsg {
+	error: string;
+	message: string;
+	details?: unknown;
+}
+
 export interface Route {
 	path: string;
 	component: () => HTMLDivElement | Promise<HTMLDivElement>;
