@@ -30,10 +30,12 @@ export function errorHandler(
     }, 'Error occurred')
 
     // Handle known application errors (BaseError instances)
+    // Always pass through error.message — these are intentional user-facing messages
+    // (e.g. "User not found"), not implementation details.
     if (error instanceof BaseError) {
         return reply.status(error.statusCode).send({
             error: error.name,
-            message: isProd ? getProductionMessage(error.statusCode) : error.message,
+            message: error.message,
             details: isProd ? [] : (error.details ?? [])
         })
     }
