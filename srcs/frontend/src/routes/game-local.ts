@@ -9,7 +9,7 @@ export default function createGameLocalPage(): HTMLDivElement {
 	outer.className = "flex flex-col flex-1 justify-center items-end"
 	inner.className = "text-3xl w-9/12 h-2/3 flex flex-col items-end justify-evenly";
 
-	outer.append(createBackButton("bg-blue-800", "/"))
+	outer.append(createBackButton("bg-blue-400 dark:bg-blue-800", "/"))
 	
 	const btnClasses = "w-full h-full flex flex-row p-4"; 
 	inner.append(
@@ -33,7 +33,7 @@ export default function createGameLocalPage(): HTMLDivElement {
 			iconBClass: "h-10 pr-3 dark:invert"
 			})
 		), 
-		makeButtonBlock("bg-cyan-300 dark:bg-cyan-900", createButton({
+		makeButtonBlock("bg-cyan-200 dark:bg-cyan-900", createButton({
 			id: "create-local-tournament",
 			extraClasses: btnClasses,
 			buttonText: "Local Tournament",

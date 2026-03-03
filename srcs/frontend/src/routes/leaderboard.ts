@@ -1,8 +1,11 @@
 import createBackButton from "../components/button/backButton";
 import { createButton } from "../components/button/button";
+import { API_BASE } from "../handler/loginHandler";
+import { getItem } from "../helpers/localStoragehelper";
 
 // Variable names subject to change with proper backend integration
 type userInfo = {
+	userId: string;
 	userName: string;
 	localAiE: number;
 	localAiM: number;
@@ -28,7 +31,9 @@ type scoreKey = keyof Pick<
 async function importUserData(): Promise<userInfo[]> {
 	 try {
 		
-		const response = await fetch("/api/test/users.json");
+		const response = await fetch(`${API_BASE}/leaderboard`, {
+			method: "GET",
+		});
 		if (!response.ok) {
 			throw new Error(`Network error: ${response.status} ${response.statusText}`);
 		}
@@ -102,7 +107,7 @@ function createLeaderboardCells(users: userInfo[]): HTMLTableSectionElement {
 	return tBody;
 };
 
-export async function buildLeaderboardPage(): Promise<HTMLDivElement> {
+export default async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 
 	// Helper functions
 	function buildLeaderboard(key: scoreKey): HTMLTableSectionElement {
@@ -170,7 +175,7 @@ export async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 				f: () => replaceTableBody(key),
 			}))
 	return th;
-}
+	}
 
 	// Function Proper
 	const outer = document.createElement("div");
@@ -179,7 +184,6 @@ export async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 	const table = document.createElement("table");
 	const tHead = document.createElement("thead");
 	const tbody = document.createElement("tbody");
-	const backButton = createBackButton("", "/");
 	let users: userInfo[];
 	
 	// Setting metadata
@@ -219,7 +223,11 @@ export async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 	table.append(tHead, tbody);
 	tableContainer.append(table)
 	leaderboard.append(tableContainer);
-	outer.append(leaderboard, backButton);
+	outer.append(leaderboard);
+
+	if (getItem("loggedIn") === true) {
+		outer.append(createBackButton("bg-red-300 dark:bg-red-900", "/"));
+	}
 	
 	try {
 		users = await importUserData();

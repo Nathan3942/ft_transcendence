@@ -2,7 +2,7 @@ export default function createTestPage(): HTMLDivElement  {
 	const template = document.createElement("template");
 	
 	template.innerHTML = `
-	<div class="flex-1">test</div>
+	<div class="flex-1"></div>
 	`;
 
 	const pageTest = template.content.firstElementChild as HTMLDivElement;

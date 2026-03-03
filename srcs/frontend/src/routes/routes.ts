@@ -1,0 +1,43 @@
+import { authGuard} from "../handler/routeHandler";
+import type { Route } from "../interfaces/properties";
+
+const lazy = <T extends HTMLElement>(
+	loader: () => Promise<{default: () => T | Promise<T>}>
+) => async () => (await loader()).default();
+
+export const routes: Route[] = [
+	{
+		path: "/",
+		component: lazy(() => import("./home")),
+		guarded: [authGuard]
+	},
+	{
+		path: "/leaderboard",
+		component: lazy(() => import("./leaderboard")),
+		// guarded: [authGuard]
+	},
+	/* {
+		path: "/user-profile",
+		component: lazy(() => import("./user-profile")),
+		guarded: [authGuard]
+	}, */
+	{
+		path: "/login",
+		component: lazy(() => import("./login-page"))
+	},
+	{
+		path: "/game-local",
+		component: lazy(() => import("./game-local")),
+		guarded: [authGuard]
+	},
+	{
+		path: "/game-local-ai",
+		component: lazy(() => import("./game-local-ai")),
+		guarded: [authGuard]
+	},
+	{
+		path: "/game-online",
+		component: lazy(() => import("./game-online")),
+		guarded: [authGuard]
+	}
+]
