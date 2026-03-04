@@ -264,6 +264,13 @@ export function updateMatchStatus(
     }
 }
 
+export function getMatchStatus(matchId: string | number) {
+
+    const match = getMatchByIdRepo(matchId);
+    return match?.status;
+}
+
+
 /**
  * Start a match (sets status to in_progress and records start time)
  * @param matchId - Match ID

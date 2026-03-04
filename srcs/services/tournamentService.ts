@@ -217,7 +217,8 @@ export function saveTournamentResult(input: TournamentResultInput) {
             p1User!.id,
             m.scorePlayer1,
             p2User!.id,
-            m.scorePlayer2
+            m.scorePlayer2,
+            "1v1"
         )
     })
 

@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 15:45:30 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/03 10:35:59 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/04 17:11:54 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@ import type { FastifyBaseLogger } from "fastify";
 import type { WsSocket } from "../ws/hub";
 import type { GameId, GameState, PaddleInput, ModeId, GameSlot } from "./types";
 import { GameLoop } from "./gameLoop";
+import { deleteMatch, updateMatchStatus } from "../services/matchService";
 
 
 const H = 700;
@@ -95,12 +96,58 @@ export function randomSign() {
 
 function initBall(mode: ModeId) {
 
-	// ajouter random pour debut de partie sur vx vy
+	const SPEED = 420;
+
 	if (mode === "1v1" || mode === "2v2") {
-		return { x: W / 2 + 100, y: H / 2 + 100, vx: 420 * randomSign(), vy: 420 * 0.6 * randomSign() };
+		return {
+			x: W / 2 + 100,
+			y: H / 2 + 100,
+			vx: SPEED * randomSign(),
+			vy: SPEED * 0.6 * randomSign()
+		};
 	}
 	else {
-		return { x: W_CARRE / 2 + 100, y: H_CARRE / 2 + 10, vx: 420 * randomSign(), vy: 420 * 0.6 * randomSign() };
+		const r = Math.floor(Math.random() * 4);
+		const r2 = Math.random();
+
+		let vx = 0;
+		let vy = 0;
+
+		if (r === 0) {
+			vx = 420;
+			if (r2)
+				vy = 420 * 0.6;
+			else
+				vy = -420 * 0.6;
+		}
+		else if (r === 1) {
+			vx = -420;
+			if (r2)
+				vy = 420 * 0.6;
+			else
+				vy = -420 * 0.6;
+		}
+		else if (r === 2) {
+			if (r2)
+				vx = 420 * 0.6;
+			else
+				vx = -420 * 0.6;
+			vy = 420;
+		}
+		else {
+			if (r2)
+				vx = 420 * 0.6;
+			else
+				vx = -420 * 0.6;
+			vy = -420;
+		}
+
+		return {
+			x: W_CARRE / 2 + 100,
+			y: H_CARRE / 2 + 10,
+			vx,
+			vy
+		};
 	}
 }
 
@@ -142,8 +189,7 @@ export class GameManager {
 				if (evt.type === "game_over") {
 					const winnerSlot = evt.winnerSlot as GameSlot;
 					const winnerUserId = this.games.get(id)?.players[winnerSlot]?.clientId ?? null;
-					
-
+					updateMatchStatus(id, "finished");
 					this.broadcastToRoom(`game:${id}`, {
 						type: "game_over",
 						gameId: id,

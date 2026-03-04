@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 14:42:50 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/02/27 10:28:50 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/04 13:33:18 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,8 +44,12 @@ function matchRow(m: Match, onDeleted: () => void): HTMLDivElement {
 	joinBtn.className = "px-4 py-2 rounded bg-blue-600 text-white";
 	joinBtn.textContent = "Join";
 	joinBtn.onclick = () => {
-		setCurrentMatchId(String(m.id));
-		navigate("/online-match");
+		if (m.status === "finished")
+			confirm(`Match ${m.id} finished`);
+		else {
+			setCurrentMatchId(String(m.id));
+			navigate("/online-match");
+		}
 	};
 
 	const delBtn = document.createElement("button");
@@ -56,10 +60,10 @@ function matchRow(m: Match, onDeleted: () => void): HTMLDivElement {
 		if (!ok) 
 			return;
 		try {
-		await deleteMatch(m.id);
-		onDeleted(); // refresh list
+			await deleteMatch(m.id);
+			onDeleted(); // refresh list
 		} catch (e) {
-		alert(`Delete failed: ${(e as Error).message}`);
+			alert(`Delete failed: ${(e as Error).message}`);
 		}
 	};
 

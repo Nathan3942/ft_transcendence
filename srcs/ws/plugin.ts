@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/13 15:48:09 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/03 10:34:00 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/04 16:47:32 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ import { WsHub, type WsSocket } from "./hub";
 import type { WsClientEvent, WsEnvelope, WsRoom } from "./events";
 
 import { GameManager } from "../game/gameManager";
-import { updateMatchStatus } from "../services/matchService";
+import { getMatchStatus, updateMatchStatus } from "../services/matchService";
 import { getMatchById } from "../repository/matchesRepository";
 
 
@@ -98,7 +98,8 @@ function countRegisteredPlayers(game: any, mode: ModeStr): number {
   const slots = slotsForMode(mode);
   let c = 0;
   for (const s of slots) {
-    if (game.players?.[s]?.clientId) c++;
+    if (game.players?.[s]?.clientId)
+		c++;
   }
   return c;
 }
@@ -201,8 +202,12 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 
 			if (msg.type === "join_game") {
 				
+				console.log("Refresh page");
 				const room = `game:${msg.gameId}` as WsRoom;
 				ws._gameId = msg.gameId;
+
+				if (getMatchStatus(ws._gameId) === "finished")
+					return;
 
 				const match = getMatchById(msg.gameId);
 				const mode = normalizeMode(match?.mode);

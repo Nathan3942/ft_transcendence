@@ -6,13 +6,12 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 15:45:48 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/03 10:07:36 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/04 17:23:47 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import type { GameState, PaddleInput, GameSlot, ModeId } from "./types";
 import { randomSign, slotsForMode } from "./gameManager";
-import { stat } from "fs";
 
 const H = 700;
 const W = 1000;
@@ -199,8 +198,50 @@ export class GameLoop {
 
 		this.state.ball.x = this.state.play.w / 2 + this.state.play.x;
 		this.state.ball.y = this.state.play.h / 2 + this.state.play.y;
-		this.state.ball.vx = 420 * randomSign();
-		this.state.ball.vy = 420 * 0.6 * randomSign(); 
+
+		let vx = 0;
+		let vy = 0;
+
+		if (this.state.mode === "1v1" || this.state.mode === "2v2") {
+			vx = 420 * randomSign(),
+			vy = 420 * 0.6 * randomSign()
+		}
+		else {
+			const r = Math.floor(Math.random() * 4);
+			const r2 = Math.random();
+
+			if (r === 0) {
+				vx = 420;
+				if (r2)
+					vy = 420 * 0.6;
+				else
+					vy = -420 * 0.6;
+			}
+			else if (r === 1) {
+				vx = -420;
+				if (r2)
+					vy = 420 * 0.6;
+				else
+					vy = -420 * 0.6;
+			}
+			else if (r === 2) {
+				if (r2)
+					vx = 420 * 0.6;
+				else
+					vx = -420 * 0.6;
+				vy = 420;
+			}
+			else {
+				if (r2)
+					vx = 420 * 0.6;
+				else
+					vx = -420 * 0.6;
+				vy = -420;
+			}
+		}
+		
+		this.state.ball.vx = vx;
+		this.state.ball.vy = vy; 
 	}
 
 	private applyScore4P() {

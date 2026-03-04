@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/23 16:55:07 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/03 10:00:49 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/04 12:13:45 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,8 +49,8 @@ export function drawPong(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElemen
 		ctx.font = "150px 'vt323'";
 		
 		const yScore = state.playY + 120;
-		ctx.fillText(String(state.scoreLeft), cx - 150, yScore);
-		ctx.fillText(String(state.scoreRight), cx + 90, yScore);
+		ctx.fillText(String(state.scoreLeft), cx - 100, yScore);
+		ctx.fillText(String(state.scoreRight), cx + 100, yScore);
 	}
 	else {
 		ctx.fillStyle = "white";

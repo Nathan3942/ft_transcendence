@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 17:15:35 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/03 10:33:12 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/04 17:39:57 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,39 +14,32 @@ import { getCurrentMatchId, getCurrentMatchMode } from "../services/onlineStore"
 import { drawPong } from "../game/pong_render";
 import { toRenderState, type RenderState, type ServerGameState, type GameSlot } from "../game/server_state_adapter";
 
-
 function navigate(path: string) {
-	window.dispatchEvent(new CustomEvent("navigate", { detail: { path } }));
+  window.dispatchEvent(new CustomEvent("navigate", { detail: { path } }));
 }
-
 
 type Dir = -1 | 0 | 1;
 
 function randomId(): string {
-	
 	const c: any = globalThis.crypto as any;
-	if (c && typeof	c.randomUUID === "function")
+	if (c && typeof c.randomUUID === "function")
 		return c.randomUUID();
-	return (`${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`);
+	return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
 }
 
 function getClientId(): string {
 	const key = "clientId";
-	// a voir ce quon garde en pratique
-	// let v = localStorage.getItem(key);
 	let v = sessionStorage.getItem(key);
 	if (!v) {
 		v = randomId();
 		sessionStorage.setItem(key, v);
 	}
-	return (v);
+	return v;
 }
-
 
 function isHorizontal(slot: GameSlot) {
 	return slot === "top" || slot === "bottom";
 }
-
 
 function bindInput(ws: WebSocket, gameId: string, slot: GameSlot) {
 	let negPressed = false; // up / left
@@ -54,31 +47,38 @@ function bindInput(ws: WebSocket, gameId: string, slot: GameSlot) {
 	let currentDir: Dir = 0;
 
 	function computeDir(): Dir {
-		if (negPressed && !posPressed) return -1;
-		if (!negPressed && posPressed) return 1;
+		if (negPressed && !posPressed) 
+			return -1;
+		if (!negPressed && posPressed) 
+			return 1;
 		return 0;
 	}
 
 	function sendDir(dir: Dir) {
-		if (ws.readyState !== WebSocket.OPEN) return;
+		if (ws.readyState !== WebSocket.OPEN)
+			return;
 		ws.send(JSON.stringify({ type: "input", gameId, slot, input: { dir, ts: Date.now() } }));
 	}
 
 	function onKeyDown(e: KeyboardEvent) {
-		if (e.repeat) return;
+		if (e.repeat)
+			return;
 
 		const horiz = isHorizontal(slot);
 		const negKey = horiz ? "a" : "w";
 		const posKey = horiz ? "d" : "s";
 
-		if (e.key === negKey) negPressed = true;
-		else if (e.key === posKey) posPressed = true;
-		else return;
+		if (e.key === negKey)
+			negPressed = true;
+		else if (e.key === posKey)
+			posPressed = true;
+		else
+			return;
 
 		const next = computeDir();
 		if (next !== currentDir) {
-		currentDir = next;
-		sendDir(currentDir);
+			currentDir = next;
+			sendDir(currentDir);
 		}
 	}
 
@@ -87,11 +87,11 @@ function bindInput(ws: WebSocket, gameId: string, slot: GameSlot) {
 		const negKey = horiz ? "a" : "w";
 		const posKey = horiz ? "d" : "s";
 
-		if (e.key === negKey) 
+		if (e.key === negKey)
 			negPressed = false;
-		else if (e.key === posKey) 
+		else if (e.key === posKey)
 			posPressed = false;
-		else 
+		else
 			return;
 
 		const next = computeDir();
@@ -110,9 +110,7 @@ function bindInput(ws: WebSocket, gameId: string, slot: GameSlot) {
 	};
 }
 
-
 export default function onlineMatch(): HTMLDivElement {
-
 	const page = document.createElement("div");
 	page.className = "flex flex-col flex-1 p-6 gap-4";
 
@@ -138,22 +136,82 @@ export default function onlineMatch(): HTMLDivElement {
 	}
 	const ctx: CanvasRenderingContext2D = ctxMaybe;
 
-	// taille initiale (sinon 300x150 par défaut → rendu moche)
-	// {
-	// 	const rect = gameContainer.getBoundingClientRect();
-	// 	canvas.width = Math.max(300, Math.floor(rect.width));
-	// 	canvas.height = Math.max(300, Math.floor(rect.height));
-	// }
-
 	let lastServerState: ServerGameState | null = null;
 	let lastRenderState: RenderState | null = null;
 
-	// lastServerState = msg.state as ServerGameState;
-	// lastRenderState = toRenderState(lastServerState, canvas.width, canvas.height);
+	let mySlot: GameSlot = "left";
+	let unbindInput: null | (() => void) = null;
 
-	let rafId = 0;
 	let running = true;
+	let rafId = 0;
 
+	const ws = new WebSocket(`ws://${window.location.hostname}:3000/ws`);
+
+	// ResizeObserver
+	const ro = new ResizeObserver(() => {
+		const rect = gameContainer.getBoundingClientRect();
+		canvas.width = Math.max(300, Math.floor(rect.width));
+		canvas.height = Math.max(300, Math.floor(rect.height));
+		if (lastServerState)
+			lastRenderState = toRenderState(lastServerState, canvas.width, canvas.height);
+	});
+	ro.observe(gameContainer);
+
+	// ✅ CLEANUP unique (évite TDZ + double-calls)
+	const cleanup = () => {
+		if (!running)
+			return;
+		running = false;
+
+		cancelAnimationFrame(rafId);
+		ro.disconnect();
+
+		if (unbindInput) {
+			unbindInput();
+			unbindInput = null;
+		}
+
+		// prévenir serveur
+		try {
+			const matchId = getCurrentMatchId();
+			if (matchId && ws.readyState === WebSocket.OPEN) {
+				ws.send(JSON.stringify({ type: "leave_game", gameId: matchId, clientId: getClientId() }));
+			}
+		}
+		catch {}
+
+		try {
+			ws.close(1000, "leave");
+		}
+		catch {}
+
+		window.removeEventListener("beforeunload", onBeforeUnload);
+		window.removeEventListener("pagehide", onPageHide);
+		window.removeEventListener("navigate", onNavigate as any);
+	};
+
+	// important : “back” / bfcache
+	const onPageHide = () => cleanup();
+
+	// refresh / close tab
+	const onBeforeUnload = () => cleanup();
+
+	// SPA navigation : cleanup quand on quitte /online-match
+	const onNavigate = (ev: any) => {
+		const nextPath = ev?.detail?.path as string | undefined;
+		if (!nextPath) {
+			cleanup();
+			return;
+		}
+		if (nextPath !== "/online-match")
+			cleanup();
+	};
+
+	window.addEventListener("beforeunload", onBeforeUnload);
+	window.addEventListener("pagehide", onPageHide);
+	window.addEventListener("navigate", onNavigate as any);
+
+	// RAF loop
 	function loop() {
 		if (!running)
 			return;
@@ -162,11 +220,6 @@ export default function onlineMatch(): HTMLDivElement {
 		rafId = requestAnimationFrame(loop);
 	}
 	rafId = requestAnimationFrame(loop);
-
-	const ws = new WebSocket(`ws://${window.location.hostname}:3000/ws`);
-
-	let mySlot: GameSlot = "left";
-	let unbindInput: null | (() => void) = null;
 
 	ws.onopen = () => {
 		status.textContent = "Connected. Joining match...";
@@ -177,20 +230,21 @@ export default function onlineMatch(): HTMLDivElement {
 		}
 
 		ws.send(
-			JSON.stringify({
+		JSON.stringify({
 			type: "join_game",
 			gameId: matchId,
 			clientId: getClientId(),
-			mode: getCurrentMatchMode(), // "1v1" | "2v2" | "3p" | "4p"
-		}));
+			mode: getCurrentMatchMode(),
+		})
+		);
 	};
 
 	ws.onmessage = (e) => {
 		let msg: any;
 		try {
-			msg = JSON.parse(e.data); 
-		} 
-		catch { 
+			msg = JSON.parse(e.data);
+		}
+		catch {
 			return;
 		}
 
@@ -205,31 +259,29 @@ export default function onlineMatch(): HTMLDivElement {
 		}
 
 		if (msg.type === "game_paused") {
-			status.textContent = `Paused (player ${msg.clientId} disconnected)`
-			return;
-		}
-			if (msg.type === "game_resumed") {
-			
+			status.textContent = `Paused (player ${msg.clientId} disconnected)`;
 			return;
 		}
 
-		// accepte tous les slots
+		if (msg.type === "game_resumed") {
+			status.textContent = `Game resumed`;
+			return;
+		}
+
 		if (msg.type === "assigned_slot") {
 			mySlot = msg.slot as GameSlot;
-
 			const matchId = getCurrentMatchId();
 			if (matchId) {
 				if (unbindInput) unbindInput();
 				unbindInput = bindInput(ws, String(matchId), mySlot);
 			}
-
-			console.log("assigned_slot =", mySlot, "clientId =", getClientId());
 			return;
 		}
 
 		if (msg.type === "match_full") {
 			alert("Match full");
-			window.dispatchEvent(new CustomEvent("navigate", { detail: { path: "/browse-games" } }));
+			cleanup();
+			navigate("/browse-games");
 			return;
 		}
 
@@ -240,86 +292,29 @@ export default function onlineMatch(): HTMLDivElement {
 				unbindInput();
 				unbindInput = null;
 			}
+			alert(`Winner: ${winner}`);
+			cleanup();
+			navigate("/game-online");
 			return;
 		}
 
 		if (msg.type === "game_tick" && msg.state) {
 			lastServerState = msg.state as ServerGameState;
 			lastRenderState = toRenderState(lastServerState, canvas.width, canvas.height);
-			// console.log("SERVER paddle keys:", Object.keys(msg.state.paddle ?? msg.state.paddles ?? {}));
-  			// console.log("SERVER state:", msg.state);
 			return;
 		}
 	};
 
-	const ro = new ResizeObserver(() => {
-		const rect = gameContainer.getBoundingClientRect();
-		canvas.width = Math.max(300, Math.floor(rect.width));
-		canvas.height = Math.max(300, Math.floor(rect.height));
-		if (lastServerState) lastRenderState = toRenderState(lastServerState, canvas.width, canvas.height);
-	});
-	ro.observe(gameContainer);
-
-	 // --- cleanup SPA / back / leave ---
-  	const onNavigate = (ev: any) => {
-		// optionnel: ne cleanup que si on quitte la page online-match
-		// si tu n'as pas l'info du path courant, enlève ce if
-		const nextPath = ev?.detail?.path as string | undefined;
-		if (!nextPath) {
-			cleanup();
-			return;
-		}
-		// si tu veux : cleanup seulement quand on sort de /online-match
-		if (nextPath !== "/online-match") 
-			cleanup();
-  	};
-
- 	const onPageHide = () => cleanup(); // super important pour "back" / bfcache
-
- 	const cleanup = () => {
-		if (!running)
-			return; // éviter double-call
-		running = false;
-
-		cancelAnimationFrame(rafId);
-		ro.disconnect();
-
-		if (unbindInput) {
-			unbindInput();
-			unbindInput = null;
-		}
-
-    // optionnel mais top: prévenir le serveur avant close
-		try {
-			const matchId = getCurrentMatchId();
-			if (matchId) {
-				ws.send(JSON.stringify({ type: "leave_game", gameId: matchId, clientId: getClientId() }));
-			}
-		}
-		catch {}
-
-		try { ws.close(1000, "leave"); } catch {}
-
-		window.removeEventListener("beforeunload", cleanup);
-		window.removeEventListener("pagehide", onPageHide);
-		window.removeEventListener("navigate", onNavigate as any);
+	ws.onerror = () => {
+		status.textContent = "WS error";
 	};
 
-	window.addEventListener("beforeunload", cleanup);
-	window.addEventListener("pagehide", onPageHide);
-	window.addEventListener("navigate", onNavigate as any);
+	ws.onclose = () => {
+		// si on est encore sur la page, affiche juste un message
+		if (running) status.textContent = "WS closed";
+	};
+
 	return page;
 }
-
-
-
-// export function ModeOnlineMatch() {
-
-
-
-// 	const match = createOnlineMatch();
-// 	setCurrentMatchId(String(match.id));
-// 	onlineMatch();
-// }
 
 
