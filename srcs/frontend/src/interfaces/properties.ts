@@ -17,6 +17,12 @@ export interface buttonProps extends standardProps {
 }
 
 export interface loginRequest {
+	email: string;
+	password: string;
+}
+
+export interface registrationRequest {
+	email: string;
 	username: string;
 	password: string;
 }

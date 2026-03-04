@@ -1,6 +1,6 @@
 import { renderError, renderMessage } from "../components/popup/popup";
 import { setItem } from "../helpers/localStoragehelper";
-import type { loginRequest } from "../interfaces/properties";
+import type { loginRequest, registrationRequest } from "../interfaces/properties";
 
 export const API_BASE = "/api/v1";
 
@@ -24,7 +24,7 @@ export async function loginHandler(payload: loginRequest): Promise<void> {
 	setItem<boolean>("loggedIn", true);
 }
 
-export async function registerHandler(payload: loginRequest): Promise<void> {
+export async function registerHandler(payload: registrationRequest): Promise<void> {
 	const resp = await fetch(`${API_BASE}/auth/register`, {
 		method: "POST",
 		headers: {

@@ -23,7 +23,7 @@ function createLoginForm(): HTMLDivElement {
 	form.id = "login-form"
 
 	textInput.type = "text";
-	textInput.placeholder = "Username";
+	textInput.placeholder = "Email";
 	textInput.className = "mb-2 w-full border p-2 boder-gray-50";
 
 	passInput.type = "password";
@@ -73,15 +73,15 @@ function createLoginForm(): HTMLDivElement {
 		}
 
 		const payload = {
-			username: textInput.value.trim(),
+			email: textInput.value.trim(),
 			password: passInput.value
 		};
 
 		try {
-			if (payload.username.length === 0) {
+			if (payload.email.length === 0) {
 				textInput.classList.add("border-red-500");
 				textInput.classList.remove("boder-gray-50");
-				throw new Error("Username field empty");
+				throw new Error("Email field empty");
 			} else if (payload.password.trim().length === 0) {
 				passInput.classList.add("border-red-500");
 				passInput.classList.remove("boder-gray-50");
@@ -108,6 +108,7 @@ function createRegistrationForm(): HTMLDivElement {
 	const h1 = document.createElement("h1");
 	const form = document.createElement("form");
 	const text = document.createElement("input");
+	const mail = document.createElement("input");
 	const pass = document.createElement("input");
 	const passConfirm = document.createElement("input");
 	const p = document.createElement("p");
@@ -127,6 +128,11 @@ function createRegistrationForm(): HTMLDivElement {
 	text.placeholder = "Username";
 	text.className = "mb-4 w-full border p-2";
 
+	mail.id = "email"
+	mail.type = "email";
+	mail.placeholder = "Email";
+	mail.className = "mb-4 w-full border p-2";
+
 	pass.id = "password";
 	pass.type = "password";
 	pass.placeholder = "Password";
@@ -139,7 +145,7 @@ function createRegistrationForm(): HTMLDivElement {
 
 	errorMsg.className = "text-red-600 mb-2 hidden";
 
-	form.append(text, pass, passConfirm, errorMsg, createButton({
+	form.append(text, mail, pass, passConfirm, errorMsg, createButton({
 		id: "register-button",
 		buttonText: "Register",
 		extraClasses: "w-full bg-blue-500 p-2 hover:bg-blue-600 dark:bg-blue-900 dark:hover:bg-blue-950 transition-color duration-200",
@@ -186,6 +192,7 @@ function createRegistrationForm(): HTMLDivElement {
 
 		const payload = {
 			username: text.value.trim(),
+			email: mail.value.trim(),
 			password: passConfirm.value,
 		}
 
@@ -194,6 +201,10 @@ function createRegistrationForm(): HTMLDivElement {
 				text.classList.remove("boder-gray-50");
 				text.classList.add("border-red-500");
 				throw new Error("Username field empty");
+			} else if (mail.value.trim().length === 0) {
+				mail.classList.remove("boder-gray-50");
+				mail.classList.add("border-red-500");
+				throw new Error("Email field empty");
 			} else if (pass.value.trim().length === 0) {
 				pass.classList.remove("boder-gray-50");
 				pass.classList.add("border-red-500");
