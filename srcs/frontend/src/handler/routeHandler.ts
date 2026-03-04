@@ -6,7 +6,6 @@ import createHomePage from '../routes/home';
 import createLoginPage from '../routes/login-page';
 import createTestPage from '../routes/test';
 import assemblePage from './pageHandler';
-import createLocalTournament from '../routes/local-tournament';
 
 type Route = {
     path: string;
@@ -21,8 +20,7 @@ const routes: Route[] = [
     { path: "/test", component: () => assemblePage(createTestPage()) },
     { path: "/game-local", component: () => assemblePage(createGameLocalPage()) },
     { path: "/game-local-ai", component: () => assemblePage(createLocalAIGamePage())},
-    { path: "/game-online", component: () => assemblePage(createGameOnlinePage()) },
-    { path: "/local-tournament", component: () => assemblePage(createLocalTournament()) }
+    { path: "/game-online", component: () => assemblePage(createGameOnlinePage()) }
 ];
 
 export class Router {

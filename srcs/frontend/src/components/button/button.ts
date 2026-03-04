@@ -20,7 +20,7 @@ export function createButton(props: buttonProps): HTMLButtonElement {
 	if (props.f) {
 		btn.addEventListener("click", props.f);
 	} else if (props.href) {
-		btn.setAttribute("data-href", props.href)
+		btn.setAttribute("data-href", props.href);
 	}
 
 	return btn;
