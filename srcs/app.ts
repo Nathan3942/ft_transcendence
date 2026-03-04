@@ -1,6 +1,7 @@
 import Fastify, { FastifyInstance } from 'fastify'
 import cors from '@fastify/cors'
 import jwt from '@fastify/jwt'
+import cookie from '@fastify/cookie'
 import multipart from '@fastify/multipart'
 import staticFiles from '@fastify/static'
 import path from 'path'
@@ -27,9 +28,13 @@ export async function buildApp(): Promise<FastifyInstance> {
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
   })
 
+  // Cookie — parsing des cookies (requis pour HttpOnly JWT)
+  await app.register(cookie)
+
   // JWT — disponible via server.jwt.sign() et request.jwtVerify()
   await app.register(jwt, {
-    secret: env.JWT_SECRET
+    secret: env.JWT_SECRET,
+    cookie: { cookieName: 'token', signed: false }
   })
 
   // Multipart — parsing fichiers uploadés (avatars)

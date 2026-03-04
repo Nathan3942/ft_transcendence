@@ -9,6 +9,7 @@ import * as authService from '../../services/authService'
 import * as userService from '../../services/userService'
 import { success } from '../../utils/response'
 import { authenticate } from '../../plugins/authenticate'
+import { isDev } from '../../config/env'
 
 export default async function authRoutes(server: FastifyInstance) {
 
@@ -26,7 +27,7 @@ export default async function authRoutes(server: FastifyInstance) {
     })
 
     /************************* POST /auth/login **********************************/
-    server.post('/auth/login', async (request, _reply) => {
+    server.post('/auth/login', async (request, reply) => {
         const { email, password } = request.body as {
             email: string
             password: string
@@ -35,7 +36,15 @@ export default async function authRoutes(server: FastifyInstance) {
         const { user, payload } = await authService.login(email, password)
         const token = server.jwt.sign(payload, { expiresIn: '7d' })
 
-        return success({ token, user })
+        reply.setCookie('token', token, {
+            httpOnly: true,
+            secure: !isDev,
+            sameSite: 'strict',
+            path: '/',
+            maxAge: 60 * 60 * 24 * 7
+        })
+
+        return success({ user })
     })
 
     /************************* GET /auth/me **********************************/
@@ -46,9 +55,10 @@ export default async function authRoutes(server: FastifyInstance) {
     })
 
     /************************* POST /auth/logout **********************************/
-    server.post('/auth/logout', { preHandler: authenticate }, async (request, _reply) => {
+    server.post('/auth/logout', { preHandler: authenticate }, async (request, reply) => {
         const { id } = request.user as { id: number; username: string }
         authService.logout(id)
+        reply.clearCookie('token', { path: '/' })
         return success({ message: 'Logged out' })
     })
 }
