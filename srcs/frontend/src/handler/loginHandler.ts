@@ -1,6 +1,6 @@
 import { renderError, renderMessage } from "../components/popup/popup";
 import { setItem } from "../helpers/localStoragehelper";
-import type { loginRequest, registrationRequest } from "../interfaces/properties";
+import type { loginRequest, loginResponse, registrationRequest, user } from "../interfaces/properties";
 
 export const API_BASE = "/api/v1";
 
@@ -20,6 +20,17 @@ export async function loginHandler(payload: loginRequest): Promise<void> {
 			renderMessage("Login failed: You appear to be offline.");
 		throw new Error(`Login failed: ${resp.status}: ${err}`);
 	}
+
+	const respJson = await resp.json() as loginResponse;
+	const respUser = respJson.data.user;
+
+	setItem<number>("id", respUser.id);
+	setItem<string>("username", respUser.username);
+	setItem<string>("display_name", respUser.display_name);
+	if (respUser.email)
+		setItem<string>("email", respUser.email);
+	setItem<string | null>("avatar_url", respUser.avatar_url);
+	setItem<boolean>("is_online", respUser.is_online);
 
 	setItem<boolean>("loggedIn", true);
 }
@@ -41,6 +52,17 @@ export async function registerHandler(payload: registrationRequest): Promise<voi
 		throw new Error(`Registration failed: ${resp.status}: ${err}`);
 	}
 
+	const respJson = await resp.json() as loginResponse;
+	const respUser = respJson.data.user;
+
+	setItem<number>("id", respUser.id);
+	setItem<string>("username", respUser.username);
+	setItem<string>("display_name", respUser.display_name);
+	if (respUser.email)
+		setItem<string>("email", respUser.email);
+	setItem<string | null>("avatar_url", respUser.avatar_url);
+	setItem<boolean>("is_online", respUser.is_online);
+
 	setItem<boolean>("loggedIn", true);
 }
 
@@ -56,7 +78,15 @@ export async function logoutHandler() {
 			renderError(`Logout failed: ${resp.status}: ${err}`);
 			throw new Error(`Logout failed: ${resp.status}: ${err}`);
 		}
+		setItem<null>("id", null);
+		setItem<null>("username", null);
+		setItem<null>("display_name", null);
+		setItem<null>("email", null);
+		setItem<null>("avatar_url", null);
+		setItem<boolean>("is_online", false);
+
 		setItem<boolean>("loggedIn", false);
+
 		window.location.href = "/login";
 	} catch (err) {
 		console.warn(err);
