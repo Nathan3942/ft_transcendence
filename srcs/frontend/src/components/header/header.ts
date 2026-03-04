@@ -52,6 +52,7 @@ export default function createHeader(): HTMLHeadElement {
 				extraClasses: "relative group",
 				// f: () => show user menu dropdown
 				icon: "assets/images/user-svgrepo-com.svg",
+				iconId: "header-user-pfp",
 				iconAlt: "Icon",
 				iconBClass: "h-8 dark:invert"
 			});
@@ -93,6 +94,5 @@ export default function createHeader(): HTMLHeadElement {
 	}
 	
 	header.append(title, navbar);
-	
 	return header;
 }

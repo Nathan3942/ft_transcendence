@@ -123,7 +123,8 @@ export async function authenticate(): Promise<boolean | string> {
 	try {
 		const resp = await fetch(`${API_BASE}/auth/me`, {
 			method: "GET",
-			credentials: "include"
+			credentials: "include",
+			cache: "reload"
 		});
 
 		if (resp.status === 200) {

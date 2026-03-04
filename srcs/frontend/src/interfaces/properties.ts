@@ -10,6 +10,7 @@ export interface buttonProps extends standardProps {
 	extraClasses?: string;
 	buttonText?: string;
 	icon?: string;
+	iconId?: string;
 	iconAlt?: string;
 	iconBClass?: string;
 	type?: "button" | "reset" | "submit";
