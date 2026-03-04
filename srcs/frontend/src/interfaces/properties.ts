@@ -40,6 +40,7 @@ export interface user {
 	email?: string;
 	avatar_url: string | null;
 	is_online: boolean;
+	created_at?: string;
 }
 
 export interface APIErrMsg {

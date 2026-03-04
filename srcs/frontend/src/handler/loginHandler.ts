@@ -31,6 +31,8 @@ export async function loginHandler(payload: loginRequest): Promise<void> {
 		setItem<string>("email", respUser.email);
 	setItem<string | null>("avatar_url", respUser.avatar_url);
 	setItem<boolean>("is_online", respUser.is_online);
+	if (respUser.created_at)
+		setItem<string>("created_at", respUser.created_at);
 
 	setItem<boolean>("loggedIn", true);
 }
@@ -62,6 +64,8 @@ export async function registerHandler(payload: registrationRequest): Promise<voi
 		setItem<string>("email", respUser.email);
 	setItem<string | null>("avatar_url", respUser.avatar_url);
 	setItem<boolean>("is_online", respUser.is_online);
+	if (respUser.created_at)
+		setItem<string>("created_at", respUser.created_at);
 
 	setItem<boolean>("loggedIn", true);
 }
