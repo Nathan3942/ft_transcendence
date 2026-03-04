@@ -6,6 +6,7 @@
 import { FastifyInstance } from 'fastify'
 import { success } from '../../utils/response'
 import * as statsService from '../../services/statsService'
+import { authenticate } from '../../plugins/authenticate'
 
 export default async function statsRoutes(server: FastifyInstance) {
 
@@ -16,8 +17,8 @@ export default async function statsRoutes(server: FastifyInstance) {
         return success(stats)
     })
 
-    /************************* GET USER MATCH HISTORY **********************************/
-    server.get('/users/:id/matches', async (request, _reply) => {
+    /************************* GET USER MATCH HISTORY — logged-in users only **********************************/
+    server.get('/users/:id/matches', { preHandler: authenticate }, async (request, _reply) => {
         const { id } = request.params as { id: string }
         const matches = statsService.getUserMatchHistory(id)
         return success(matches)
