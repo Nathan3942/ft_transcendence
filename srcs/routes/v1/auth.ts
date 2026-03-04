@@ -21,9 +21,19 @@ export default async function authRoutes(server: FastifyInstance) {
             password: string
         }
 
-        const user = await authService.register(username, email, password)
+        const { user, payload } = await authService.register(username, email, password)
+        const token = server.jwt.sign(payload, { expiresIn: '7d' })
+
+        reply.setCookie('token', token, {
+            httpOnly: true,
+            secure: !isDev,
+            sameSite: 'strict',
+            path: '/',
+            maxAge: 60 * 60 * 24 * 7
+        })
+
         reply.status(201)
-        return success(user)
+        return success({ user })
     })
 
     /************************* POST /auth/login **********************************/

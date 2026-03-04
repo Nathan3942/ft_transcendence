@@ -12,7 +12,11 @@ import { PublicUser } from '../models/userModel'
 
 const SALT_ROUNDS = 12
 
-export async function register(username: string, email: string, password: string): Promise<PublicUser> {
+export async function register(
+    username: string,
+    email: string,
+    password: string
+): Promise<{ user: PublicUser; payload: { id: number; username: string } }> {
     if (!username || !email || !password) {
         throw new BadRequestError('Missing username, email or password')
     }
@@ -21,7 +25,12 @@ export async function register(username: string, email: string, password: string
     }
 
     const password_hash = await bcrypt.hash(password, SALT_ROUNDS)
-    return createUser({ username, email, password_hash })
+    const user = await createUser({ username, email, password_hash })
+
+    setOnlineStatus(user.id, true)
+
+    const payload = { id: user.id, username: user.username }
+    return { user: { ...user, is_online: 1 }, payload }
 }
 
 export async function login(
