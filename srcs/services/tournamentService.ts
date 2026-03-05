@@ -124,6 +124,12 @@ export function addPlayerToTournament(tournamentId: string | number, userId: num
     }
 }
 
+export function getTournamentStatus(tournamentId: string | number) {
+    const tournament = getTournamentByIdRepo(tournamentId);
+    return tournament?.status;
+}
+
+
 /**
  * Get all players in a tournament
  * @param tournamentId - Tournament ID

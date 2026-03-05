@@ -6,11 +6,23 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 16:53:19 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/02/27 11:48:45 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/05 18:12:39 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+import { boolean, success } from "zod";
 import { api } from "./api";
+// import { getTournamentById } from "../../../repository/tournamentsRepository";
+
+export type TournamentStatus = 'open' | 'in_progress' | 'finished';
+
+export interface Tournament {
+  id: number;
+  name: string;
+  status: TournamentStatus;
+  winnerId: number | null;
+  createdAt: string;
+}
 
 const API_BASE = `http://${window.location.hostname}:3000/api/v1`;  //a changer selon setup
 
@@ -42,6 +54,15 @@ export type Match = {
 //     return (res.json() as Promise<T>);
 // }
 
+
+// CREATE TABLE tournaments (
+//       id INTEGER PRIMARY KEY AUTOINCREMENT,
+//       name TEXT NOT NULL UNIQUE,
+//       status TEXT DEFAULT 'open' CHECK(status IN ('open', 'in_progress', 'finished')),
+//       winner_id INTEGER,
+//       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+//       FOREIGN KEY (winner_id) REFERENCES users(id)
+//     );
 
 export async function createOnlineMatch(mode: 1 | 2 | 3 | 4): Promise<Match> {
     
@@ -83,7 +104,7 @@ export async function createOnlineTournament() {
 
     const t = await api<{ id: string }>("/tournaments", {
         method: "POST",
-        body: JSON.stringify({ name: "My tournament" }),
+        body: JSON.stringify({ name: `Tournament${Date.now()}` }),
     });
     
     return (t.id);
@@ -91,6 +112,11 @@ export async function createOnlineTournament() {
 
 export async function deleteMatch(id: string | number): Promise<unknown> {
     return api(`/matches/${id}`, { method: "DELETE" });
+}
+
+
+export async function deleteTournament(id: string | number): Promise<unknown> {
+    return api(`/tournaments/${id}`, { method: "DELETE" });
 }
 
 // export async function browseGames() {
@@ -101,5 +127,10 @@ export async function deleteMatch(id: string | number): Promise<unknown> {
 
 export async function listOnlineMatches(): Promise<Match[]> {
     const res = await api<{ success: boolean; data: Match[] }>("/matches", { method: "GET" });
+    return res.data;
+}
+
+export async function listOnlineTournament(): Promise<Tournament[]> {
+    const res = await api<{ success: boolean; data: Tournament[]}>("/tournaments", { method: "GET" });
     return res.data;
 }

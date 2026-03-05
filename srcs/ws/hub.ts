@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/13 14:57:23 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/03 10:10:54 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/05 18:28:38 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@ import type WebSocket from "ws";
 import type { FastifyBaseLogger } from "fastify";
 import type { WsRoom, WsServerEvent, WsEnvelope } from "./events";
 import { GameSlot } from "./plugin";
+import { StringValidation } from "zod/v3";
 
 
 
@@ -29,6 +30,7 @@ export type WsSocket = WebSocket & {
     _userId?: string;
     _clientId?: string;
     _gameId?: string;
+    _tournamentId?: string;
     //surment en garder que un au final a voir avec l'auth
     _slot?: GameSlot;
 }

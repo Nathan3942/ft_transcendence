@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 17:15:35 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/04 17:39:57 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/05 18:15:20 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -157,7 +157,7 @@ export default function onlineMatch(): HTMLDivElement {
 	});
 	ro.observe(gameContainer);
 
-	// ✅ CLEANUP unique (évite TDZ + double-calls)
+	// CLEANUP unique (évite TDZ + double-calls)
 	const cleanup = () => {
 		if (!running)
 			return;

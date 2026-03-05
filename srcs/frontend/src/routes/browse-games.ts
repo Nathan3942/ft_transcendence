@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 14:42:50 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/04 13:33:18 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/05 15:40:35 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,20 +111,21 @@ export default function createBrowseGamesPage(): HTMLDivElement {
 		list.innerHTML = "";
 
 		try {
-		const matches = await listOnlineMatches();
+			const matches = await listOnlineMatches();
 
-		if (!Array.isArray(matches) || matches.length === 0) {
-			status.textContent = "No matches yet. Create one!";
-			return;
+			if (!Array.isArray(matches) || matches.length === 0) {
+				status.textContent = "No matches yet. Create one!";
+				return;
+			}
+
+			status.textContent = `${matches.length} match(es)`;
+
+			matches.forEach((m) => {
+				list.appendChild(matchRow(m, load));
+			});
 		}
-
-		status.textContent = `${matches.length} match(es)`;
-
-		matches.forEach((m) => {
-			list.appendChild(matchRow(m, load));
-		});
-		} catch (e) {
-		status.textContent = `Error: ${(e as Error).message}`;
+		catch (e) {
+			status.textContent = `Error: ${(e as Error).message}`;
 		}
 	}
 

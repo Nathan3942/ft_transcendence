@@ -10,6 +10,8 @@ import createLocalTournament from '../routes/local-tournament';
 import createBrowseGamesPage from '../routes/browse-games';
 import onlineMatch from '../routes/online-match';
 import chooseOnlineMode from '../routes/online-mode';
+import chooseBrowse from '../routes/choose-browse';
+import createBrowseTournamentsPage from '../routes/browse-tournaments';
 
 type Route = {
     path: string;
@@ -28,7 +30,9 @@ const routes: Route[] = [
     { path: "/local-tournament", component: () => assemblePage(createLocalTournament()) },
     { path: "/browse-games", component: () => assemblePage(createBrowseGamesPage())},
     { path: "/online-mode", component: () => assemblePage(chooseOnlineMode())},
-    { path: "/online-match", component: () => assemblePage(onlineMatch())}
+    { path: "/online-match", component: () => assemblePage(onlineMatch())},
+    { path: "/choose-browse", component: () => assemblePage(chooseBrowse())},
+    { path: "/browse-tournaments", component: () => assemblePage(createBrowseTournamentsPage())}
 ];
 
 export class Router {

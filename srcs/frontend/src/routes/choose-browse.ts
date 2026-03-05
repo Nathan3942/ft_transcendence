@@ -1,27 +1,23 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   game-online.ts                                     :+:      :+:    :+:   */
+/*   choose-browse.ts                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/02/18 16:52:45 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/05 18:19:24 by njeanbou         ###   ########.fr       */
+/*   Created: 2026/03/05 15:46:15 by njeanbou          #+#    #+#             */
+/*   Updated: 2026/03/05 16:53:41 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-import { createButton } from "../components/button/button";
-import makeButtonBlock from "../components/button/buttonBlock";
-import { createOnlineMatch, createOnlineTournament } from "../services/online";
-import { setCurrentMatchId, getCurrentMatchId, setCurrentTournamentId } from "../services/onlineStore";
-
+import { createButton } from "../components/button/button.js";
+import makeButtonBlock from "../components/button/buttonBlock.js";
 
 function navigate(path: string) {
 	window.dispatchEvent(new CustomEvent("navigate", { detail: { path } }));
 }
 
-
-export default function createGameOnlinePage(): HTMLDivElement {
+export default function chooseBrowse(): HTMLDivElement {
 	const outer = document.createElement("div");
 	const inner = document.createElement("div");
 
@@ -34,25 +30,11 @@ export default function createGameOnlinePage(): HTMLDivElement {
 		makeButtonBlock("bg-yellow-300 dark:bg-green-900", createButton({
 			id: "create-match-button",
 			extraClasses:btnClasses,
-			buttonText: "Create Match",
+			buttonText: "Browse Match",
 			f: () => {
-				navigate("/online-mode");
+				navigate("/browse-games");
 			},
 			icon: "assets/images/plus-large-svgrepo-com.svg",
-			iconAlt: "Icon",
-			iconBClass: "h-10 pr-3 dark:invert"
-			})
-		),
-		makeButtonBlock("bg-yellow-400 dark:bg-yellow-900", createButton({
-			id: "create-tournament-button",
-			extraClasses: btnClasses,
-			buttonText: "Create Tournament",
-			f: async () => {
-				const id = await createOnlineTournament();
-				setCurrentTournamentId(String(id));
-				navigate(`/game-online/${id}`);
-			},
-			icon: "assets/images/trophy-svgrepo-com.svg",
 			iconAlt: "Icon",
 			iconBClass: "h-10 pr-3 dark:invert"
 			})
@@ -60,10 +42,10 @@ export default function createGameOnlinePage(): HTMLDivElement {
 		makeButtonBlock("bg-orange-400 dark:bg-orange-900", createButton({
 			id: "browse-matches-button",
 			extraClasses: btnClasses,
-			buttonText: "Browse Games",
-			href: "/browse-games",
+			buttonText: "Browse Tournaments",
+			// href: "/browse-games",
 			f: async () => {
-				navigate("/choose-browse");
+				navigate("/browse-tournaments");
 			},
 			icon: "assets/images/list-svgrepo-com.svg",
 			iconAlt: "Icon",

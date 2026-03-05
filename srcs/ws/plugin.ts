@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/13 15:48:09 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/04 16:47:32 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/05 18:29:36 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ import type { WsClientEvent, WsEnvelope, WsRoom } from "./events";
 import { GameManager } from "../game/gameManager";
 import { getMatchStatus, updateMatchStatus } from "../services/matchService";
 import { getMatchById } from "../repository/matchesRepository";
+import { getTournamentStatus } from "../services/tournamentService";
 
 
 export type ModeStr = "1v1" | "2v2" | "3p" | "4p";
@@ -202,7 +203,6 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 
 			if (msg.type === "join_game") {
 				
-				console.log("Refresh page");
 				const room = `game:${msg.gameId}` as WsRoom;
 				ws._gameId = msg.gameId;
 
@@ -258,6 +258,17 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 
 				return;
 			}
+
+
+			if (msg.type === "join_tournament") {
+
+				const room = `tournament:${msg.tournamentId}` as WsRoom;
+				ws._tournamentId = msg.tournamentId;
+
+				if (getTournamentStatus(ws._tournamentId) === "finished")
+					return;
+			}
+
 
 			if (msg.type === "input") {
 
