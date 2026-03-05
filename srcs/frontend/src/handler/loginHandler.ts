@@ -1,6 +1,6 @@
 import { renderError, renderMessage } from "../components/popup/popup";
 import { setItem } from "../helpers/localStoragehelper";
-import type { loginRequest, loginResponse, registrationRequest, user } from "../interfaces/properties";
+import type { loginRequest, loginResponse, registrationRequest } from "../interfaces/properties";
 
 export const API_BASE = "/api/v1";
 

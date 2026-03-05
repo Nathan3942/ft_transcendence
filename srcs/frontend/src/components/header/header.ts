@@ -1,4 +1,5 @@
 import { logoutHandler } from "../../handler/loginHandler";
+import { getLocalUserAvatar } from "../../helpers/avatarHelper";
 import { getItem } from "../../helpers/localStoragehelper";
 import { createButton } from "../button/button";
 
@@ -51,7 +52,7 @@ export default function createHeader(): HTMLHeadElement {
 				id: "user-profile-dropdown",
 				extraClasses: "relative group",
 				// f: () => show user menu dropdown
-				icon: "assets/images/user-svgrepo-com.svg",
+				icon: getLocalUserAvatar(),
 				iconId: "header-user-pfp",
 				iconAlt: "Icon",
 				iconBClass: "h-8 dark:invert"
