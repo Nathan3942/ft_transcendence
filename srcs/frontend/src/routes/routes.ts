@@ -26,6 +26,12 @@ export const routes: Route[] = [
 		guarded: [authGuard]
 	}, */
 	{
+		path: "/user-settings",
+		component: lazy(() => import("./user-settings")),
+		init: lazyInit(() => import("./user-settings-init")),
+		guarded: [authGuard]
+	},
+	{
 		path: "/login",
 		component: lazy(() => import("./login-page"))
 	},
