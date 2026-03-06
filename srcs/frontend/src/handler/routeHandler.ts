@@ -59,6 +59,8 @@ export class Router {
 		try {
 			const component = await route.component();
 			this.replaceRoot(component);
+			if (route.init)
+				route.init()
 		} catch (err) {
 			console.error("Failed to load component for", path, err);
 			renderError(`Component for: ${path} failed to load...`);

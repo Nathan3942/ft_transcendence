@@ -5,6 +5,10 @@ const lazy = <T extends HTMLElement>(
 	loader: () => Promise<{default: () => T | Promise<T>}>
 ) => async () => (await loader()).default();
 
+const lazyInit = (
+	loader: () => Promise<{default: () => void | Promise<void>}>
+) => async () => (await loader()).default();
+
 export const routes: Route[] = [
 	{
 		path: "/",

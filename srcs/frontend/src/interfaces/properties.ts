@@ -52,5 +52,6 @@ export interface APIErrMsg {
 export interface Route {
 	path: string;
 	component: () => HTMLDivElement | Promise<HTMLDivElement>;
+	init?: () => void | Promise<void>;
 	guarded?: Guard[];
 }
