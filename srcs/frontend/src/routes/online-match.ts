@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 17:15:35 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/05 18:15:20 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/06 09:26:50 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,6 +64,15 @@ function bindInput(ws: WebSocket, gameId: string, slot: GameSlot) {
 		if (e.repeat)
 			return;
 
+		if (e.key === "Escape") {
+			ws.send(JSON.stringify({
+				type: "pause_toggle",
+				gameId,
+				clientId: getClientId()
+			}));
+			return;
+		}
+
 		const horiz = isHorizontal(slot);
 		const negKey = horiz ? "a" : "w";
 		const posKey = horiz ? "d" : "s";
@@ -113,6 +122,8 @@ function bindInput(ws: WebSocket, gameId: string, slot: GameSlot) {
 export default function onlineMatch(): HTMLDivElement {
 	const page = document.createElement("div");
 	page.className = "flex flex-col flex-1 p-6 gap-4";
+	page.style.width = "100%";
+	page.style.height = "80%";
 
 	const status = document.createElement("div");
 	status.className = "text-xl font-semibold";
@@ -154,8 +165,10 @@ export default function onlineMatch(): HTMLDivElement {
 		canvas.height = Math.max(300, Math.floor(rect.height));
 		if (lastServerState)
 			lastRenderState = toRenderState(lastServerState, canvas.width, canvas.height);
+		
 	});
 	ro.observe(gameContainer);
+	
 
 	// CLEANUP unique (évite TDZ + double-calls)
 	const cleanup = () => {
@@ -212,6 +225,7 @@ export default function onlineMatch(): HTMLDivElement {
 	window.addEventListener("navigate", onNavigate as any);
 
 	// RAF loop
+	
 	function loop() {
 		if (!running)
 			return;
@@ -259,7 +273,10 @@ export default function onlineMatch(): HTMLDivElement {
 		}
 
 		if (msg.type === "game_paused") {
-			status.textContent = `Paused (player ${msg.clientId} disconnected)`;
+			if (msg.reason === "Escape")
+				status.textContent = `Paused by ${msg.clientId}`;
+			else
+				status.textContent = `Paused (player ${msg.clientId} disconnected)`;
 			return;
 		}
 

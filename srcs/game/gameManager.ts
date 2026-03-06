@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 15:45:30 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/04 17:11:54 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/06 08:31:06 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ import { GameLoop } from "./gameLoop";
 import { deleteMatch, updateMatchStatus } from "../services/matchService";
 
 
-const H = 700;
+const H = 750;
 const W = 1000;
 const H_CARRE = 800;
 const W_CARRE = 800;
@@ -210,6 +210,10 @@ export class GameManager {
 		
 		this.createGame(gameId, mode);
 		return this.games.get(gameId)!;
+	}
+
+	get(gameId: GameId) {
+		return this.games.get(gameId);
 	}
 
 	joinGame(ws: WsSocket, gameId: GameId) {

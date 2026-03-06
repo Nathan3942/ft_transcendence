@@ -6,14 +6,15 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 15:45:48 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/04 17:23:47 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/06 08:45:17 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import type { GameState, PaddleInput, GameSlot, ModeId } from "./types";
 import { randomSign, slotsForMode } from "./gameManager";
+import { stat } from "fs";
 
-const H = 700;
+const H = 750;
 const W = 1000;
 const H_CARRE = 800;
 const W_CARRE = 800;
@@ -79,14 +80,17 @@ export class GameLoop {
 	}
 
 	start() {
+
+		console.log(`Playfield : x ${this.state.play.x}, y ${this.state.play.y}, w ${this.state.play.w}, h ${this.state.play.h}, \nBall: x ${this.state.ball.x}, y ${this.state.ball.y}`);
+		
 		if (this.timer)
 			return;
 		this.state.status = "running";
 		this.state.lastTickMs = Date.now();
 
 		for (const s of slotsForMode(this.state.mode)) {
-			if (!this.inputs[s])
-				this.inputs[s] = { dir: 0, ts: 0 };
+			if (!this.inputs[s]) 
+				this.inputs[s] = { dir: 0, ts: 0, esc: false };
 		}
 
 		this.timer = setInterval(() => this.step(), TICK_MS);
@@ -104,6 +108,8 @@ export class GameLoop {
 		if (this.timer)
 			return;
 		this.state.status = "running";
+		this.state.phase = "COUNTDOWN";
+		this.state.countdown = 3;
 		this.state.lastTickMs = Date.now();
 		this.timer = setInterval(() => this.step(), TICK_MS);
 	}
@@ -122,6 +128,8 @@ export class GameLoop {
 		const now = Date.now();
 		const dt = (now - this.state.lastTickMs) / 1000;
 		this.state.lastTickMs = now;
+
+		// console.log(`pos paddle left: ${this.state.paddles.left?.pos}`)
 
 		if (this.state.phase === "COUNTDOWN") {
 			// console.log(`Countdown cda: ${this.state.countdownAcc}, cd: ${this.state.countdown}`);

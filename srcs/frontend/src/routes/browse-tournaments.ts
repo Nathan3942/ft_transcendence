@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 16:33:40 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/05 16:58:14 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/06 09:40:35 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,11 +89,11 @@ function tournamentRow(t: Tournament, onDeleted: () => void): HTMLDivElement {
 
 export default function createBrowseTournamentsPage(): HTMLDivElement {
     const page = document.createElement("div");
-    page.className = "flex flex-col flex-1 p-6 gap-4";
+    page.className = "flex flex-col flex-1 min-h-0 p-6 gap-4";
 
     // ---- header ----
     const header = document.createElement("div");
-    header.className = "flex items-center justify-between";
+    header.className = "flex items-center justify-between shrink-0";
 
     const h1 = document.createElement("div");
     h1.className = "text-2xl font-bold";
@@ -108,13 +108,17 @@ export default function createBrowseTournamentsPage(): HTMLDivElement {
 
     // ---- status + list container ----
     const status = document.createElement("div");
-    status.className = "text-sm opacity-70";
+    status.className = "text-sm opacity-70 shrink-0";
     status.textContent = "Loading tournaments...";
+
+	const panel = document.createElement("div");
+	panel.className = "flex-1 min-h-0 overflow-y-auto rounded bg-black/5 dark:bg-white/5 p-3";
 
     const list = document.createElement("div");
     list.className = "flex flex-col gap-3";
 
-    page.append(header, status, list);
+	panel.appendChild(list);
+    page.append(header, status, panel);
 
     async function load() {
         status.textContent = "Loading tournaments...";

@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/23 16:55:07 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/04 12:13:45 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/06 08:49:36 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,10 +25,10 @@ export function drawPong(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElemen
 	ctx.strokeRect(state.playX, state.playY, state.playW, state.playH);
 
 	// title
-	// ctx.fillStyle = "white";
-	// ctx.font = "120px 'VT323'";
-	// ctx.textAlign = "center";
-	// ctx.fillText("COCO_PONG", canvas.width / 2, state.playY - 20);
+	ctx.fillStyle = "white";
+	ctx.font = "120px 'VT323'";
+	ctx.textAlign = "center";
+	ctx.fillText("COCO_PONG", canvas.width / 2, state.playY - 20);
 
 	// mid dashed line (vertical)
 	// score
@@ -100,6 +100,13 @@ export function drawPong(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElemen
 		ctx.fill();
 	}
 
+// 	console.log("RENDER STATE", state);
+// 	console.log("ball", state.ballX, state.ballY);
+// 	console.log("paddles", state.paddles);
+// 	for (const p of state.paddles) {
+// 		console.log("paddle rect", p.slot, p.x, p.y, p.w, p.h);
+// }
+
 	// paddles
 	ctx.fillStyle = "white";
 	for (const p of state.paddles) {
@@ -132,4 +139,5 @@ export function drawPong(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElemen
 		ctx.textAlign = "center";
 		ctx.fillText("Ended...", state.playX + state.playW / 2, state.playY + state.playH / 2);
 	}
+	console.log(`Playfield : x ${state.playX}, y ${state.playY}, w ${state.playW}, h ${state.playH}, \nBall: x ${state.ballX}, y ${state.ballY}`);
 }

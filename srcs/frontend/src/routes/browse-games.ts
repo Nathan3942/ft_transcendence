@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 14:42:50 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/05 15:40:35 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/06 09:36:35 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,7 @@ function navigate(path: string) {
 
 function matchRow(m: Match, onDeleted: () => void): HTMLDivElement {
 	const row = document.createElement("div");
-	row.className =
-		"w-full flex items-center justify-between p-3 rounded bg-white dark:bg-gray-800";
+	row.className = "w-full flex items-center justify-between p-3 rounded bg-white dark:bg-gray-800";
 
 	// ---- bloc gauche : infos ----
 	const left = document.createElement("div");
@@ -74,12 +73,13 @@ function matchRow(m: Match, onDeleted: () => void): HTMLDivElement {
 }
 
 export default function createBrowseGamesPage(): HTMLDivElement {
+	
 	const page = document.createElement("div");
-	page.className = "flex flex-col flex-1 p-6 gap-4";
+	page.className = "flex flex-col flex-1 min-h-0 p-6 gap-4";
 
 	// ---- header ----
 	const header = document.createElement("div");
-	header.className = "flex items-center justify-between";
+	header.className = "flex items-center justify-between shrink-0";
 
 	const h1 = document.createElement("div");
 	h1.className = "text-2xl font-bold";
@@ -94,13 +94,17 @@ export default function createBrowseGamesPage(): HTMLDivElement {
 
 	// ---- status + list container ----
 	const status = document.createElement("div");
-	status.className = "text-sm opacity-70";
+	status.className = "text-sm opacity-70 shrink-0";
 	status.textContent = "Loading matches...";
+
+	const panel = document.createElement("div");
+	panel.className = "flex-1 min-h-0 overflow-y-auto rounded bg-black/5 dark:bg-white/5 p-3";
 
 	const list = document.createElement("div");
 	list.className = "flex flex-col gap-3";
 
-	page.append(header, status, list);
+	panel.appendChild(list);
+	page.append(header, status, panel);
 
 	/*
 		Charge la liste des matchs depuis l'API et met à jour le DOM.

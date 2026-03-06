@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/13 14:47:51 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/05 18:22:46 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/06 08:40:24 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ export type PlayerSlot = "left" | "right";
 export type PaddleInput = {
 	dir: -1 | 0 | 1;
 	ts: number;
+	esc: number;
 };
 
 export type WsClientEvent =
@@ -35,6 +36,7 @@ export type WsClientEvent =
 	| { type: "join_game"; gameId: string; clientId: string, mode: ModeId }
 	| { type: "leave_game"; gameId: string }
 	| { type: "join_tournament", tournamentId: string, clientId: string }
+	| { type: "pause_toggle", gameId: string, clientId: string }
 	| { type: "input"; gameId: string; slot: PlayerSlot; input: PaddleInput };
 
 export type GameState = {
@@ -63,6 +65,8 @@ export type WsServerEvent =
 	| { type: "match_waiting"; gameId: string; count: number, playerNeeded: number, mode: ModeStr}
 	| { type: "match_ready"; gameId: string; count: number, mode: ModeStr }
 	| { type: "assigned_slot"; gameId: string; slot: GameSlot, mode: ModeId }
-	| { type: "match_full", gameId: string };
+	| { type: "match_full", gameId: string }
+	| { type: "game_paused", reason: string, clientId: string }
+	| { type: "game_resumed" };
 
 export type WsEnvelope<T extends { type: string }> = T;

@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/13 15:48:09 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/05 18:29:36 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/06 08:40:55 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -282,6 +282,24 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 				console.log("leave game");
 				if (ws._slot && ws._clientId)
 					gameManager.pauseGame(msg.gameId, ws._clientId);
+				return;
+			}
+
+			if (msg.type === "pause_toggle") {
+				
+				const g = gameManager.get(msg.gameId);
+				if (!g)
+					return;
+				
+				if (g.state.status === "running") {
+					g.loop.pause();
+					hub.broadcast(`game:${msg.gameId}`, { type: "game_paused", reason: "Escape", clientId: msg.clientId });
+				}
+				else if (g.state.status === "paused") {
+					g.loop.resume();
+					hub.broadcast(`game:${msg.gameId}`, { type: "game_resumed" });
+				}
+				
 				return;
 			}
 
