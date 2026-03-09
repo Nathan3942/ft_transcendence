@@ -4,7 +4,7 @@ import type { loginRequest, loginResponse, registrationRequest } from "../interf
 
 export const API_BASE = "/api/v1";
 
-export async function loginHandler(payload: loginRequest): Promise<void> {
+export async function loginHandler(payload: loginRequest): Promise<number> {
 	const resp = await fetch(`${API_BASE}/auth/login`, {
 		method: "POST",
 		headers: {
@@ -16,9 +16,15 @@ export async function loginHandler(payload: loginRequest): Promise<void> {
 
 	if (!resp.ok) {
 		const err = await resp.text();
-		if (resp.status == 404 && resp.text.length == 0)
+
+		if (resp.status === 400) {
+			return 400;
+		} else if (resp.status === 401) {
+			return 401;
+		} else if (resp.status == 404 && resp.text.length == 0)
 			renderMessage("Login failed: You appear to be offline.");
-		throw new Error(`Login failed: ${resp.status}: ${err}`);
+		console.error(`Login failed: ${resp.status}: ${err}`);
+		return resp.status;
 	}
 
 	const respJson = await resp.json() as loginResponse;
@@ -35,9 +41,10 @@ export async function loginHandler(payload: loginRequest): Promise<void> {
 		setItem<string>("created_at", respUser.created_at);
 
 	setItem<boolean>("loggedIn", true);
+	return 200;
 }
 
-export async function registerHandler(payload: registrationRequest): Promise<void> {
+export async function registerHandler(payload: registrationRequest): Promise<number> {
 	const resp = await fetch(`${API_BASE}/auth/register`, {
 		method: "POST",
 		headers: {
@@ -48,10 +55,16 @@ export async function registerHandler(payload: registrationRequest): Promise<voi
 	});
 
 	if (!resp.ok) {
+		const status = resp.status;
 		const err = await resp.text();
-		if (resp.status == 404 && resp.text.length == 0)
+		if (status === 400) {
+			return 400;
+		} else if (status === 409) {
+			return 409;
+		} else if (status == 404 && resp.text.length == 0)
 			renderMessage("Registration failed: You appear to be offline.");
-		throw new Error(`Registration failed: ${resp.status}: ${err}`);
+		console.error(`Registration failed: ${status}: ${err}`);
+		return status;
 	}
 
 	const respJson = await resp.json() as loginResponse;
@@ -68,6 +81,7 @@ export async function registerHandler(payload: registrationRequest): Promise<voi
 		setItem<string>("created_at", respUser.created_at);
 
 	setItem<boolean>("loggedIn", true);
+	return 200;
 }
 
 export async function logoutHandler() {
@@ -77,6 +91,11 @@ export async function logoutHandler() {
 			credentials: "include"
 		})
 
+		if (resp.status === 401) {
+			renderMessage("You are not logged in");
+			redirectToLogin();
+		}
+		
 		if (!resp.ok) {
 			const err = await resp.text();
 			renderError(`Logout failed: ${resp.status}: ${err}`);
@@ -89,9 +108,7 @@ export async function logoutHandler() {
 		setItem<null>("avatar_url", null);
 		setItem<boolean>("is_online", false);
 
-		setItem<boolean>("loggedIn", false);
-
-		window.location.href = "/login";
+		redirectToLogin();
 	} catch (err) {
 		console.warn(err);
 	}
@@ -102,52 +119,21 @@ export function redirectToLogin(): void {
 	window.location.href = "/login";
 }
 
-export async function refreshAccess(): Promise<void> {
-	try {
-		const resp = await fetch(`${API_BASE}/auth/refresh`, {
-			method: "POST",
-			credentials: "include"
-		});
-
-		if (resp.status == 404 && resp.text.length == 0)
-			renderMessage("You appear to be offline. Some features may be unavailable");
-
-		if (!resp.ok) {
-			redirectToLogin();
-		}
-
-		setItem<boolean>("loggedIn", true);
-
-	} catch (err) {
-		console.error("Refresh failed:", err);
-		redirectToLogin();
-	}
-}
-
-export async function fetchProtected<T = unknown>(endpoint: string, opts: RequestInit = {}): Promise<T | null> {
+export async function fetchProtected<T = unknown>(endpoint: string, opts: RequestInit = {}): Promise<T | null | string> {
 	const resp = await fetch(`${API_BASE}${endpoint}`, {
 		...opts,
 		credentials: "include"
 	});
 
 	if (resp.status === 401) {
-		await refreshAccess();
-
-		const retry = await fetch(`${API_BASE}${endpoint}`, {
-			...opts,
-			credentials: "include"
-		})
-		
-		if (!retry.ok) {
-			console.error("Error while fetching resource:", resp.text)
-			return null;
-		}
-
-		return (retry as T);
+		console.warn(`Error 401: ${resp.text()}`);
+		renderMessage("You appear to be logged out, please try to log in again");
+		redirectToLogin();
+		return (null);
 	}
 
 	if (!resp.ok) {
-		console.error("Error while fetching resource:", resp.text)
+		console.error("Error while fetching resource:", await resp.text())
 		return null;
 	}
 	return (await resp.json() as T);
@@ -162,31 +148,39 @@ export async function authenticate(): Promise<boolean | string> {
 		});
 
 		if (resp.status === 200) {
-			console.warn("authenticate called")
+			
+			const respJson = await resp.json() as loginResponse;
+			const respUser = respJson.data.user;
+
+			setItem<number>("id", respUser.id);
+			setItem<string>("username", respUser.username);
+			setItem<string>("display_name", respUser.display_name);
+			if (respUser.email)
+				setItem<string>("email", respUser.email);
+			setItem<string | null>("avatar_url", respUser.avatar_url);
+			setItem<boolean>("is_online", respUser.is_online);
+			if (respUser.created_at)
+				setItem<string>("created_at", respUser.created_at);
+
 			return true;
 		}
 		if (resp.status === 401) {
-			await refreshAccess();
 
-			const retry = await fetch(`${API_BASE}/auth/me`, {
-				method: "GET",
-				credentials: "include"
-			});
+			console.warn(`Error 401: ${await resp.text()}`);
+			renderMessage("You appear to be logged out, please try to log in again");
+			redirectToLogin();
+			return (false);
+		}
 
-			if (retry.status == 401) {
-				return false;
-			} else if (retry.status == 404) {
-				renderMessage("You appear to be offline. Some features may be unavailable")
-				return "offline";
-			} else {
-				renderMessage("Unexpected error while trying to authenticate user. Please try again later");
-				return "fail";				
-			}
+		if (resp.status === 404 && (await resp.text()).length === 0) {
+			renderMessage("You appear to be offline. Some features may be unavailable")
+			return "offline";
 		}
 
 		if (resp.status === 404) {
-			renderMessage("You appear to be offline. Some features may be unavailable")
-			return "offline";
+			renderMessage(`Error: ${await resp.text()}`);
+			redirectToLogin();
+			return(false);
 		}
 
 		console.warn("Unexpected auth/me status:", resp.status);

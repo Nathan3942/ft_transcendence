@@ -89,6 +89,17 @@ function createLoginForm(): HTMLDivElement {
 			}
 			
 			const result = await loginHandler(payload);
+			if (result === 400) {
+				throw new Error("400: Login has missing field(s)");
+			} else if (result === 401) {
+				textInput.classList.add("border-red-500");
+				textInput.classList.remove("boder-gray-50");
+				passInput.classList.add("border-red-500");
+				passInput.classList.remove("boder-gray-50");
+				throw new Error("401: Invalid Credentials");
+			} else if (result != 200) {
+				throw new Error(`Unexpected error: ${result}`);
+			}
 			console.log("Login succeeded:", result);
 
 			window.location.href = "/dashboard";
@@ -135,11 +146,13 @@ function createRegistrationForm(): HTMLDivElement {
 
 	pass.id = "password";
 	pass.type = "password";
+	pass.minLength = 8;
 	pass.placeholder = "Password";
 	pass.className = "mb-2 w-full border p-2";
 
 	passConfirm.id = "password-confirm";
 	passConfirm.type = "password";
+	passConfirm.minLength = 8;
 	passConfirm.placeholder = "Confirm password";
 	passConfirm.className = "mb-4 w-full border p-2";
 
@@ -221,7 +234,18 @@ function createRegistrationForm(): HTMLDivElement {
 				throw new Error("Passwords do not match");
 			}
 
-			await registerHandler(payload);
+			const result = await registerHandler(payload);
+			if (result === 400) {
+				throw new Error("Missing field(s) ot password < 8 chars");
+			} else if (result === 409 ) {
+				text.classList.remove("boder-gray-50");
+				text.classList.add("border-red-500");
+				mail.classList.remove("boder-gray-50");
+				mail.classList.add("border-red-500");
+				throw new Error("Username or email has already been used");
+			} else if (result != 200) {
+				throw new Error(`Unexpected error: ${result}`);
+			}
 
 			window.location.href = "/dashboard";
 		} catch(err: any) {
