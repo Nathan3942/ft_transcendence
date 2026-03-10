@@ -7,7 +7,7 @@ export default async function createUserSettingsPage(): Promise<HTMLDivElement> 
 		<section class="flex items-center mt-10 ml-6 w-1/3">
 			<div class="relative mr-2 w-24 h-24 overflow-hidden bg-gray-100 dark:bg-gray-700">
 				<img id="profileImg" src="/assets/images/user-svgrepo-com.svg" alt="Profile picture"
-					class="w-full h-full object-cover dark:invert"/>
+					class="w-full h-full object-cover"/>
 				<label for="avatarInput"
 					class="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-700 bg-opacity-30 opacity-0 hover:opacity-100 cursor-pointer transition">
 				<img id="upArrow" src="/assets/images/arrow-up-arrow-indicator-chevron-anchor-point-svgrepo-com.svg"

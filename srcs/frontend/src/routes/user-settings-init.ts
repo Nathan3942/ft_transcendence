@@ -56,6 +56,11 @@ export default function initUSerSettings(): void {
 		}));
 	}
 
+	if (profileImg) {
+		profileImg.src = getLocalUserAvatar();
+		console.log(profileImg.src);
+	}
+
 	if (avatarInput && profileImg) {
 		avatarInput.addEventListener("change", async () => {
 			const file = avatarInput.files?.[0];
