@@ -44,7 +44,7 @@ export default function initUSerSettings(): void {
 
 		// setItem("avatarUrl", await resp.text());
 		return await resp.text();
-	} 
+	}
 
 	// Function Propper
 	if (submitPass) {
@@ -56,10 +56,8 @@ export default function initUSerSettings(): void {
 		}));
 	}
 
-	if (profileImg) {
+	if (profileImg)
 		profileImg.src = getLocalUserAvatar();
-		console.log(profileImg.src);
-	}
 
 	if (avatarInput && profileImg) {
 		avatarInput.addEventListener("change", async () => {
