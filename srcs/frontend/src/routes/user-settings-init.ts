@@ -147,7 +147,6 @@ export default function initUSerSettings(): void {
 	}
 	
 	if (userInfoForm) {
-		console.log("Im here");
 		userInfoForm.addEventListener("submit", async (e) => {
 			e.preventDefault();
 			
