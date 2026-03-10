@@ -1,3 +1,6 @@
+import { getLocalUserAvatar } from "../helpers/avatarHelper";
+import { getItem } from "../helpers/localStoragehelper";
+
 export default async function createUserSettingsPage(): Promise<HTMLDivElement> {
 	const outer = document.createElement("div");
 	outer.className = "flex flex-1 flex-col"
@@ -6,7 +9,7 @@ export default async function createUserSettingsPage(): Promise<HTMLDivElement> 
 
 		<section class="flex items-center mt-10 ml-6 w-1/3">
 			<div class="relative mr-2 w-24 h-24 overflow-hidden bg-gray-100 dark:bg-gray-700">
-				<img id="profileImg" src="/assets/images/user-svgrepo-com.svg" alt="Profile picture"
+				<img id="profileImg" src="${getLocalUserAvatar()}" alt="Profile picture"
 					class="w-full h-full object-cover"/>
 				<label for="avatarInput"
 					class="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-700 bg-opacity-30 opacity-0 hover:opacity-100 cursor-pointer transition">
@@ -19,15 +22,24 @@ export default async function createUserSettingsPage(): Promise<HTMLDivElement> 
 		</section>
 
 		<section class="mt-10 ml-6 w-1/3">
-			<div>
-				<label class="block text-sm">Username</label>
-				<p id="usernameDisplay" class="mt-1 text-lg text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-800 pl-1">johndoe123</p>
-			</div>
+			<form id="userInfoForm" class="space-y-4">
+				<div>
+					<label class="block text-sm">Username</label>
+					<input type="username" required id="usernameInput" value=${getItem("username")}
+						class="text-lg mt-1 block w-full border border-gray-300 dark:border-gray-500 shadow-sm">
+				</div>
 
-			<div>
-				<label class="block text-sm mt-2">Email</label>
-				<p id="emailDisplay" class="mt-1 text-lg text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-800 pl-1">john.doe@example.com</p>
-			</div>
+				<div>
+					<label class="block text-sm mt-2">Email</label>
+					<input type="email" required id="emailInput" value=${getItem("username")}
+						class="text-lg mt-1 block w-full border border-gray-300 dark:border-gray-500 shadow-sm">
+				</div>
+
+				<div class="mt-4 flex space-x-2">
+					<button id="submitInfoChange" type="submit">
+				</div>
+				<p id="userInfoText"></p>
+			</form>
 		</section>
 
 		<section class="mt-10 ml-6 w-1/3">
@@ -37,19 +49,19 @@ export default async function createUserSettingsPage(): Promise<HTMLDivElement> 
 				<div>
 				<label for="currentPwd" class="block text-sm pl-1">Current password</label>
 				<input type="password" id="currentPwd" required
-						class="mt-1 block w-full border border-gray-300 dark:border-gray-500 shadow-sm"/>
+						class="text-lg mt-1 block w-full border border-gray-300 dark:border-gray-500 shadow-sm"/>
 				</div>
 
 				<div>
 				<label for="newPwd" class="block text-sm pl-1">New password</label>
 				<input type="password" id="newPwd" required minlength="8"
-						class="mt-1 block w-full border border-gray-300 dark:border-gray-500 shadow-sm"/>
+						class="text-lg mt-1 block w-full border border-gray-300 dark:border-gray-500 shadow-sm"/>
 				</div>
 
 				<div>
 				<label for="confirmPwd" class="block text-sm pl-1">Confirm new password</label>
 				<input type="password" id="confirmPwd" required minlength="8"
-					class="mt-1 block w-full border border-gray-300 dark:border-gray-500 shadow-sm"/>
+					class="text-lg mt-1 block w-full border border-gray-300 dark:border-gray-500 shadow-sm"/>
 				</div>
 
 				<button id="submitPass" type="submit">
