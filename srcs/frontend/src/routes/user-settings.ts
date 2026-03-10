@@ -5,7 +5,7 @@ export default async function createUserSettingsPage(): Promise<HTMLDivElement> 
 		<h2 class="text-2xl font-semibold mt-4 ml-2">User Settings</h2>
 
 		<section class="flex items-center mt-10 ml-6 w-1/3">
-			<div class="relative w-24 h-24 overflow-hidden bg-gray-100 dark:bg-gray-700">
+			<div class="relative mr-2 w-24 h-24 overflow-hidden bg-gray-100 dark:bg-gray-700">
 				<img id="profileImg" src="/assets/images/user-svgrepo-com.svg" alt="Profile picture"
 					class="w-full h-full object-cover dark:invert"/>
 				<label for="avatarInput"
@@ -15,7 +15,7 @@ export default async function createUserSettingsPage(): Promise<HTMLDivElement> 
 				</label>
 				<input type="file" id="avatarInput" accept="image/*" class="hidden"/>
 			</div>
-			<div><p class="text-sm ml-2">Click the picture to upload a new avatar.</p></div>
+			<div id="avatarMsg"><p class="text-sm">Click the picture to upload a new avatar.</p></div>
 		</section>
 
 		<section class="mt-10 ml-6 w-1/3">
