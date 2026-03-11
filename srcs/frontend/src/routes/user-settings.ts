@@ -1,7 +1,7 @@
 import { getLocalUserAvatar } from "../helpers/avatarHelper";
 import { getItem } from "../helpers/localStoragehelper";
 
-export default async function createUserSettingsPage(): Promise<HTMLDivElement> {
+export default function createUserSettingsPage(): HTMLDivElement {
 	const outer = document.createElement("div");
 	outer.className = "flex flex-1 flex-col"
 	outer.innerHTML = `

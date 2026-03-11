@@ -55,3 +55,27 @@ export interface Route {
 	init?: () => void | Promise<void>;
 	guarded?: Guard[];
 }
+
+interface statsResponse {
+  data: {
+    userId: number;
+    username: string;
+    totalMatches: number;
+    wins: number;
+    losses: number;
+    winrate: number;
+    tournamentsWon: number;
+  };
+}
+
+interface matchHistoryResponse {
+  data: Array<{
+    matchId: number;
+    opponentId: number;
+    opponentName: string;
+    userScore: number;
+    opponentScore: number;
+    won: boolean;
+    finishedAt: string;
+  }>;
+}

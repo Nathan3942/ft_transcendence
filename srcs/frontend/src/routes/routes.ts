@@ -20,11 +20,11 @@ export const routes: Route[] = [
 		component: lazy(() => import("./leaderboard")),
 		// guarded: [authGuard]
 	},
-	/* {
+	{
 		path: "/user-profile",
 		component: lazy(() => import("./user-profile")),
 		guarded: [authGuard]
-	}, */
+	},
 	{
 		path: "/user-settings",
 		component: lazy(() => import("./user-settings")),
