@@ -1,6 +1,6 @@
 import { createButton } from "../components/button/button";
 import { renderError, renderMessage } from "../components/popup/popup";
-import { authenticate } from "../handler/loginHandler";
+import { API_BASE, authenticate } from "../handler/loginHandler";
 import { getLocalId } from "../helpers/apiHelper";
 import { getLocalUserAvatar } from "../helpers/avatarHelper";
 import { getItem, setItem } from "../helpers/localStoragehelper";
@@ -25,7 +25,7 @@ export default function initUSerSettings(): void {
 		const form = new FormData();
 		form.append("file", file);
 
-		const resp = await fetch(`/users/${getLocalId}/avatar`, {
+		const resp = await fetch(`${API_BASE}/users/${getLocalId}/avatar`, {
 			method: "POST",
 			credentials: "include",
 			body: form
@@ -68,7 +68,7 @@ export default function initUSerSettings(): void {
 		if (!form.has("email") || !form.has("username"))
 			throw "You have not entered any new values";
 
-		const resp = await fetch(`/users/${getLocalId}}`, {
+		const resp = await fetch(`${API_BASE}/users/${getLocalId}}`, {
 			method: "PATCH",
 			credentials: "include",
 			body: form
