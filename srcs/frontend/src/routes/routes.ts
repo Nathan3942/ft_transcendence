@@ -23,6 +23,7 @@ export const routes: Route[] = [
 	{
 		path: "/user-profile",
 		component: lazy(() => import("./user-profile")),
+		init: lazyInit(() => import("./user-profile-init")),
 		guarded: [authGuard]
 	},
 	{

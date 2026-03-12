@@ -57,25 +57,25 @@ export interface Route {
 }
 
 export interface userStatsResponse {
-  data: {
-    userId: number;
-    username: string;
-    totalMatches: number;
-    wins: number;
-    losses: number;
-    winrate: number;
-    tournamentsWon: number;
-  };
+	data: {
+		userId: number;
+		username: string;
+		totalMatches: number;
+		wins: number;
+		losses: number;
+		winrate: number;
+		tournamentsWon: number;
+	};
 }
 
 export interface userMatchHistoryResponse {
-  data: Array<{
-    matchId: number;
-    opponentId: number;
-    opponentName: string;
-    userScore: number;
-    opponentScore: number;
-    won: boolean;
-    finishedAt: string;
-  }>;
+	data: Array<{
+		matchId: number;
+		opponentId: number;
+		opponentName: string;
+		userScore: number;
+		opponentScore: number;
+		won: boolean;
+		finishedAt: string;
+	}>;
 }

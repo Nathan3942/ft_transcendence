@@ -1,4 +1,5 @@
 import { authenticate } from "../handler/loginHandler";
+import type { user } from "../interfaces/properties";
 import { getItem } from "./localStoragehelper";
 
 export function getLocalId(): number | null {
@@ -8,4 +9,8 @@ export function getLocalId(): number | null {
 		id = getItem("id");
 	}
 	return (id);
+}
+
+export function getOnlineUser(): user | string {
+
 }

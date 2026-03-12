@@ -20,8 +20,7 @@ export default function createHeader(): HTMLHeadElement {
 
 	navbar.className = "flex justify-end space-x-5 px-4";
 	navbar.id = "navbar";
-	
-	if (getItem("loggedIn") === true) {
+	if ((getItem<boolean>("loggedIn") ?? false) === true) {
 		const userDropdown = document.createElement("div");
 		const bridge = document.createElement("div");
 		bridge.className = "absolute w-full h-4 right-0 z-10 group-hover:visible";

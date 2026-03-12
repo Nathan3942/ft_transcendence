@@ -1,0 +1,114 @@
+import { renderMessage } from "../components/popup/popup";
+import { API_BASE } from "../handler/loginHandler";
+import { getLocalId, getOnlineUser } from "../helpers/apiHelper";
+import { getLocalUserAvatar } from "../helpers/avatarHelper";
+import { getItem } from "../helpers/localStoragehelper";
+import type { user, userStatsResponse } from "../interfaces/properties";
+
+async function fetchUserStats(userId: number): Promise<userStatsResponse> {
+	const resp = await fetch(`${API_BASE}/users/${userId}/stats`, {
+		method: "GET",
+		credentials: "include"
+	})
+
+	if (resp.ok) {
+		const respJson = await resp.json() as userStatsResponse;
+		return respJson;
+	} else if (resp.status === 400)
+		throw new Error("400: Invalid user ID");
+	else if (resp.status === 404 && resp.text.length === 0) {
+		renderMessage("You appear to be offline, please try again later.");
+		throw new Error("404: Offline");
+	} else if (resp.status === 404)
+		throw new Error("404: User not found");
+	else
+		throw new Error(`Unexpected error: ${resp.status}`);
+}
+
+export default async function initUserProfile(): Promise<void> {
+
+	// Initialisation of document elements
+	const pfp = document.getElementById("profilePfp") as HTMLImageElement;
+	const username = document.getElementById("profileUsername") as HTMLHeadingElement;
+	const onlineStatus = document.getElementById("onlineStatus") as HTMLParagraphElement;
+
+	const userStatsDiv = document.getElementById("userStats") as HTMLDivElement;
+	const matchHistoryTable = document.getElementById("matchHistory") as HTMLTableElement;
+
+	// Initialisation of user stats
+	const id = getLocalId();
+	if (!id) {
+		console.error("Error: No user id found, cannot load statistics");
+		return ;
+	}
+
+	let  userInfo: user | string;
+	
+	
+	if (id == getLocalId()) {
+		 userInfo = {
+			id: id,
+			username: getItem<string>("username") ?? "null",
+			display_name: getItem<string>("display_name") ?? "null",
+			avatar_url: getLocalUserAvatar(),
+			is_online: getItem<boolean>("is_online") ?? false
+		}
+	} else {
+		userInfo = getOnlineUser();
+		if (typeof userInfo === "string" ) {
+			console.warn(`Warning: Cannot get user information for id: ${id} for reason "${userInfo}"... Aborting page init`);
+
+			return ;
+		}
+	}
+
+	username.innerText = userInfo.username;
+	if (userInfo.avatar_url)
+		pfp.src = userInfo.avatar_url;
+	if (userInfo.is_online) {
+		onlineStatus.innerText = "Online"
+	} else {
+		onlineStatus.innerText = "Offline"
+	}
+
+
+	try {
+		const dataStats = await fetchUserStats(id);
+		const userStats = dataStats.data; 
+
+		// Test Values
+		/* const userStats = {
+			userId: 1,
+			username: "Player1",
+			totalMatches: 100,
+			wins: 70,
+			losses: 30,
+			winrate: 0.7,
+			tournamentsWon: 5,
+		}; */
+
+		document.getElementById("totalMatches")!.textContent = userStats.totalMatches.toString();
+		document.getElementById("tournamentsWon")!.textContent = userStats.tournamentsWon.toString();
+		document.getElementById("wins")!.textContent = userStats.wins.toString();
+		document.getElementById("losses")!.textContent = userStats.losses.toString();
+		document.getElementById("winrate")!.textContent = `${userStats.winrate * 100}%`;
+
+		const winCircle = document.getElementById("winCircle");
+		if (winCircle instanceof SVGCircleElement) {
+			const circumference = 251.2;
+			const winPercentage = userStats.winrate;
+	
+			const winOffset = circumference - (winPercentage * circumference);
+			winCircle.style.strokeDashoffset = winOffset.toString();
+		}
+
+	} catch (e) {
+		console.error(`Error: Unable to fetch user stats: ${e}`);
+		document.getElementById("userStats")!.innerHTML = `
+			<div class="col-span-4 pl-6">
+				Error: Unable to fetch user stats: ${e}
+			</div>
+		`;
+	}
+
+}
