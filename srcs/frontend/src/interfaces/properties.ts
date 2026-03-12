@@ -56,7 +56,7 @@ export interface Route {
 	guarded?: Guard[];
 }
 
-interface statsResponse {
+export interface userStatsResponse {
   data: {
     userId: number;
     username: string;
@@ -68,7 +68,7 @@ interface statsResponse {
   };
 }
 
-interface matchHistoryResponse {
+export interface userMatchHistoryResponse {
   data: Array<{
     matchId: number;
     opponentId: number;
