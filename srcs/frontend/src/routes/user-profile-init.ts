@@ -156,7 +156,7 @@ export default async function initUserProfile(): Promise<void> {
 
 		tbody.innerHTML = "";
 
-		for (let i = 0; i < matchHistoryArray.length; ++i) {
+		for (let i = matchHistoryArray.length - 1; i >= 0; --i) {
 			const match = matchHistoryArray[i];
 			const newRow = tbody.insertRow();
 			newRow.classList.add("text-center")
@@ -175,7 +175,9 @@ export default async function initUserProfile(): Promise<void> {
 			else
 				cell4.classList.add("text-red-600", "text-red-400")
 			cell4.textContent = match.won ? "Win" : "Loss";
-			cell5.textContent = match.finishedAt;
+			const date: string[] = match.finishedAt.split("T");
+			console.log(date);
+			cell5.textContent = `${date.at(0)} - ${date.at(1)?.replace("Z", "")}`
 
 		}
 	} catch (e) {

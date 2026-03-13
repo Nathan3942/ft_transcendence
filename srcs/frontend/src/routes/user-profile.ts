@@ -1,19 +1,38 @@
 export default function buildUserProfile(): HTMLDivElement {
-	const thClasses = "py-2 px-4 border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white";
-	const h2Classes = "w-full font-bold mb-2 border border-gray-200 dark:border-gray-700 text-center bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white";
-	const statBoxClasses = "bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-2 rounded-sm text-gray-800 dark:text-white text-center ";
+	const thClasses = [
+		"py-2 px-4",
+		"border-b border-gray-200 dark:border-gray-700",
+		"bg-gray-100 dark:bg-gray-800",
+		"text-gray-800 dark:text-white"
+	].join(" ");
+
+	const h2Classes = [
+		"w-full mb-2",
+		"border border-gray-200 dark:border-gray-700",
+		"bg-gray-100 dark:bg-gray-800",
+		"font-bold text-gray-800 dark:text-white text-center"
+	].join(" ");
+
+	const statBoxClasses = [
+		"p-2",
+		"border border-gray-200 dark:border-gray-700",
+		"bg-gray-100 dark:bg-gray-800",
+		"rounded-sm",
+		"text-gray-800 dark:text-white text-center"
+
+	].join(" ");
 
 	const outer = document.createElement("div");
 	outer.className = "flex flex-1 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-white p-4";
 	outer.innerHTML = `
-		<section class="w-1/3 h-full flex flex-col items-center pt-10 border-r border-gray-200 dark:border-gray-700 pr-4">
+		<section class="w-1/6 h-full flex flex-col items-center pt-10 border-r border-gray-200 dark:border-gray-700 pr-4">
 			<img id="profilePfp" src="assets/images/user-svgrepo-com.svg" alt="avatar" class="w-20 h-20 border-2 border-gray-300 dark:border-gray-700">
 			<h1 id="profileUsername" class="text-2xl font-bold pt-3"></h1>
 			<p id="onlineStatus" class="pt-2 text-gray-500 dark:text-gray-400"></p>
 		</section>
-		<section class="w-2/3 h-full flex flex-col pl-4">
+		<section class="w-5/6 h-full flex flex-col pl-4">
 			<div class="flex flex-col mt-4">
-				<h2 class="text-xl font-bold mb-2 text-gray-800 dark:text-white">User Stats</h2>
+				<h2 class="text-xl font-bold mb-2 text-gray-800 dark:text-white">▐ User Stats</h2>
 				<div id="userStats" class="w-full grid grid-cols-4 gap-4">
 					<div class="${statBoxClasses}">
 						<h2 class="${h2Classes}">Total Matches</h2>
@@ -65,7 +84,7 @@ export default function buildUserProfile(): HTMLDivElement {
 				</div>
 			</div>
 			<div class="mt-6 flex-1 overflow-y-auto">
-				<h2 class="text-xl font-bold mb-2 text-gray-800 dark:text-white">Match History</h2>
+				<h2 class="text-xl font-bold mb-2 text-gray-800 dark:text-white">▐ Match History</h2>
 				<table id="matchHistory" class="w-full border border-gray-200 dark:border-gray-700">
 					<thead>
 						<tr>
