@@ -19,11 +19,11 @@ export default function buildUserProfile(): HTMLDivElement {
 				<div id="userStats" class="w-5/6 grid grid-cols-4 gap-6">
 					<div class="flex flex-col items-center">
 						<h2 class="${h2Classes}">Total Matches</h2>
-						<p id="totalMatches"></p>
+						<p id="totalMatches" class="text-xl"></p>
 					</div>
 					<div class="flex flex-col items-center">
 						<h2 class="${h2Classes}">Tournaments Won</h2>
-						<p id="tournamentsWon"></p>
+						<p id="tournamentsWon" class="text-xl"></p>
 					</div>
 					<div class="relative">
 						<svg class="w-full h-full" viewBox="0 0 100 100">

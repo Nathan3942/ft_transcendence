@@ -3,7 +3,7 @@ import { API_BASE } from "../handler/loginHandler";
 import { getLocalId, getOnlineUser } from "../helpers/apiHelper";
 import { getLocalUserAvatar } from "../helpers/avatarHelper";
 import { getItem } from "../helpers/localStoragehelper";
-import type { user, userStatsResponse } from "../interfaces/properties";
+import type { user, userMatchHistoryResponse, userStatsResponse } from "../interfaces/properties";
 
 async function fetchUserStats(userId: number): Promise<userStatsResponse> {
 	const resp = await fetch(`${API_BASE}/users/${userId}/stats`, {
@@ -16,6 +16,28 @@ async function fetchUserStats(userId: number): Promise<userStatsResponse> {
 		return respJson;
 	} else if (resp.status === 400)
 		throw new Error("400: Invalid user ID");
+	else if (resp.status === 404 && resp.text.length === 0) {
+		renderMessage("You appear to be offline, please try again later.");
+		throw new Error("404: Offline");
+	} else if (resp.status === 404)
+		throw new Error("404: User not found");
+	else
+		throw new Error(`Unexpected error: ${resp.status}`);
+}
+
+async function fetchMatchHistory(userId: number): Promise<userMatchHistoryResponse> {
+	const resp = await fetch(`${API_BASE}/users/${userId}/matches`, {
+		method: "GET",
+		credentials: "include"
+	})
+
+	if (resp.ok) {
+		const respJson = await resp.json() as userMatchHistoryResponse;
+		return respJson;
+	} else if (resp.status === 400)
+		throw new Error("400: Invalid user ID");
+	else if (resp.status === 401)
+		throw new Error("401: Not authenticated")
 	else if (resp.status === 404 && resp.text.length === 0) {
 		renderMessage("You appear to be offline, please try again later.");
 		throw new Error("404: Offline");
@@ -39,6 +61,16 @@ export default async function initUserProfile(): Promise<void> {
 	const id = getLocalId();
 	if (!id) {
 		console.error("Error: No user id found, cannot load statistics");
+		userStatsDiv.innerHTML = `
+			<div class="col-span-4 pl-6">
+				Error: No user id found, cannot load statistics...
+			</div>
+		`;
+		matchHistoryTable.innerHTML =  `
+			<div class="pl-6">
+				Error: No user id found, cannot load match history...
+			</div>
+		`
 		return ;
 	}
 
@@ -74,7 +106,7 @@ export default async function initUserProfile(): Promise<void> {
 
 	try {
 		const dataStats = await fetchUserStats(id);
-		const userStats = dataStats.data; 
+		const userStats = dataStats.data;
 
 		// Test Values
 		/* const userStats = {
@@ -104,11 +136,43 @@ export default async function initUserProfile(): Promise<void> {
 
 	} catch (e) {
 		console.error(`Error: Unable to fetch user stats: ${e}`);
-		document.getElementById("userStats")!.innerHTML = `
+		userStatsDiv.innerHTML = `
 			<div class="col-span-4 pl-6">
 				Error: Unable to fetch user stats: ${e}
 			</div>
 		`;
 	}
 
+	try {
+
+		const matchHistoryArray = (await fetchMatchHistory(id)).data;
+		const tbody = matchHistoryTable.querySelector("tbody")!;
+
+		tbody.innerHTML = "";
+
+		for (let i = 0; i < matchHistoryArray.length; ++i) {
+			const match = matchHistoryArray[i];
+			const newRow = tbody.insertRow();
+			newRow.classList.add("text-center")
+			
+			const cell1 = newRow.insertCell(0); // Match ID
+			const cell2 = newRow.insertCell(1); // Opponent Info
+			const cell3 = newRow.insertCell(2); // Score
+			const cell4 = newRow.insertCell(3); // Result
+			const cell5 = newRow.insertCell(4); // Date
+
+			cell1.textContent = match.matchId.toString();
+			cell2.textContent = match.opponentName; // Make button that rerouts to opponents profile
+			cell3.textContent = `${match.userScore} - ${match.opponentScore}`;
+			if (match.won)
+				cell4.classList.add("text-green-600", "dark:text-green-400");
+			else
+				cell4.classList.add("text-red-600", "text-red-400")
+			cell4.textContent = match.won ? "Win" : "Loss";
+			cell5.textContent = match.finishedAt;
+
+		}
+	} catch (e) {
+
+	}
 }
