@@ -1,7 +1,7 @@
 export default function buildUserProfile(): HTMLDivElement {
 	const thClasses = "py-2 px-4 border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white";
-	const h2Classes = "w-full font-bold mb-2 border border-gray-200 dark:border-gray-700 text-center bg-gray-100 dark:bg-gray-800 text-gray-800";
-	const statBoxClasses = "bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-2 rounded-sm text-gray-800 text-center";
+	const h2Classes = "w-full font-bold mb-2 border border-gray-200 dark:border-gray-700 text-center bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white";
+	const statBoxClasses = "bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-2 rounded-sm text-gray-800 dark:text-white text-center ";
 
 	const outer = document.createElement("div");
 	outer.className = "flex flex-1 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-white p-4";
