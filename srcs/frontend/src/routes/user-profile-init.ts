@@ -179,6 +179,12 @@ export default async function initUserProfile(): Promise<void> {
 
 		}
 	} catch (e) {
-
+		console.error(`Error: Unable to fetch match history: ${e}`);
+		matchHistoryTable.classList.remove("border");
+		matchHistoryTable.innerHTML = `
+			<div class="col-span-4 pl-6">
+				Error: Unable to fetch match history: ${e}
+			</div>
+		`;
 	}
 }
