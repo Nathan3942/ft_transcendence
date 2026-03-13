@@ -84,23 +84,23 @@ export default async function initUserProfile(): Promise<void> {
 			display_name: getItem<string>("display_name") ?? "null",
 			avatar_url: getLocalUserAvatar(),
 			is_online: getItem<boolean>("is_online") ?? false
-		}
+		};
 	} else {
 		userInfo = getOnlineUser();
 		if (typeof userInfo === "string" ) {
 			console.warn(`Warning: Cannot get user information for id: ${id} for reason "${userInfo}"... Aborting page init`);
 
 			return ;
-		}
+		};
 	}
 
 	username.innerText = userInfo.username;
 	if (userInfo.avatar_url)
 		pfp.src = userInfo.avatar_url;
 	if (userInfo.is_online) {
-		onlineStatus.innerText = "Online"
+		onlineStatus.innerText = "Online";
 	} else {
-		onlineStatus.innerText = "Offline"
+		onlineStatus.innerText = "Offline";
 	}
 
 
@@ -159,7 +159,7 @@ export default async function initUserProfile(): Promise<void> {
 		for (let i = matchHistoryArray.length - 1; i >= 0; --i) {
 			const match = matchHistoryArray[i];
 			const newRow = tbody.insertRow();
-			newRow.classList.add("text-center")
+			newRow.classList.add("text-center");
 			
 			const cell1 = newRow.insertCell(0); // Match ID
 			const cell2 = newRow.insertCell(1); // Opponent Info
@@ -173,11 +173,10 @@ export default async function initUserProfile(): Promise<void> {
 			if (match.won)
 				cell4.classList.add("text-green-600", "dark:text-green-400");
 			else
-				cell4.classList.add("text-red-600", "text-red-400")
+				cell4.classList.add("text-red-600", "text-red-400");
 			cell4.textContent = match.won ? "Win" : "Loss";
 			const date: string[] = match.finishedAt.split("T");
-			console.log(date);
-			cell5.textContent = `${date.at(0)} - ${date.at(1)?.replace("Z", "")}`
+			cell5.textContent = `${date.at(0)} - ${date.at(1)?.replace("Z", "")}`;
 
 		}
 	} catch (e) {
