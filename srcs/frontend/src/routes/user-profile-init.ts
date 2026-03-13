@@ -127,11 +127,17 @@ export default async function initUserProfile(): Promise<void> {
 
 		const winCircle = document.getElementById("winCircle");
 		if (winCircle instanceof SVGCircleElement) {
+			const lossCircle = document.getElementById("lossCircle")!;
+
 			const circumference = 251.2;
 			const winPercentage = userStats.winrate;
-	
-			const winOffset = circumference - (winPercentage * circumference);
-			winCircle.style.strokeDashoffset = winOffset.toString();
+			const lossPercentage = 1 - winPercentage;
+			const winDegrees = winPercentage * 360;
+
+			winCircle.style.strokeDashoffset = (circumference - (winPercentage * circumference)).toString();
+			lossCircle.style.transform = `rotate(${winDegrees}deg)`;
+			lossCircle.style.transformOrigin = "center";
+			lossCircle.style.strokeDashoffset = (circumference - (lossPercentage * circumference)).toString();
 		}
 
 	} catch (e) {
