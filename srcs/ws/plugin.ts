@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/13 15:48:09 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/06 08:40:55 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/13 16:16:36 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,8 @@ import type { WsClientEvent, WsEnvelope, WsRoom } from "./events";
 import { GameManager } from "../game/gameManager";
 import { getMatchStatus, updateMatchStatus } from "../services/matchService";
 import { getMatchById } from "../repository/matchesRepository";
-import { getTournamentStatus } from "../services/tournamentService";
+import { getTournamentStatus, updateTournamentStatus } from "../services/tournamentService";
+import { TournamentMaganer } from "../tournament/tournamentManager";
 
 
 export type ModeStr = "1v1" | "2v2" | "3p" | "4p";
@@ -40,9 +41,9 @@ export type GameSlot = Slot1v1 | Slot2v2 | Slot3p | Slot4p;
 
 // etend le type FastifyInstance pour l'ajouter au wsHub
 declare module "fastify" {
-  interface FastifyInstance {
-    wsHub: WsHub;
-  }
+	interface FastifyInstance {
+		wsHub: WsHub;
+	}
 }
 
 // pase JSON en securite
@@ -80,35 +81,35 @@ function slotsForMode(mode: ModeStr): GameSlot[] {
  * Sinon null si match plein.
  */
 function pickSlotForClient(game: any, mode: ModeStr, clientId: string): GameSlot | null {
-  const slots = slotsForMode(mode);
+	const slots = slotsForMode(mode);
 
-  // 1) Reconnect : le clientId existe déjà -> on lui redonne son slot
-  for (const s of slots) {
-    if (game.players?.[s]?.clientId === clientId) return s;
-  }
+	// 1) Reconnect : le clientId existe déjà -> on lui redonne son slot
+	for (const s of slots) {
+		if (game.players?.[s]?.clientId === clientId) return s;
+	}
 
-  // 2) Nouveau joueur : premier slot vide
-  for (const s of slots) {
-    if (!game.players?.[s]?.clientId) return s;
-  }
+	// 2) Nouveau joueur : premier slot vide
+	for (const s of slots) {
+		if (!game.players?.[s]?.clientId) return s;
+	}
 
-  return null;
+	return null;
 }
 
 function countRegisteredPlayers(game: any, mode: ModeStr): number {
-  const slots = slotsForMode(mode);
-  let c = 0;
-  for (const s of slots) {
-    if (game.players?.[s]?.clientId)
-		c++;
-  }
-  return c;
+	const slots = slotsForMode(mode);
+	let c = 0;
+	for (const s of slots) {
+		if (game.players?.[s]?.clientId)
+			c++;
+	}
+	return c;
 }
 
 function randomId(): string {
-  const g: any = globalThis as any;
-  if (g.crypto?.randomUUID) return g.crypto.randomUUID();
-  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+	const g: any = globalThis as any;
+	if (g.crypto?.randomUUID) return g.crypto.randomUUID();
+	return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 }
 
 
@@ -122,8 +123,12 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
     const hub = new WsHub(app.log);
     app.decorate("wsHub", hub);
 
-	const gameManager = new GameManager(app.log, (room, payload) => hub.broadcast(room as any, payload));
-
+	const tournamentManager = new TournamentMaganer();
+	const gameManager = new GameManager(
+		app.log,
+		(room, payload) => hub.broadcast(room as any, payload),
+		tournamentManager
+	);
     /* 
     	endpoint websocket 
 		client co a l'url
@@ -224,8 +229,9 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 					hub.send(ws, { type: "match_full", gameId: msg.gameId });
 					setTimeout(() => {
 						try {
-						ws.close(1008, "Match full");
-						} catch {}
+							ws.close(1008, "Match full");
+						}
+						catch {}
 					}, 30);
 					return;
 				}
@@ -264,9 +270,75 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 
 				const room = `tournament:${msg.tournamentId}` as WsRoom;
 				ws._tournamentId = msg.tournamentId;
+				ws._clientId = msg.clientId;
 
-				if (getTournamentStatus(ws._tournamentId) === "finished")
+				const tournamentId = msg.tournamentId;
+
+				const status = getTournamentStatus(tournamentId);
+				if (status === "finished") {
+					hub.send(ws, {
+						type: "tournament_finished",
+						tournamentId,
+						// msg.winnerName,
+						// msg.winnerId,
+					});
 					return;
+				}
+
+				hub.join(ws, room);
+
+				if (!tournamentManager.isTournamentPlayer(tournamentId, ws._clientId)) {
+					tournamentManager.registerTournamentPlayer(
+						tournamentId,
+						ws._clientId,
+						ws._userId
+					);
+				}
+
+				const count = tournamentManager.countTournamentPlayers(tournamentId);
+				const needed = 8;
+
+				if (count < needed) {
+					hub.broadcast(room, {
+						type: "tournament_waiting",
+						tournamentId,
+						count,
+						playerNeeded: needed,
+					});
+					return;
+				}
+
+				// todo ca marche pas
+				if (count >= needed && !tournamentManager.isTournamentPlayer(tournamentId, ws._clientId)) {
+					hub.send(ws, {
+						type: "tournament_full",
+						tournamentId,
+					});
+					return;
+				}
+
+				if (status === "in_progress") {
+					hub.send(ws, {
+						type: "tournament_bracket_update",
+						tournamentId,
+						bracket: tournamentManager.getBracket(tournamentId),
+					});
+					return;
+				}
+
+				updateTournamentStatus(tournamentId, "in_progress");
+				
+				const bracket = tournamentManager.startTournament(tournamentId);
+
+				hub.broadcast(room, {
+					type: "tournament_started",
+					tournamentId,
+					count,
+					bracket,
+				});
+
+				return;
+				
 			}
 
 

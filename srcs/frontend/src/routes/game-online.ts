@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 16:52:45 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/05 18:19:24 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/09 18:57:15 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,9 +48,9 @@ export default function createGameOnlinePage(): HTMLDivElement {
 			extraClasses: btnClasses,
 			buttonText: "Create Tournament",
 			f: async () => {
-				const id = await createOnlineTournament();
-				setCurrentTournamentId(String(id));
-				navigate(`/game-online/${id}`);
+				const tournament = await createOnlineTournament();
+				setCurrentTournamentId(String(tournament.id));
+				navigate(`/online-tournament`);
 			},
 			icon: "assets/images/trophy-svgrepo-com.svg",
 			iconAlt: "Icon",

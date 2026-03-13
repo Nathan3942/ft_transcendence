@@ -6,16 +6,16 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 17:15:35 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/06 09:26:50 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/13 15:41:25 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-import { getCurrentMatchId, getCurrentMatchMode } from "../services/onlineStore";
+import { getCurrentMatchId, getCurrentMatchMode, setCurrentTournamentId } from "../services/onlineStore";
 import { drawPong } from "../game/pong_render";
 import { toRenderState, type RenderState, type ServerGameState, type GameSlot } from "../game/server_state_adapter";
 
 function navigate(path: string) {
-  window.dispatchEvent(new CustomEvent("navigate", { detail: { path } }));
+	window.dispatchEvent(new CustomEvent("navigate", { detail: { path } }));
 }
 
 type Dir = -1 | 0 | 1;
@@ -309,9 +309,20 @@ export default function onlineMatch(): HTMLDivElement {
 				unbindInput();
 				unbindInput = null;
 			}
-			alert(`Winner: ${winner}`);
-			cleanup();
-			navigate("/game-online");
+
+			if (msg.tournamentId) {
+				setCurrentTournamentId(String(msg.tournamentId));
+				setTimeout(() => {
+					navigate("/online-tournament");
+				}, 1500);
+				return;
+			}
+
+			setTimeout(() => {
+				alert(`Winner: ${winner}`);
+				cleanup();
+				navigate("/game-online");
+			}, 1500);
 			return;
 		}
 

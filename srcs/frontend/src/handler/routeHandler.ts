@@ -12,6 +12,7 @@ import onlineMatch from '../routes/online-match';
 import chooseOnlineMode from '../routes/online-mode';
 import chooseBrowse from '../routes/choose-browse';
 import createBrowseTournamentsPage from '../routes/browse-tournaments';
+import onlineTournament from '../routes/online-tournament';
 
 type Route = {
     path: string;
@@ -32,7 +33,8 @@ const routes: Route[] = [
     { path: "/online-mode", component: () => assemblePage(chooseOnlineMode())},
     { path: "/online-match", component: () => assemblePage(onlineMatch())},
     { path: "/choose-browse", component: () => assemblePage(chooseBrowse())},
-    { path: "/browse-tournaments", component: () => assemblePage(createBrowseTournamentsPage())}
+    { path: "/browse-tournaments", component: () => assemblePage(createBrowseTournamentsPage())},
+    { path: "/online-tournament", component: () => assemblePage(onlineTournament())}
 ];
 
 export class Router {

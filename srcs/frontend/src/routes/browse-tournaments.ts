@@ -6,15 +6,12 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 16:33:40 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/06 09:40:35 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/09 15:39:34 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-// ✅ Idéalement, tu devrais avoir ça côté frontend (via fetch/api)
-// import { listOnlineTournaments, deleteTournament } from "../services/online";
-
-// ⚠️ Ton import actuel (si ça marche chez toi ok, sinon faut passer par une route HTTP)
 import { deleteTournament, listOnlineTournament, type Tournament } from "../services/online";
+import { setCurrentTournamentId } from "../services/onlineStore";
 
 function navigate(path: string) {
   	window.dispatchEvent(new CustomEvent("navigate", { detail: { path } }));
@@ -55,7 +52,8 @@ function tournamentRow(t: Tournament, onDeleted: () => void): HTMLDivElement {
 	openBtn.onclick = () => {
 		// ✅ adapte à ton routing
 		// Si tu as une page tournament dédiée :
-		navigate(`/tournament/${t.id}`);
+		setCurrentTournamentId(String(t.id));
+		navigate(`/online-tournament`);
 
 		// Sinon si tu utilises /game-online/:id :
 		// navigate(`/game-online/${t.id}`);

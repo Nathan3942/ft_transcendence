@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 15:45:30 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/06 08:31:06 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/13 16:15:00 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,9 @@ import type { WsSocket } from "../ws/hub";
 import type { GameId, GameState, PaddleInput, ModeId, GameSlot } from "./types";
 import { GameLoop } from "./gameLoop";
 import { deleteMatch, updateMatchStatus } from "../services/matchService";
+import { match } from "assert";
+import { TournamentMaganer } from "../tournament/tournamentManager";
+import { getMatchById } from "../repository/matchesRepository";
 
 
 const H = 750;
@@ -160,7 +163,8 @@ export class GameManager {
 
 	constructor(
 		private log: FastifyBaseLogger, 
-		private broadcastToRoom: (room: string, payload: any) => void
+		private broadcastToRoom: (room: string, payload: any) => void,
+		private tournamentManager: TournamentMaganer
 	) {}
 
 	createGame(id: GameId, md: ModeId) {
@@ -189,15 +193,47 @@ export class GameManager {
 				if (evt.type === "game_over") {
 					const winnerSlot = evt.winnerSlot as GameSlot;
 					const winnerUserId = this.games.get(id)?.players[winnerSlot]?.clientId ?? null;
+					
 					updateMatchStatus(id, "finished");
+
+					const match = getMatchById(id);
+					
 					this.broadcastToRoom(`game:${id}`, {
 						type: "game_over",
 						gameId: id,
 						winnerSlot,
 						winnerUserId,
+						tournamentId: match?.tournamentId ?? null,
 					});
+
+					if (match?.tournamentId && winnerUserId) {
+						const updatedBracket = this.tournamentManager.handleMatchFinished(
+							String(match.tournamentId),
+							Number(id),
+							Number(winnerUserId)
+						);
+
+						this.broadcastToRoom(`tournament:${match.tournamentId}`, {
+							type: "tournament_bracket_update",
+							tournamentId: String(match.tournamentId),
+							bracket: updatedBracket,
+						});
+
+						const result = this.tournamentManager.tryFinishTournament(String(match.tournamentId));
+
+						if (result) {
+							this.broadcastToRoom(`tournament:${match.tournamentId}`, {
+								type: "tournament_finished",
+								tournamentId: match.tournamentId,
+								winnerName: result.winnerName,
+								winnerId: result.winnerId
+							});
+						}
+					}
+
 					return;
 				}
+				
 				this.broadcastToRoom(`game:${id}`, { type: "game_event", evt })
 			}
 		);

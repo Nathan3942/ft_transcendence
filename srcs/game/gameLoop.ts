@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 15:45:48 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/06 08:45:17 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/13 13:51:03 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ const MARGIN = 10;
 const GAP = PADDLE_THICK + 8
 const TICK_MS = 10;
 
-const WINNING_SCORE = 10;
+const WINNING_SCORE = 1;
 
 
 function clamp(v: number, min: number, max: number) {

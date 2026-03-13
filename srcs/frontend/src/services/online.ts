@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 16:53:19 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/05 18:12:39 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/09 18:53:28 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,14 +100,13 @@ export async function startOnlineMatch(matchId: string): Promise<Match> {
 }
 
 
-export async function createOnlineTournament() {
+export async function createOnlineTournament(): Promise<Tournament> {
+	const res = await api<{ success: boolean; data: Tournament }>("/tournaments", {
+		method: "POST",
+		body: JSON.stringify({ name: `tournament:${Date.now()}` }),
+	});
 
-    const t = await api<{ id: string }>("/tournaments", {
-        method: "POST",
-        body: JSON.stringify({ name: `Tournament${Date.now()}` }),
-    });
-    
-    return (t.id);
+	return res.data;
 }
 
 export async function deleteMatch(id: string | number): Promise<unknown> {
