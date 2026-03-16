@@ -6,26 +6,21 @@ import { getItem } from "../helpers/localStoragehelper";
 // Variable names subject to change with proper backend integration
 type userInfo = {
 	userId: string;
-	userName: string;
-	localAiE: number;
-	localAiM: number;
-	localAiH: number;
-	onlineCustom: number;
-	onlineTournament: number;
-
-	totalLocalScore?: number;
-	totalOnlineScore?: number;
+	username: string;
+	wins: number;
+	losses: number;
+	totalMatches: number;
+	winrate: number;
+	winrateString: string;
 }
 
 type scoreKey = keyof Pick<
 	userInfo,
-	| "localAiE"
-	| "localAiM"
-	| "localAiH"
-	| "onlineCustom"
-	| "onlineTournament"
-	| "totalLocalScore"
-	| "totalOnlineScore"
+	| "username"
+	| "wins"
+	| "losses"
+	| "totalMatches"
+	| "winrate"
 >;
 
 async function importUserData(): Promise<userInfo[]> {
@@ -35,7 +30,10 @@ async function importUserData(): Promise<userInfo[]> {
 			method: "GET",
 		});
 		if (!response.ok) {
-			throw new Error(`Network error: ${response.status} ${response.statusText}`);
+			if (response.status === 400)
+				throw new Error(`Request error: ${response.status}: ${response.text()}`);
+			
+			throw new Error(`Network error: ${response.status}: ${response.statusText}`);
 		}
 		const jsonData = await response.json();
 
@@ -91,14 +89,11 @@ function createLeaderboardCells(users: userInfo[]): HTMLTableSectionElement {
 
 		cell.append(
 			createTdElement(i),
-			createTdElement(user?.userName || "Undefined"),
-			createTdElement(user?.localAiE || NaN),
-			createTdElement(user?.localAiM || NaN),
-			createTdElement(user?.localAiH || NaN),
-			createTdElement(user?.totalLocalScore || NaN),
-			createTdElement(user?.onlineCustom || NaN),
-			createTdElement(user?.onlineTournament || NaN),
-			createTdElement(user?.totalOnlineScore || NaN)
+			createTdElement(user?.username || "Undefined"),
+			createTdElement(user?.wins || NaN),
+			createTdElement(user?.losses || NaN),
+			createTdElement(user?.totalMatches || NaN),
+			createTdElement(user?.winrateString || "NaN"),
 		);
 
 		tBody.append(cell);
@@ -112,46 +107,23 @@ export default async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 	// Helper functions
 	function buildLeaderboard(key: scoreKey): HTMLTableSectionElement {
 		switch(key) {
-			case "localAiE": {
-				users.sort((a, b) => b.localAiE - a.localAiE);
+			case "wins": {
+				users.sort((a, b) => b.wins - a.wins);
 
 				break;
 			}
-			case "localAiM": {
-				users.sort((a, b) => b.localAiM - a.localAiM);
-
-				break;
-			}
-			case "localAiH": {
-				users.sort((a, b) => b.localAiH - a.localAiH);
+			case "losses": {
+				users.sort((a, b) => b.losses - a.losses);
 				
 				break;
 			}
-			case "totalLocalScore": {
-				users.sort((a, b) => {
-					const aScore = a.totalLocalScore ?? Number.NEGATIVE_INFINITY;
-					const bScore = b.totalLocalScore ?? Number.NEGATIVE_INFINITY;
-					return bScore - aScore;
-				});
+			case "totalMatches": {
+				users.sort((a, b) => b.totalMatches - a.totalMatches);
 
 				break;
 			}
-			case "onlineCustom": {
-				users.sort((a, b) => b.onlineCustom - a.onlineCustom);
-
-				break;
-			}
-			case "onlineTournament": {
-				users.sort((a, b) => b.onlineTournament - a.onlineTournament);
-
-				break;
-			}
-			case "totalOnlineScore": {
-				users.sort((a, b) => {
-					const aScore = a.totalOnlineScore ?? Number.NEGATIVE_INFINITY;
-					const bScore = b.totalOnlineScore ?? Number.NEGATIVE_INFINITY;
-					return bScore - aScore;
-				});
+			case "winrate": {
+				users.sort((a, b) => b.winrate - a.winrate);
 
 				break;
 			}
@@ -210,13 +182,10 @@ export default async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 	tr.append(
 		pos,
 		userNames,
-		createThElement("Ai Easy", "aiEasyButton", "localAiE"),
-		createThElement("Ai Medium", "aiMediumButton", "localAiM"),
-		createThElement("Ai Hard", "aiHardButton", "localAiH"),
-		createThElement("Total Ai", "toalAiButton", "totalLocalScore"),
-		createThElement("Custom Matches", "customOnlineButton", "onlineCustom"),
-		createThElement("Online Tournament", "onlineTournamentButton", "onlineTournament"),
-		createThElement("Total Online", "toalOnlineButton", "totalOnlineScore")
+		createThElement("Wins", "winsButton", "wins"),
+		createThElement("Losses", "lossButton", "losses"),
+		createThElement("Total Matches", "totalMatchButton", "totalMatches"),
+		createThElement("Winrate", "winrateButton", "winrate"),
 	)
 	
 	tHead.append(tr);
@@ -234,15 +203,14 @@ export default async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 		for (let i = 0; i < users.length; ++i) {
 			let user = users.at(i);
 			if (user) {
-				user.totalLocalScore = user.localAiE + user.localAiH + user.localAiM;
-				user.totalOnlineScore = user.onlineCustom + user.onlineTournament;
+				user.winrateString = user.winrate.toPrecision(2).slice(2) + "%";
 			}
 		}
 		
-		tbody.replaceWith(buildLeaderboard("onlineCustom"), );
+		tbody.replaceWith(buildLeaderboard("wins"), );
 	} catch (e) {
 		console.error("Could not load users:", e);
-		tbody.replaceWith(`Could not load users: ${e}`);
+		tHead.replaceWith(`Error loading leaderboard: Could not load users: ${e}`);
 	}
 
 	return outer;

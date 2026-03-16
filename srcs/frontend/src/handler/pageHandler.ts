@@ -6,8 +6,7 @@ export default function assemblePage(element: HTMLDivElement) : HTMLDivElement {
 	const div = document.createElement("div");
 
 	div.className = "flex flex-col w-full h-full";
-	element.classList.add("bg-gray-50");
-	element.classList.add("dark:bg-gray-900");
+	element.classList.add("bg-gray-50", "dark:bg-gray-900");
 	div.append(createHeader(), element, createFooter(), buildPopup());
 
 	return div; 
