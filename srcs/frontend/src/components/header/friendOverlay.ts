@@ -1,3 +1,5 @@
+import { createButton } from "../button/button";
+
 export function buildFriendOverlay(): HTMLDivElement {
 	const overlay = document.createElement("div");
 	overlay.classList.add("w-full", "h-[calc(100vh-60px-48px)]",
@@ -8,12 +10,16 @@ export function buildFriendOverlay(): HTMLDivElement {
 
 	const rightElement = document.createElement("div");
 	rightElement.classList.add("w-3/5", "h-full",
-		"bg-gray-100/20", "dark:bg-gray-900/20");
+		"bg-gray-100/20", "dark:bg-gray-900/30");
+		
+	rightElement.innerHTML = `
+		<button id="closeFriendOverlayButton"></button>
+	`;
 
 	const leftElement = document.createElement("div");
 	leftElement.classList.add("flex", "flex-col",
 		"w-2/5", "h-full",
-		"bg-gray-300/75", "dark:bg-gray-700/90");
+		"bg-gray-300", "dark:bg-gray-700");
 	
 	const inputClasses = [
 		"mt-1 w-full px-3 py-2",
@@ -64,6 +70,34 @@ export function buildFriendOverlay(): HTMLDivElement {
 
 export function populateFriendOverlay(): void {
 	const overlay = document.getElementById("headerFriendOverlay") as HTMLDivElement;
+	const closeOverlay = document.getElementById("closeFriendOverlayButton") as HTMLButtonElement;
+	const addFriendButton = document.getElementById("addFriendButton") as HTMLButtonElement;
 
-	overlay!.classList.remove("hidden");
+	if (overlay!.classList.contains("hidden"))
+		overlay!.classList.remove("hidden");
+	else
+		overlay!.classList.add("hidden");
+
+	closeOverlay!.replaceWith(createButton({
+		id: "closeFriendOverlayButton",
+		extraClasses: "w-full h-full",
+		f: () => {
+			document.getElementById("headerFriendOverlay")!.classList.add("hidden");
+		}
+	}));
+
+	const buttonClasses = [
+		"w-full py-2 mt-2",
+		"bg-blue-500 dark:bg-blue-900",
+		"rounded-md",
+		"hover:bg-blue-600 hover:dark:bg-blue-800",
+		"transition-colors duration-100"
+	].join(" ")
+
+	addFriendButton!.replaceWith(createButton({
+		id: "addFriendButton",
+		buttonText: "Add Friend",
+		type: "submit",
+		extraClasses: buttonClasses,
+	}))
 }

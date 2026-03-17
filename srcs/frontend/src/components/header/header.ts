@@ -15,7 +15,7 @@ export default function createHeader(): HTMLHeadElement {
 	title.appendChild(createButton({
 		id: "home-button",
 		buttonText: "PONG",
-		extraClasses: "px-4 text-2xl",
+		extraClasses: "px-4 text-2xl hover:opacity-80",
 		href: "/"
 	}))
 
@@ -66,7 +66,7 @@ export default function createHeader(): HTMLHeadElement {
 				f: () => populateFriendOverlay(),
 				icon: "assets/images/users-svgrepo-com.svg",
 				iconAlt: "Icon",
-				iconBClass: "h-8 dark:invert"
+				iconBClass: "h-8 dark:invert hover:opacity-80"
 			}),
 			createButton({
 				id: "notification-center-button",
