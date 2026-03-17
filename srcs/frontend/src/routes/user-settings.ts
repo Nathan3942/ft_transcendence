@@ -52,12 +52,12 @@ export default function createUserSettingsPage(): HTMLDivElement {
 			<form id="userInfoForm" class="space-y-4">
 				<div>
 					<label class="${labelClasses}" for="usernameInput">Username</label>
-					<input type="text" required id="usernameInput" value="${getItem("username") ?? ""}"
+					<input type="text" required id="usernameInput" placeholder="John Doe" value="${getItem("username") ?? ""}"
 						class="${inputClasses}"/>
 				</div>
 				<div>
 					<label class="${labelClasses}" for="emailInput">Email</label>
-					<input type="email" required id="emailInput" value="${getItem("email") ?? ""}"
+					<input type="email" required id="emailInput" placeholder="john.doe@example.com" value="${getItem("email") ?? ""}"
 						class="${inputClasses}"/>
 				</div>
 				<div class="pt-2">
