@@ -2,6 +2,7 @@ import { logoutHandler } from "../../handler/loginHandler";
 import { getLocalUserAvatar } from "../../helpers/avatarHelper";
 import { getItem } from "../../helpers/localStoragehelper";
 import { createButton } from "../button/button";
+import { buildFriendOverlay, populateFriendOverlay } from "./friendOverlay";
 
 export default function createHeader(): HTMLHeadElement {
 
@@ -9,7 +10,7 @@ export default function createHeader(): HTMLHeadElement {
 	const title = document.createElement("div");
 	const navbar = document.createElement("div");
 	
-	header.className = "min-h-15 h-15 flex justify-between align-middle items-center bg-gray-200 dark:bg-gray-800";
+	header.className = "min-h-15 h-15 flex justify-between align-middle items-center bg-gray-200 dark:bg-gray-800 header z-[200]";
 	
 	title.appendChild(createButton({
 		id: "home-button",
@@ -62,7 +63,7 @@ export default function createHeader(): HTMLHeadElement {
 		navbar.append(
 			createButton({
 				id: "friend-menu-button",
-				//  f: () => display friend dropdown / overlay
+				f: () => populateFriendOverlay(),
 				icon: "assets/images/users-svgrepo-com.svg",
 				iconAlt: "Icon",
 				iconBClass: "h-8 dark:invert"

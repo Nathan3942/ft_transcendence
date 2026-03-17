@@ -1,12 +1,19 @@
-export default function buildFriendOverlay(): HTMLDivElement {
+export function buildFriendOverlay(): HTMLDivElement {
 	const overlay = document.createElement("div");
-	overlay.classList.add("w-full", "h-full", "flex");
+	overlay.classList.add("w-full", "h-[calc(100vh-60px-48px)]",
+		"flex", "absolute", "left-0", "top-15", "viewport", "z-[100]",
+		"hidden");
+
+	overlay.id = "headerFriendOverlay";
 
 	const rightElement = document.createElement("div");
-	rightElement.classList.add("w-3/5", "h-full", "bg-gray-100", "dark:bg-gray-900", "bg-opacity-20")
+	rightElement.classList.add("w-3/5", "h-full",
+		"bg-gray-100/20", "dark:bg-gray-900/20");
 
 	const leftElement = document.createElement("div");
-	leftElement.classList.add("flex", "flex-col", "w-2/5", "h-full", "bg-gray-300", "dark:bg-gray-700", "bg-opacity-75");
+	leftElement.classList.add("flex", "flex-col",
+		"w-2/5", "h-full",
+		"bg-gray-300/75", "dark:bg-gray-700/90");
 	
 	const inputClasses = [
 		"mt-1 w-full px-3 py-2",
@@ -26,7 +33,6 @@ export default function buildFriendOverlay(): HTMLDivElement {
 	leftElement.innerHTML = `
 
 		<section class="pt-4 m-4">
-			<!-- add friend box -->
 			<h1 class="text-2xl">Add Friend</h1>
 			<form id="addFriendForm">
 				<input id="addFriendInput" required placeholder="Friend Id" class="${inputClasses}">
@@ -54,4 +60,10 @@ export default function buildFriendOverlay(): HTMLDivElement {
 	
 	overlay.append(leftElement, rightElement);
 	return overlay;
+}
+
+export function populateFriendOverlay(): void {
+	const overlay = document.getElementById("headerFriendOverlay") as HTMLDivElement;
+
+	overlay!.classList.remove("hidden");
 }
