@@ -1,4 +1,8 @@
+import { API_BASE } from "../../handler/loginHandler";
+import { getLocalId } from "../../helpers/apiHelper";
+import type { Friend, FriendResponse } from "../../interfaces/properties";
 import { createButton } from "../button/button";
+import { renderMessage } from "../popup/popup";
 
 export function buildFriendOverlay(): HTMLDivElement {
 	const overlay = document.createElement("div");
@@ -36,6 +40,10 @@ export function buildFriendOverlay(): HTMLDivElement {
 		"border-t-2 border-dashed border-gray-700 dark:border-gray-400"
 	].join(" ");
 
+	const listClasses = [
+		"divide-y"
+	].join(" ")
+
 	leftElement.innerHTML = `
 
 		<section class="pt-4 m-4">
@@ -50,14 +58,14 @@ export function buildFriendOverlay(): HTMLDivElement {
 			<div class="${dividerClasses}"></div>
 		<section class="pt-4 m-4">
 			<h1 class="text-2xl">Online Friends</h1>
-			<ul id="onlineFriendList">
+			<ul id="onlineFriendList" class="${listClasses}">
 
 			</ul>
 		</section>
 			<div class="${dividerClasses}"></div>
 		<section class="pt-4 m-4">
 			<h1 class="text-2xl">Offline Friends</h1>
-			<ul id="offlineFriendList">
+			<ul id="offlineFriendList" class="${listClasses}">
 
 			</ul>
 		</section>
@@ -68,15 +76,62 @@ export function buildFriendOverlay(): HTMLDivElement {
 	return overlay;
 }
 
-export function populateFriendOverlay(): void {
+async function getFriendList(id: number): Promise<FriendResponse> {
+	const resp = await fetch(`${API_BASE}/users/${id}/friends`, {
+		method: "GET",
+		credentials: "include",
+	});
+
+	if (resp.ok) {
+		const respJson = await resp.json() as FriendResponse
+		return respJson;
+	} else if (resp.status === 404 && resp.text.length == 0) {
+		renderMessage("You appear to be offline, please try again later.");
+		throw new Error(`You appear to be offline, please try again later.`);
+	} else if (resp.status === 404) {
+		throw new Error(`404: The specified user does not seem to exist.`);
+	} else {
+		throw new Error(`Unexpected error: ${resp.status}.`);
+	}
+}
+
+export async function removeFriend(id: number): Promise<string> {
+	// Show confirmation popup
+
+	const resp = await fetch(`${API_BASE}/${getLocalId}/friends/${id}`, {
+		method: "DELETE",
+		credentials: "include"
+	})
+
+	if (resp.ok) {
+		return `200`;
+	} else if (resp.status === 403) {
+		console.error("Error 403: User does not have the rights to terminate this friendship");
+		return "Error: User does not have the rights to terminate this friendship";
+	} else if (resp.status === 404 && resp.text.length === 0) {
+		console.error("Error 404: You appear to be offline, please try again later");
+		renderMessage("You appear to be offline, please try again later.");
+		return "You appear to be offline, please try again later.";
+	} else if (resp.status === 404) {
+		console.error(`Error 404: You are not friends with ${id}`);
+		return `Error, you are not friends with ${id}`;
+	} else {
+		console.error(`Error: Unexpected error: ${resp.status}`);
+		return `Error: Unexpected error: ${resp.status}`;
+	}
+}
+
+export async function populateFriendOverlay(): Promise<void> {
 	const overlay = document.getElementById("headerFriendOverlay") as HTMLDivElement;
 	const closeOverlay = document.getElementById("closeFriendOverlayButton") as HTMLButtonElement;
 	const addFriendButton = document.getElementById("addFriendButton") as HTMLButtonElement;
 
 	if (overlay!.classList.contains("hidden"))
 		overlay!.classList.remove("hidden");
-	else
+	else {
 		overlay!.classList.add("hidden");
+		return ;
+	}
 
 	closeOverlay!.replaceWith(createButton({
 		id: "closeFriendOverlayButton",
@@ -100,4 +155,60 @@ export function populateFriendOverlay(): void {
 		type: "submit",
 		extraClasses: buttonClasses,
 	}))
+
+	try {
+		const id = getLocalId()
+		if (!id)
+			throw new Error("Could not find local user ID, please refresh the page and try again")
+
+		const response = await getFriendList(id);
+		const friendList = response.data;
+
+		const onlineList = document.getElementById("onlineFriendList") as HTMLUListElement
+		onlineList.innerHTML = "";
+		const offlineList = document.getElementById("offlineFriendList") as HTMLUListElement
+		offlineList.innerHTML = "";
+
+		const liClasses = `flex items-center gap-3 py-2`
+
+		friendList.forEach((friend: Friend) => {
+			const li = document.createElement("li");
+			li.classList = liClasses;
+
+			li.innerHTML = `
+				<img src="${friend.avatar_url}" alt=${friend.display_name} class="w-10 h-10" />
+				<div class="flex flex-col">
+					<p class="font-medium">${friend.display_name}</p>
+					<p class="font-sm>">@${friend.username}</p>
+				</div>
+				<p id="friendStatusBox-${friend.id}" class="text-xs text-red-500"><p>
+			`
+			li.appendChild(createButton({
+					id: "removeFriendButton",
+					f: async () => {
+						const status = document.getElementById(`friendStatusBox-${friend.id}`) as HTMLParagraphElement;
+						const resp = await removeFriend(friend.id);
+						if (resp === "200") {
+							li.remove();
+							return ;
+						}
+						status.innerText = resp;
+					},
+					extraClasses: "ml-auto mr-2",
+					iconBClass:"h-5 w-5 stroke-red-500 brightness-130 dark:brightness-120",
+					icon: "/assets/images/cross-circle-red.svg?raw",
+					iconAlt: "Remove friend"
+				}));
+
+			if (friend.is_online) {
+				onlineList.appendChild(li);
+			} else {
+				offlineList.appendChild(li);
+			}
+		})
+		
+	} catch (e) {
+		console.log(`${e}`);
+	}
+
 }

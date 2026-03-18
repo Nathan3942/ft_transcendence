@@ -79,3 +79,16 @@ export interface userMatchHistoryResponse {
 		finishedAt: string;
 	}>;
 }
+
+export interface FriendResponse {
+	data: Friend[]
+}
+
+export interface Friend {
+	friendship_id: number,
+	id: number,
+	username: string,
+	display_name: string,
+	avatar_url: string,
+	is_online: boolean
+}
