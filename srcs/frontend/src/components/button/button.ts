@@ -12,7 +12,7 @@ export function createButton(props: buttonProps): HTMLButtonElement {
 		img.src = props.icon;
 		img.alt = props.iconAlt ?? "";
 		img.className = props.iconBClass ?? "";
-		btn.append(img);
+		btn.prepend(img);
 	}
 
 	btn.append(document.createTextNode(props.buttonText ?? ""));

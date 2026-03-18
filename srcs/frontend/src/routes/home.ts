@@ -10,14 +10,14 @@ export default function createHomePage(): HTMLDivElement {
 	inner.className = "text-3xl w-9/12 h-2/3 flex flex-col items-end justify-between";
 
 	const buttonClasses: string = "w-full h-full flex flex-row p-4";
-	const iconBClasses: string = "h-10 pr-2 dark:invert";
+	const iconBClasses: string = "h-10 w-10 pr-2 dark:invert";
 
 	inner.append(
 		makeButtonBlock("bg-blue-300 dark:bg-blue-900", createButton({
 			id: "local-button",
 			extraClasses: buttonClasses,
 			buttonText: "Local Play",
-			icon: "assets/images/monitor-svgrepo-com.svg",
+			icon: "assets/images/monitor-svgrepo-com.svg?raw",
 			iconAlt: "Icon",
 			iconBClass: iconBClasses,
 			href: "/game-local"
@@ -26,7 +26,7 @@ export default function createHomePage(): HTMLDivElement {
 			id: "online-button",
 			extraClasses: buttonClasses,
 			buttonText: "Online Play",
-			icon: "assets/images/globe-svgrepo-com.svg",
+			icon: "assets/images/globe-svgrepo-com.svg?raw",
 			iconAlt: "Icon",
 			iconBClass: iconBClasses,
 			href: "/game-online"
@@ -35,7 +35,7 @@ export default function createHomePage(): HTMLDivElement {
 			id: "leaderboard-button",
 			extraClasses: buttonClasses,
 			buttonText: "Leaderboard",
-			icon: "assets/images/square-poll-vertical-svgrepo-com.svg",
+			icon: "assets/images/square-poll-vertical-svgrepo-com.svg?raw",
 			iconAlt: "Icon",
 			iconBClass: iconBClasses,
 			href: "/leaderboard"
@@ -44,7 +44,7 @@ export default function createHomePage(): HTMLDivElement {
 			id: "about-button",
 			extraClasses: buttonClasses,
 			buttonText: "About",
-			icon: "assets/images/circle-information-svgrepo-com.svg",
+			icon: "assets/images/circle-information-svgrepo-com.svg?raw",
 			iconAlt: "Icon",
 			iconBClass: iconBClasses,
 			href: "/about"

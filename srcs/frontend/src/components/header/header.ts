@@ -2,7 +2,7 @@ import { logoutHandler } from "../../handler/loginHandler";
 import { getLocalUserAvatar } from "../../helpers/avatarHelper";
 import { getItem } from "../../helpers/localStoragehelper";
 import { createButton } from "../button/button";
-import { buildFriendOverlay, populateFriendOverlay } from "./friendOverlay";
+import { populateFriendOverlay } from "./friendOverlay";
 
 export default function createHeader(): HTMLHeadElement {
 
@@ -55,7 +55,7 @@ export default function createHeader(): HTMLHeadElement {
 				icon: getLocalUserAvatar(),
 				iconId: "header-user-pfp",
 				iconAlt: "Icon",
-				iconBClass: "h-8 dark:invert"
+				iconBClass: "h-8 w-8 dark:invert"
 			});
 
 		userProfileBtn.append(bridge, userDropdown);
@@ -64,16 +64,16 @@ export default function createHeader(): HTMLHeadElement {
 			createButton({
 				id: "friend-menu-button",
 				f: () => populateFriendOverlay(),
-				icon: "assets/images/users-svgrepo-com.svg",
+				icon: "assets/images/users-svgrepo-com.svg?raw",
 				iconAlt: "Icon",
-				iconBClass: "h-8 dark:invert hover:opacity-80"
+				iconBClass: "h-8 w-8 dark:invert hover:opacity-80"
 			}),
 			createButton({
 				id: "notification-center-button",
 				// f: () => display notification dropdown / overlay
-				icon: "assets/images/bell-svgrepo-com.svg",
+				icon: "assets/images/bell-svgrepo-com.svg?raw",
 				iconAlt: "Icon",
-				iconBClass: "h-8 dark:invert"
+				iconBClass: "h-8 w-8 dark:invert"
 			}),
 			userProfileBtn
 		);

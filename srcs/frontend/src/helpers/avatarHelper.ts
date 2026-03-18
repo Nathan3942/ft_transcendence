@@ -7,5 +7,5 @@ export function getLocalUserAvatar(): string {
 	if (url) {
 		return url;
 	}
-	return "assets/images/user-svgrepo-com.svg";
+	return "assets/images/user-svgrepo-com.svg?raw";
 }

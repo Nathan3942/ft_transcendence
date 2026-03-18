@@ -11,6 +11,8 @@ export default function createGameOnlinePage(): HTMLDivElement {
 
 	outer.append(createBackButton("bg-green-300 dark:bg-green-900", "/"));
 
+	const iconClasses = "h-10 w-10 pr-3 dark:invert"
+
 	const btnClasses = "w-full h-full flex flex-row p-4"; 
 	inner.append(
 		makeButtonBlock("bg-green-300 dark:bg-green-800", createButton({
@@ -18,9 +20,9 @@ export default function createGameOnlinePage(): HTMLDivElement {
 			extraClasses:btnClasses,
 			buttonText: "Create Match",
 			// f: createOnlineMatch(),
-			icon: "assets/images/plus-large-svgrepo-com.svg",
+			icon: "assets/images/plus-large-svgrepo-com.svg?raw",
 			iconAlt: "Icon",
-			iconBClass: "h-10 pr-3 dark:invert"
+			iconBClass: iconClasses
 			})
 		),
 		makeButtonBlock("bg-lime-200 dark:bg-lime-800", createButton({
@@ -28,9 +30,9 @@ export default function createGameOnlinePage(): HTMLDivElement {
 			extraClasses: btnClasses,
 			buttonText: "Create Tournament",
 			// f: createOnlineTournament(),
-			icon: "assets/images/trophy-svgrepo-com.svg",
+			icon: "assets/images/trophy-svgrepo-com.svg?raw",
 			iconAlt: "Icon",
-			iconBClass: "h-10 pr-3 dark:invert"
+			iconBClass: iconClasses
 			})
 		),
 		makeButtonBlock("bg-emerald-300 dark:bg-emerald-900", createButton({
@@ -38,9 +40,9 @@ export default function createGameOnlinePage(): HTMLDivElement {
 			extraClasses: btnClasses,
 			buttonText: "Browse Games",
 			// f: displayMatchBrowser(),
-			icon: "assets/images/list-svgrepo-com.svg",
+			icon: "assets/images/list-svgrepo-com.svg?raw",
 			iconAlt: "Icon",
-			iconBClass: "h-10 pr-3 dark:invert"
+			iconBClass: iconClasses
 		}))
 	);
 
