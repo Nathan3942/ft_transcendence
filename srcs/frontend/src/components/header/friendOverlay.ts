@@ -22,7 +22,7 @@ export function buildFriendOverlay(): HTMLDivElement {
 
 	const leftElement = document.createElement("div");
 	leftElement.classList.add("flex", "flex-col",
-		"w-2/5", "h-full",
+		"overflow-y-auto", "w-2/5", "h-full",
 		"bg-gray-300", "dark:bg-gray-700");
 	
 	const inputClasses = [

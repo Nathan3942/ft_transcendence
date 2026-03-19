@@ -3,7 +3,7 @@ import { getItem } from "../helpers/localStoragehelper";
 
 export default function createUserSettingsPage(): HTMLDivElement {
 	const outer = document.createElement("div");
-	outer.className = "flex flex-1 flex-col bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white min-h-full";
+	outer.className = "overflow-y-auto flex flex-1 flex-col bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white";
 
 	const sectionClasses = "mt-8 ml-6 w-full max-w-1/3";
 	const inputClasses = [
