@@ -53,6 +53,7 @@ export function buildFriendOverlay(): HTMLDivElement {
 				</input>
 
 				<button id="addFriendButton"></button>
+				<p id="addFriendMsg" class="pt-3 text-center"></p>
 			</form>
 		</section>
 			<div class="${dividerClasses}"></div>
@@ -68,6 +69,13 @@ export function buildFriendOverlay(): HTMLDivElement {
 			<ul id="offlineFriendList" class="${listClasses}">
 
 			</ul>
+		</section>
+			<div class="${dividerClasses}"></div>
+		<section class="pt-4 m-4">
+			<h1 class="text-2xl">Friend Requests</h1>
+			<ul id="incomingRequestsList" class="${listClasses}">
+
+			</ul
 		</section>
 	
 	`
@@ -125,12 +133,54 @@ export async function populateFriendOverlay(): Promise<void> {
 	const overlay = document.getElementById("headerFriendOverlay") as HTMLDivElement;
 	const closeOverlay = document.getElementById("closeFriendOverlayButton") as HTMLButtonElement;
 	const addFriendButton = document.getElementById("addFriendButton") as HTMLButtonElement;
+	const addFriendForm = document.getElementById("addFriendForm") as HTMLFormElement;
 
 	if (overlay!.classList.contains("hidden"))
 		overlay!.classList.remove("hidden");
 	else {
 		overlay!.classList.add("hidden");
 		return ;
+	}
+
+	if (addFriendForm) {
+		addFriendForm.addEventListener("submit", async (e) => {
+			const friendInput = document.getElementById("addFriendInput")! as HTMLInputElement;
+			const statusMsg = document.getElementById("addFriendMsg")! as HTMLParagraphElement;
+			
+			e.preventDefault()
+
+			const form: FriendRequest = {
+				friendId: parseInt(friendInput.value)
+			}
+
+			const resp = await fetch(`${API_BASE}/${getLocalId}/friends`, {
+				method: "POST",
+				credentials: "include",
+				body: JSON.stringify(form)
+			})
+
+			if (resp.ok) {
+				if (!statusMsg.classList.contains("text-green-600"))
+					statusMsg.classList.add("text-green-600");
+				if (statusMsg.classList.contains("text-red-500"))
+					statusMsg.classList.remove("text-red-500");
+				statusMsg.innerText = `Successfully sent a friend request to ${friendInput.value}`
+			} else {
+				if (statusMsg.classList.contains("text-green-600"))
+					statusMsg.classList.remove("text-green-600");
+				if (!statusMsg.classList.contains("text-red-500"))
+					statusMsg.classList.add("text-red-500");
+
+				if (resp.status === 404 && resp.text.length === 0) {
+					console.error("Error 404: You appear to be offline, please try again later");
+					statusMsg.innerText = `You appear to be offline, please try again later`;
+					renderMessage("You appear to be offline, please try again later.");
+				} else {
+					console.error(`Error: ${resp.status}: ${resp.text}`);
+					statusMsg.innerText = `Error: ${resp.status}: ${resp.text}`;
+				}
+			}
+		})
 	}
 
 	closeOverlay!.replaceWith(createButton({
@@ -210,16 +260,6 @@ export async function populateFriendOverlay(): Promise<void> {
 		
 	} catch (e) {
 		console.log(`${e}`);
-	}
-
-	if (addFriendForm) {
-		addFriendForm.addEventListener("submit", (e) => {
-			const friendInput = document.getElementById("addFriendInput");
-			
-			e.preventDefault()
-
-
-		})
 	}
 
 }

@@ -92,3 +92,7 @@ export interface Friend {
 	avatar_url: string,
 	is_online: boolean
 }
+
+export interface FriendRequest {
+	friendId: number
+}
