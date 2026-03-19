@@ -49,7 +49,7 @@ export function buildFriendOverlay(): HTMLDivElement {
 		<section class="pt-4 m-4">
 			<h1 class="text-2xl">Add Friend</h1>
 			<form id="addFriendForm">
-				<input id="addFriendInput" required placeholder="Friend Id" class="${inputClasses}">
+				<input id="addFriendInput" required type="number" placeholder="Friend Id" class="${inputClasses}">
 				</input>
 
 				<button id="addFriendButton"></button>
@@ -143,9 +143,10 @@ export async function populateFriendOverlay(): Promise<void> {
 
 	const buttonClasses = [
 		"w-full py-2 mt-2",
-		"bg-blue-500 dark:bg-blue-900",
+		"bg-blue-400 dark:bg-blue-800",
 		"rounded-md",
-		"hover:bg-blue-600 hover:dark:bg-blue-800",
+		"hover:bg-blue-500 hover:dark:bg-blue-700",
+		"active:brightness-95 dark:active:brightness-110",
 		"transition-colors duration-100"
 	].join(" ")
 
@@ -209,6 +210,16 @@ export async function populateFriendOverlay(): Promise<void> {
 		
 	} catch (e) {
 		console.log(`${e}`);
+	}
+
+	if (addFriendForm) {
+		addFriendForm.addEventListener("submit", (e) => {
+			const friendInput = document.getElementById("addFriendInput");
+			
+			e.preventDefault()
+
+
+		})
 	}
 
 }
