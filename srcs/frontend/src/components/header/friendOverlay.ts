@@ -246,7 +246,7 @@ export async function populateFriendOverlay(): Promise<void> {
 						status.innerText = resp;
 					},
 					extraClasses: "ml-auto mr-2",
-					iconBClass:"h-5 w-5 stroke-red-500 brightness-130 dark:brightness-120",
+					iconBClass:"h-5 w-5 brightness-130 dark:brightness-120 hover:brightness-70 dark:hover:brightness-80",
 					icon: "/assets/images/cross-circle-red.svg?raw",
 					iconAlt: "Remove friend"
 				}));

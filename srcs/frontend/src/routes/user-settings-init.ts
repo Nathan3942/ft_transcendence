@@ -94,11 +94,21 @@ export default function initUSerSettings(): void {
 	}
 
 	// Function Propper
+	
+	const buttonClasses = [
+		"w-full py-2 mt-2",
+		"bg-blue-400 dark:bg-blue-800",
+		"rounded-md",
+		"hover:bg-blue-500 hover:dark:bg-blue-700",
+		"active:brightness-95 dark:active:brightness-110",
+		"transition-colors duration-100"
+	].join(" ")
+	
 	if (submitPass) {
 		submitPass.replaceWith(createButton({
 			id: "submitPass",
 			type: "submit",
-			extraClasses: "w-full py-2 px-4 bg-blue-500 dark:bg-blue-900 text-white rounded-md hover:bg-blue-600 hover:dark:bg-blue-800 transition-colors duration-100",
+			extraClasses: buttonClasses,
 			buttonText: "▶ Update Password"
 		}));
 	}
@@ -141,7 +151,7 @@ export default function initUSerSettings(): void {
 		submitInfoChange.replaceWith(createButton({
 			id: "submitInfoChange",
 			type: "submit",
-			extraClasses: "w-full py-2 px-4 bg-blue-500 dark:bg-blue-900 text-white rounded-md hover:bg-blue-600 hover:dark:bg-blue-800 transition-colors duration-100",
+			extraClasses: buttonClasses,
 			buttonText: "▶ Save Changes"
 		}));
 	}
