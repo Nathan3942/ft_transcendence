@@ -93,6 +93,23 @@ export interface Friend {
 	is_online: boolean
 }
 
-export interface FriendRequest {
+export interface AddFriendRequest {
 	friendId: number
+}
+
+export interface PatchFriendRequest {
+	action: "accept" | "reject"
+}
+
+export interface FriendRequestResponse {
+	data: FriendRequest[] 
+}
+
+export interface FriendRequest {
+	friendship_id: number,
+	requester_id: number,
+	username: string,
+	display_name: string,
+	avatar_url: string,
+	created_at: string
 }

@@ -63,7 +63,7 @@ export default function createHeader(): HTMLHeadElement {
 		navbar.append(
 			createButton({
 				id: "friend-menu-button",
-				f: () => populateFriendOverlay(),
+				f: () => populateFriendOverlay(0),
 				icon: "assets/images/users-svgrepo-com.svg?raw",
 				iconAlt: "Icon",
 				iconBClass: "h-8 w-8 dark:invert hover:opacity-80"

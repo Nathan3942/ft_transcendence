@@ -1,6 +1,6 @@
 import { API_BASE } from "../../handler/loginHandler";
 import { getLocalId } from "../../helpers/apiHelper";
-import type { Friend, FriendResponse } from "../../interfaces/properties";
+import type { AddFriendRequest, Friend, FriendRequest, FriendRequestResponse, FriendResponse, PatchFriendRequest } from "../../interfaces/properties";
 import { createButton } from "../button/button";
 import { renderMessage } from "../popup/popup";
 
@@ -103,7 +103,7 @@ async function getFriendList(id: number): Promise<FriendResponse> {
 	}
 }
 
-export async function removeFriend(id: number): Promise<string> {
+async function removeFriend(id: number): Promise<string> {
 	// Show confirmation popup
 
 	const resp = await fetch(`${API_BASE}/${getLocalId}/friends/${id}`, {
@@ -129,17 +129,69 @@ export async function removeFriend(id: number): Promise<string> {
 	}
 }
 
-export async function populateFriendOverlay(): Promise<void> {
+async function getFriendRequests(id: number): Promise<FriendRequestResponse> {
+	
+	const resp = await fetch(`${API_BASE}/users/${id}/friends/requests`, {
+		method: "GET",
+		credentials: "include"
+	});
+
+	if (resp.ok) {
+		const jsonResp = await resp.json() as FriendRequestResponse;
+		return jsonResp;
+	} else if (resp.status === 403) {
+		throw new Error("Error: 403: You do not have permission to view this users friend requests");
+	} else if (resp.status === 404 && resp.text.length === 0) {
+		throw new Error("You appear to be offline, please try again later.");
+	} else if (resp.status === 404) {
+		throw new Error("Error: 404: The requested user was not found");
+	} else {
+		throw new Error(`Error: unexpected error: ${resp.status}: ${resp.text}`);
+	}
+}
+
+async function replyToFriendRequest(state: "accept" | "reject", uid: number, friendId: number): Promise<string> {
+
+	const form: PatchFriendRequest = {
+		action: state
+	}
+
+	const resp = await fetch(`${API_BASE}/users/${uid}/friends/${friendId}`, {
+		method: "PATCH",
+		credentials: "include",
+		body: JSON.stringify(form)
+	});
+
+	if (resp.ok)
+		return "200";
+	else if (resp.status === 400) {
+		return "Error: 400: Invalid action performed";
+	} else if (resp.status === 403) {
+		return "Error: 403: You do not have permission to view this users friend requests";
+	} else if (resp.status === 404 && resp.text.length === 0) {
+		return "You appear to be offline, please try again later.";
+	} else if (resp.status === 404) {
+		return "Error: 404: The requested user was not found";
+	} else {
+		return `Error: unexpected error: ${resp.status}: ${resp.text}`;
+	}
+}
+
+// Mode 0 = default
+// Mode 1 = refresh
+export async function populateFriendOverlay(mode: number): Promise<void> {
 	const overlay = document.getElementById("headerFriendOverlay") as HTMLDivElement;
 	const closeOverlay = document.getElementById("closeFriendOverlayButton") as HTMLButtonElement;
 	const addFriendButton = document.getElementById("addFriendButton") as HTMLButtonElement;
 	const addFriendForm = document.getElementById("addFriendForm") as HTMLFormElement;
 
-	if (overlay!.classList.contains("hidden"))
-		overlay!.classList.remove("hidden");
-	else {
-		overlay!.classList.add("hidden");
-		return ;
+	if (mode == 0) {
+		if (overlay!.classList.contains("hidden"))
+			overlay!.classList.remove("hidden");
+		else {
+			overlay!.classList.add("hidden");
+			return ;
+		}
 	}
 
 	if (addFriendForm) {
@@ -149,7 +201,7 @@ export async function populateFriendOverlay(): Promise<void> {
 			
 			e.preventDefault()
 
-			const form: FriendRequest = {
+			const form: AddFriendRequest = {
 				friendId: parseInt(friendInput.value)
 			}
 
@@ -206,6 +258,8 @@ export async function populateFriendOverlay(): Promise<void> {
 		type: "submit",
 		extraClasses: buttonClasses,
 	}))
+	
+	const liClasses = `flex items-center gap-3 py-2`
 
 	try {
 		const id = getLocalId()
@@ -219,8 +273,6 @@ export async function populateFriendOverlay(): Promise<void> {
 		onlineList.innerHTML = "";
 		const offlineList = document.getElementById("offlineFriendList") as HTMLUListElement
 		offlineList.innerHTML = "";
-
-		const liClasses = `flex items-center gap-3 py-2`
 
 		friendList.forEach((friend: Friend) => {
 			const li = document.createElement("li");
@@ -246,8 +298,8 @@ export async function populateFriendOverlay(): Promise<void> {
 						status.innerText = resp;
 					},
 					extraClasses: "ml-auto mr-2",
-					iconBClass:"h-5 w-5 brightness-130 dark:brightness-120 hover:brightness-70 dark:hover:brightness-80",
-					icon: "/assets/images/cross-circle-red.svg?raw",
+					iconBClass:"h-7 w-7 brightness-130 dark:brightness-120 hover:brightness-70 dark:hover:brightness-80",
+					icon: "/assets/images/xmark-red-svgrepo-com.svg?raw",
 					iconAlt: "Remove friend"
 				}));
 
@@ -260,6 +312,68 @@ export async function populateFriendOverlay(): Promise<void> {
 		
 	} catch (e) {
 		console.log(`${e}`);
+	}
+
+	try {
+		const id = getLocalId();
+		if (!id)
+			throw new Error("Could not find local user ID, please refresh the page and try again");
+
+		const response = await getFriendRequests(id);
+		const requestList = response.data;
+
+		const friendRequests = document.getElementById("incomingRequestsList") as HTMLUListElement;
+		friendRequests.innerHTML = "";
+
+		requestList.forEach((request: FriendRequest) => {
+			const li = document.createElement("li");
+			li.className = liClasses;
+			
+			li.innerHTML = `
+			<img src="${request.avatar_url}" alt=${request.display_name} class="w-10 h-10" />
+			<div class="flex flex-col">
+			<p class="font-medium">${request.display_name}</p>
+			<p class="font-sm>">@${request.username}</p>
+			</div>
+			<p id="requestStatusBox-${request.requester_id}" class="text-xs text-red-500"><p>
+			`;
+			
+			const buttons = document.createElement("div");
+			buttons.className = "ml-auto flex flex-row justify-between";
+
+			buttons.append(
+				createButton({
+					icon: "/assets/images/check-green-svgrepo-com.svg?raw",
+					iconBClass: "w-7 h-7 mr-3",
+					f: async () => {
+						const resp = await replyToFriendRequest("accept", id, request.requester_id)
+						if (resp === "200") {
+							populateFriendOverlay(1);
+						} else {
+							document.getElementById(`requestStatusBox-${request.requester_id}`)!.innerText = resp;
+						}
+					}
+			}),
+				createButton({
+					icon: "/assets/images/xmark-red-svgrepo-com.svg?raw",
+					iconBClass: "w-7 h-7",
+					f: async () => {
+						const resp = await replyToFriendRequest("reject", id, request.requester_id)
+						if (resp === "200") {
+							populateFriendOverlay(1);
+						} else {
+							document.getElementById(`requestStatusBox-${request.requester_id}`)!.innerText = resp;
+						}
+					}
+			}));
+
+			li.appendChild(buttons);
+			friendRequests.appendChild(li);
+		});
+
+ 
+	} catch (e) {
+		console.error(e);
 	}
 
 }
