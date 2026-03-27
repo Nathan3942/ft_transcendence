@@ -1,110 +1,95 @@
-import create404page from '../routes/404page';
-import createGameLocalPage from '../routes/game-local';
-import createLocalAIGamePage from '../routes/game-local-ai';
-import createGameOnlinePage from '../routes/game-online';
-import createHomePage from '../routes/home';
-import createLoginPage from '../routes/login-page';
-import createTestPage from '../routes/test';
-import assemblePage from './pageHandler';
-import createLocalTournament from '../routes/local-tournament';
-import createBrowseGamesPage from '../routes/browse-games';
-import onlineMatch from '../routes/online-match';
-import chooseOnlineMode from '../routes/online-mode';
-import chooseBrowse from '../routes/choose-browse';
-import createBrowseTournamentsPage from '../routes/browse-tournaments';
-import onlineTournament from '../routes/online-tournament';
+import { renderError } from "../components/popup/popup";
+import type { Route } from "../interfaces/properties";
+import create404Page from "../routes/404page";
+import createTestPage from "../routes/test";
+import { authenticate } from "./loginHandler";
+import assemblePage from "./pageHandler";
 
-type Route = {
-    path: string;
-    component: () => HTMLDivElement;
+
+export type ComponentFactory<T extends HTMLElement = HTMLElement> = () => T | Promise<T>;
+
+type GuardTypes = true | false | "offline" | "string" | string;
+export type Guard = () => Promise<GuardTypes>;
+
+export const authGuard: Guard = async () => {
+	const result = await authenticate();
+
+	return result;
 }
 
-const routes: Route[] = [
-    { path: "/", component: () => assemblePage(createHomePage()) },
-    { path: "/leaderboard", component: () => assemblePage(document.createElement("div")) },
-    { path: "/user-profile", component: () => assemblePage(document.createElement("div")) },
-    { path: "/login", component: () => assemblePage(createLoginPage()) },
-    { path: "/test", component: () => assemblePage(createTestPage()) },
-    { path: "/game-local", component: () => assemblePage(createGameLocalPage()) },
-    { path: "/game-local-ai", component: () => assemblePage(createLocalAIGamePage())},
-    { path: "/game-online", component: () => assemblePage(createGameOnlinePage()) },
-    { path: "/local-tournament", component: () => assemblePage(createLocalTournament()) },
-    { path: "/browse-games", component: () => assemblePage(createBrowseGamesPage())},
-    { path: "/online-mode", component: () => assemblePage(chooseOnlineMode())},
-    { path: "/online-match", component: () => assemblePage(onlineMatch())},
-    { path: "/choose-browse", component: () => assemblePage(chooseBrowse())},
-    { path: "/browse-tournaments", component: () => assemblePage(createBrowseTournamentsPage())},
-    { path: "/online-tournament", component: () => assemblePage(onlineTournament())}
-];
-
 export class Router {
-    private routes: Route[] = routes;
-    private rootElement: HTMLElement;
+	private readonly routeMap: Map<String, Route>;
+	private readonly root: HTMLElement;
 
-    constructor(rootElement: HTMLElement) {
-        this.rootElement = rootElement;
-        this.setupPopStateListener();
-        this.setupEventListener();
-        this.setupNavigateEvent();
-    }
+	constructor(root: HTMLElement, routes: Route[]) {
+		this.root = root;
+		this.routeMap = new Map(routes.map(r => [r.path, r]));
+		this.setupListeners();
+	};
 
-    public start(): void {
-        const route = this.findRoute(window.location.pathname);
-        if (route) {
-            this.render(route);
-        } else {
-            this.rootElement.appendChild(assemblePage(create404page()))
-        }
-    }
+	public async start(): Promise<void> {
+		this.root.replaceChildren(assemblePage(createTestPage()));
+		await this.handleLocation(window.location.pathname);
+	};
 
-    private setupNavigateEvent(): void {
-        window.addEventListener("navigate", (e: Event) => {
-            const path = (e as CustomEvent<{ path: string }>).detail?.path;
-            if (path)
-                this.navigateTo(path);
-        })
-    }
+	public async navigateTo(path: string): Promise<void> {
+		if (window.location.pathname !== path) {
+			window.history.pushState({}, "", path);
+			await this.handleLocation(path);
+		}
+	};
 
-    public navigateTo(path: string): void {
-        window.history.pushState({}, "", path);
-        this.renderPath(path);
-    }
-    
-    private findRoute(path: string): Route | undefined {
-        return this.routes.find((route) => route.path === path);
-    }
+	private async handleLocation(path: string): Promise<void> {
+		const route = this.routeMap.get(path) ?? this.routeMap.get("*");
+		if (!route)
+			return this.renderNotFound();
 
-    private render(route: Route): void {
-        this.rootElement.innerHTML = "";
-        this.rootElement.appendChild(route.component());
-    }
+		if (route.guarded) {
+			for (const g of route.guarded) {
+				const res = await g();
+				if (res === true)
+					continue;
+				else if (res === false)
+					return this.redirectLogin();
+				else
+					return ;
+			}
+		}
 
-    private renderPath(path: string) {
-        const route = this.findRoute(path);
-        if (route) {
-            this.render(route);
-        } else {
-            console.log("Error rendering route: ", path)
-            this.rootElement.innerHTML = "";
-            this.rootElement.appendChild(assemblePage(create404page()))
-        }
-    }
+		try {
+			const component = await route.component();
+			this.replaceRoot(component);
+			if (route.init)
+				route.init()
+		} catch (err) {
+			console.error("Failed to load component for", path, err);
+			renderError(`Component for: ${path} failed to load...`);
+		}
+	};
 
-    private setupPopStateListener(): void {
-        window.addEventListener("popstate", () => {
-            this.renderPath(window.location.pathname);
-        });
-        console.log("Popstate event triggered! Current path:", window.location.pathname);
-    }
+	private replaceRoot(node: HTMLDivElement): void {
+		this.root.replaceChildren(assemblePage(node));
+	};
 
-    private setupEventListener(): void {
-        this.rootElement.addEventListener("click", (e) => {
-            const target = (e.target as HTMLElement).closest("button[data-href]");
-            if (target) {
-                e.preventDefault();
-                const path = target.getAttribute("data-href");
-                if (path)
-                    this.navigateTo(path);
-            }
-        })}
+	private renderNotFound(): void {
+		this.replaceRoot(create404Page());
+	};
+
+	private redirectLogin(): void {
+		window.location.href = "/login";
+	};
+
+	private setupListeners(): void {
+		window.addEventListener("popstate", () => this.handleLocation(window.location.pathname))
+
+		this.root.addEventListener("click", (e) => {
+			const target = (e.target as HTMLElement).closest("[data-href]");
+			if (!target)
+				return;
+			e.preventDefault();
+			const href = target.getAttribute("data-href");
+			if (href)
+				this.navigateTo(href);
+		})
+	}
 }
