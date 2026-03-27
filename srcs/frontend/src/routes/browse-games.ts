@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 14:42:50 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/06 09:36:35 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/16 15:25:48 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,7 +115,7 @@ export default function createBrowseGamesPage(): HTMLDivElement {
 		list.innerHTML = "";
 
 		try {
-			const matches = await listOnlineMatches();
+			const matches = (await listOnlineMatches()).filter(m => !m.tournamentId);
 
 			if (!Array.isArray(matches) || matches.length === 0) {
 				status.textContent = "No matches yet. Create one!";

@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 15:46:15 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/05 16:53:41 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/03/16 15:16:19 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ export default function chooseBrowse(): HTMLDivElement {
 			iconBClass: "h-10 pr-3 dark:invert"
 			})
 		),
-		makeButtonBlock("bg-orange-400 dark:bg-orange-900", createButton({
+		makeButtonBlock("bg-yellow-400 dark:bg-yellow-900", createButton({
 			id: "browse-matches-button",
 			extraClasses: btnClasses,
 			buttonText: "Browse Tournaments",
