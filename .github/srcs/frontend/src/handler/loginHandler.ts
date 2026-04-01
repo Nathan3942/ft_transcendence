@@ -2,7 +2,7 @@ import { renderError, renderMessage } from "../components/popup/popup";
 import { setItem } from "../helpers/localStoragehelper";
 import type { loginRequest, loginResponse, registrationRequest } from "../interfaces/properties";
 
-export const API_BASE = `http://${window.location.hostname}:3000/api/v1`;
+export const API_BASE = `/api/v1`;
 
 export async function loginHandler(payload: loginRequest): Promise<number> {
 	const resp = await fetch(`${API_BASE}/auth/login`, {
@@ -28,7 +28,7 @@ export async function loginHandler(payload: loginRequest): Promise<number> {
 	}
 
 	const respJson = await resp.json() as loginResponse;
-	const respUser = respJson.data.user;
+	const respUser = respJson.data;
 
 	setItem<number>("id", respUser.id);
 	setItem<string>("username", respUser.username);
@@ -68,7 +68,7 @@ export async function registerHandler(payload: registrationRequest): Promise<num
 	}
 
 	const respJson = await resp.json() as loginResponse;
-	const respUser = respJson.data.user;
+	const respUser = respJson.data;
 
 	setItem<number>("id", respUser.id);
 	setItem<string>("username", respUser.username);
@@ -165,6 +165,8 @@ export async function authenticate(): Promise<boolean | string> {
 			setItem<boolean>("is_online", respUser.is_online);
 			if (respUser.created_at)
 				setItem<string>("created_at", respUser.created_at);
+
+			setItem<boolean>("loggedIn", true);
 
 			return true;
 		}

@@ -139,7 +139,7 @@ export default function initUSerSettings(): void {
 				const savedUrl = await uploadAvatar(file);
 				profileImg.src = url;
 				URL.revokeObjectURL(url);
-				setItem<string>("avatarUrl", savedUrl);
+				setItem<string>("avatar_url", savedUrl);
 				profileImg.classList.remove("dark:invert");
 				if (avatarMsg) {
 					if (!avatarMsg.classList.contains("text-green-600"))
