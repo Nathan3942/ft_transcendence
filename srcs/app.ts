@@ -25,7 +25,8 @@ export async function buildApp(): Promise<FastifyInstance> {
   // Cors setup
   await app.register(cors, {
     origin: isDev ? true : env.FRONTEND_URL,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    credentials: true
   })
 
   // Cookie — parsing des cookies (requis pour HttpOnly JWT)
