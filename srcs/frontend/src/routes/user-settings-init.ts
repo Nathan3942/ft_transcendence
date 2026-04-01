@@ -30,7 +30,7 @@ export default function initUSerSettings(): void {
 		const form = new FormData();
 		form.append("file", file);
 
-		const resp = await fetch(`${API_BASE}/users/${getLocalId}/avatar`, {
+		const resp = await fetch(`${API_BASE}/users/${getLocalId()}/avatar`, {
 			method: "POST",
 			credentials: "include",
 			body: form
@@ -41,9 +41,6 @@ export default function initUSerSettings(): void {
 		} else if (resp.status === 403) {
 			renderError("You are not allowed to perform this action, if you think this is a mistake, clear your cache with 'ctrl + shift + r' and log back in");
 			throw "403: Not allowed";
-		} else if (resp.status === 404 && resp.text.length === 0) {
-			renderMessage("You appear to be offline. Please try again later");
-			throw "You are offline, please try again later";
 		} else if (resp.status === 404) {
 			renderMessage("The requested user was not found");
 			throw "404: Not Found";
@@ -89,9 +86,6 @@ export default function initUSerSettings(): void {
 			throw new Error("400: Invalid fields");
 		} else if (resp.status === 403) {
 			throw new Error("403: You dont have the permissions to modify this data");
-		} else if (resp.status === 404 && (await resp.text).length === 0) {
-			renderMessage("You appear to be offline. Please try again later");
-			throw new Error("You are offline, please try again later");
 		} else if (resp.status === 404) {
 			throw new Error("404: the specified user you tried to modify does not exist");
 		} else {
@@ -100,19 +94,15 @@ export default function initUSerSettings(): void {
 	}
 
 	async function deleteUser(): Promise<string> {
-		const resp = await fetch(`${API_BASE}/users/${getLocalId}`, {
+		const resp = await fetch(`${API_BASE}/users/${getLocalId()}`, {
 			method: "DELETE",
 			credentials: "include"
 		});
 
 		if (resp.ok) {
 			return "200";
-		} else if (resp.status === 404 && resp.text.length === 0) {
-			console.error("Error 404: You appear to be offline, please try again later");
-			renderMessage("You appear to be offline, please try again later.");
-			return "You appear to be offline, please try again later.";
 		} else if (resp.status === 403 || resp.status  === 404) {
-			return `Error: ${resp.text}: ${resp.text}`;
+			return `Error: ${resp.status}: ${resp.statusText}`;
 		} else {
 			return `Error: Unexpected Error: ${resp.status}: ${resp.text}`;
 		}
