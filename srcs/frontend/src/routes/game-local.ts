@@ -9,18 +9,20 @@ export default function createGameLocalPage(): HTMLDivElement {
 	outer.className = "flex flex-col flex-1 justify-center items-end"
 	inner.className = "text-3xl w-9/12 h-2/3 flex flex-col items-end justify-evenly";
 
-	outer.append(createBackButton("bg-blue-800", "/"))
+	outer.append(createBackButton("bg-blue-400 dark:bg-blue-800", "/"))
 	
 	const btnClasses = "w-full h-full flex flex-row p-4"; 
+	const iconClasses = "h-10 w-10 pr-3 dark:invert"
+
 	inner.append(
 		makeButtonBlock("bg-blue-300 dark:bg-blue-900", createButton({
 			id: "vs-ai-button",
 			extraClasses:btnClasses,
 			buttonText: "Player vs AI",
 			href: "/game-local-ai",
-			icon: "assets/images/robot-svgrepo-com.svg",
+			icon: "assets/images/robot-svgrepo-com.svg?raw",
 			iconAlt: "Icon",
-			iconBClass: "h-10 pr-3 dark:invert"
+			iconBClass: iconClasses
 			})
 		),
 		makeButtonBlock("bg-purple-300 dark:bg-purple-900", createButton({
@@ -28,19 +30,19 @@ export default function createGameLocalPage(): HTMLDivElement {
 			extraClasses: btnClasses,
 			buttonText: "Player vs Player",
 			// f: () => createLocalMatch(),
-			icon: "assets/images/keyboard-svgrepo-com.svg",
+			icon: "assets/images/keyboard-svgrepo-com.svg?raw",
 			iconAlt: "Icon",
-			iconBClass: "h-10 pr-3 dark:invert"
+			iconBClass: iconClasses
 			})
 		), 
-		makeButtonBlock("bg-cyan-300 dark:bg-cyan-900", createButton({
+		makeButtonBlock("bg-cyan-200 dark:bg-cyan-900", createButton({
 			id: "create-local-tournament",
 			extraClasses: btnClasses,
 			buttonText: "Local Tournament",
 			// f: () => createLocalTournament(),
-			icon: "assets/images/trophy-svgrepo-com.svg",
+			icon: "assets/images/trophy-svgrepo-com.svg?raw",
 			iconAlt: "Icon",
-			iconBClass: "h-10 pr-3 dark:invert"
+			iconBClass: iconClasses
 		}))
 	);
 

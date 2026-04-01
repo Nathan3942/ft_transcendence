@@ -1,27 +1,15 @@
 import createHeader from "../components/header/header";
 import createFooter from "../components/footer/footer";
+import buildPopup from "../components/popup/popup";
+import { buildFriendOverlay } from "../components/header/friendOverlay";
 
 export default function assemblePage(element: HTMLDivElement) : HTMLDivElement {
-    const template = document.createElement("template");
-    template.innerHTML = `
-        <div class="flex flex-col w-full h-full">
-            <header>
-            </header>
-            <div id="viewport">
-            </div>
-            <footer>
-            </footer>
-        </div> 
-    `;
+	const div = document.createElement("div");
 
-    const headerContainer = template.content.querySelector("header");
-    headerContainer?.replaceWith(createHeader());
+	div.className = "flex flex-col w-full h-full";
+	element.classList.add("bg-gray-50", "dark:bg-gray-900", "viewport", "z-[1]");
+	element.append(buildFriendOverlay())
+	div.append(createHeader(), element, createFooter(), buildPopup());
 
-    const viewportContainer = template.content.querySelector("#viewport");
-    viewportContainer?.replaceWith(element);
-
-    const footerContainer = template.content.querySelector("footer");
-    footerContainer?.replaceWith(createFooter());
-
-    return template.content.firstElementChild as HTMLDivElement; 
+	return div; 
 }
