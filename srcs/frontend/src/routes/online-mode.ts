@@ -6,12 +6,13 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 10:03:13 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/09 15:17:52 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/01 19:03:11 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import { createButton } from "../components/button/button.js";
 import makeButtonBlock from "../components/button/buttonBlock.js";
+import { getRouter } from "../handler/routeHandler.js";
 import { createOnlineMatch } from "../services/online.js";
 import { setCurrentMatchId, setCurrentMatchMode } from "../services/onlineStore.js";
 import onlineMatch from "./online-match.js";
@@ -38,7 +39,7 @@ export default function chooseOnlineMode(): HTMLDivElement {
 				const match = await createOnlineMatch(1);
 				setCurrentMatchMode(1);
 				setCurrentMatchId(String(match.id));
-				navigate("/online-match");
+				getRouter().lazyLoad("/online-match");
 			}
 			})
 		),
@@ -50,7 +51,7 @@ export default function chooseOnlineMode(): HTMLDivElement {
 				const match = await createOnlineMatch(2);
 				setCurrentMatchMode(2);
 				setCurrentMatchId(String(match.id));
-				navigate("/online-match");
+				getRouter().lazyLoad("/online-match");
 			}
 			})
 		),
@@ -62,7 +63,7 @@ export default function chooseOnlineMode(): HTMLDivElement {
 				const match = await createOnlineMatch(3);
 				setCurrentMatchMode(3);
 				setCurrentMatchId(String(match.id));
-				navigate("/online-match");
+				getRouter().lazyLoad("/online-match");
 			}
 			})
 		),
@@ -74,7 +75,7 @@ export default function chooseOnlineMode(): HTMLDivElement {
 				const match = await createOnlineMatch(4);
 				setCurrentMatchMode(4);
 				setCurrentMatchId(String(match.id));
-				navigate("/online-match");
+				getRouter().lazyLoad("/online-match");
 			}
 			})
 		)

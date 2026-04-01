@@ -69,6 +69,13 @@ export function getTournamentPlayers(tournamentId: string | number) {
     )
 }
 
+export function updateTournamentStatusRepo(tournamentId: number, status: TournamentStatus) {
+    return queryExecute(
+        'UPDATE tournaments SET status = ? WHERE id = ?',
+        [status, tournamentId]
+    )
+}
+
 
 export function getTournamentWithPlayers(tournamentId: string | number): TournamentWithPlayers | null {
     const tournament = getTournamentById(tournamentId)

@@ -12,12 +12,13 @@ import {
     addPlayerToTournament as addPlayerToTournamentRepo,
     getTournamentPlayers as getTournamentPlayersRepo,
     getTournamentWithPlayers as getTournamentWithPlayersRepo,
-    createFinishedTournament as createFinishedTournamentRepo
+    createFinishedTournament as createFinishedTournamentRepo,
+    updateTournamentStatusRepo
 } from '../repository/tournamentsRepository'
 import { getById as getUserById, getOrCreateByUsername } from '../repository/usersRepository'
 import { createFinishedMatchWithPlayers } from '../repository/matchesRepository'
 import { NotFoundError, BadRequestError } from '../utils/appErrors'
-import { Tournament, TournamentPlayer, TournamentWithPlayers } from '../models/tournamentModel'
+import { Tournament, TournamentPlayer, TournamentStatus, TournamentWithPlayers } from '../models/tournamentModel'
 
 /**
  * Get all tournaments
@@ -124,6 +125,12 @@ export function addPlayerToTournament(tournamentId: string | number, userId: num
     }
 }
 
+export function getTournamentStatus(tournamentId: string | number) {
+    const tournament = getTournamentByIdRepo(tournamentId);
+    return tournament?.status;
+}
+
+
 /**
  * Get all players in a tournament
  * @param tournamentId - Tournament ID
@@ -155,6 +162,40 @@ interface TournamentResultInput {
     players: { name: string; isAi: boolean }[];
     matches: TournamentMatchInput[];
     championName: string;
+}
+
+
+export function updateTournamentStatus(
+    tournamentId: string | number,
+    status: TournamentStatus
+): { message: string; matchId: number; status: TournamentStatus } {
+    const validStatuses: TournamentStatus[] = ['open', 'in_progress', 'finished']
+    if (!validStatuses.includes(status)) {
+        throw new BadRequestError('status must be one of: pending, in_progress, finished')
+    }
+
+    const tournament = getTournamentByIdRepo(tournamentId)
+    if (!tournament) {
+        throw new NotFoundError('Match not found')
+    }
+
+    // Validate status transitions
+    if (tournament.status === 'finished') {
+        throw new BadRequestError('Cannot change status of a finished match')
+    }
+
+    const numericTournamentId = typeof tournamentId === 'string' ? parseInt(tournamentId) : tournamentId
+    const updateResult = updateTournamentStatusRepo(numericTournamentId, status)
+
+    if (updateResult.changes === 0) {
+        throw new NotFoundError('Match not found')
+    }
+
+    return {
+        message: 'Tournament status updated',
+        matchId: numericTournamentId,
+        status
+    }
 }
 
 /**
@@ -217,7 +258,8 @@ export function saveTournamentResult(input: TournamentResultInput) {
             p1User!.id,
             m.scorePlayer1,
             p2User!.id,
-            m.scorePlayer2
+            m.scorePlayer2,
+            "1v1"
         )
     })
 

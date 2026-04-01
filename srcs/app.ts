@@ -11,6 +11,8 @@ import { errorHandler, notFoundHandler } from './utils/ErrorHandler'
 import { registerRateLimit } from './plugins/rateLimit'
 import { env, isDev, isProd } from './config/env'
 
+import { wsPlugin } from './ws'
+
 /**
  * creation et config du server fastify
  * plugind db error handler global et routes
@@ -64,6 +66,8 @@ export async function buildApp(): Promise<FastifyInstance> {
     throw new Error('Database integrity check failed')
   }
   initTables()
+
+  await app.register(wsPlugin);
 
   app.register(v1Routes, { prefix: '/api/v1' })
 

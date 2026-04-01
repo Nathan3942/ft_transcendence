@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 16:52:45 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/01 18:55:46 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/01 19:07:14 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,11 +15,6 @@ import makeButtonBlock from "../components/button/buttonBlock.js";
 import { getRouter } from "../handler/routeHandler.js";
 import { createOnlineMatch, createOnlineTournament } from "../services/online.js";
 import { setCurrentMatchId, getCurrentMatchId, setCurrentTournamentId } from "../services/onlineStore.js";
-
-
-function navigate(path: string) {
-	window.dispatchEvent(new CustomEvent("navigate", { detail: { path } }));
-}
 
 
 export default function createGameOnlinePage(): HTMLDivElement {

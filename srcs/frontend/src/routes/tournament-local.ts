@@ -1,26 +1,24 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   local-tournament.ts                                :+:      :+:    :+:   */
+/*   tournament-local.ts                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 16:32:13 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/01 18:43:11 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/01 22:57:37 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-import { createButton } from "../components/button/button.js";
-import makeButtonBlock from "../components/button/buttonBlock.js";
-import { startPong } from "../game/pong.js";
-import type { PongInput, PongState } from "../game/pong_core.js";
+import { createButton } from "../components/button/button";
+import makeButtonBlock from "../components/button/buttonBlock";
+import { startPong } from "../game/pong";
+import type { PongInput, PongState } from "../game/pong_core";
 
-import { makeAIPolicyP2 } from "../game/ai/policy.js";
+import { makeAIPolicyP2 } from "../game/ai/policy";
 
-import { loadHardGenome, genomeForDifficulty, createKeyMap, keyboardToInput, bindKeyboard, mergeKeyboardWithAIP2 } from "./game-local-ai.js";
-
-/* MODIF 1 : URL de base de l'API backend pour sauvegarder le tournoi */
-const API_URL = `http://${window.location.hostname}:3000/api/v1`;
+import { loadHardGenome, genomeForDifficulty, createKeyMap, keyboardToInput, bindKeyboard, mergeKeyboardWithAIP2 } from "./game-local-ai";
+// import { creatTextInput } from "../components/TextInput/TextInput";
 
 type Player = {
     id: number;
@@ -77,41 +75,6 @@ function createTextInput(id: string, placeholder: string): HTMLInputElement {
     `;
 
     return input;
-}
-
-function mirrorStateForP2(s: PongState): PongState {
-	
-	const m = structuredClone(s) as PongState;
-
-	const tmpScore = m.scoreP1;
-	m.scoreP1 = m.scoreP2;
-	m.scoreP2 = tmpScore;
-
-	const left = m.playX;
-	const right = m.playX + m.playW;
-
-	m.ballX = left + (right - m.ballX);
-	m.ballVX = -m.ballVX;
-
-	if (m.paddles.length >= 2) {
-		const pL = m.paddles[0];
-		const pR = m.paddles[1];
-
-		const tmpPos = pL.pos;
-		pL.pos = pR.pos;
-		pR.pos = tmpPos;
-	}
-	return (m);
-}
-
-function recenterPaddle(state: PongState, paddleIndex: 0 | 1, dead = 6): { up: boolean; down: boolean } {
-	const p = state.paddles[paddleIndex];
-	const target = (state.playH - p.len) / 2;
-	const d = p.pos - target;
-
-	if (d > dead)  return { up: true, down: false };
-	if (d < -dead) return { up: false, down: true };
-	return { up: false, down: false };
 }
 
 
@@ -331,74 +294,6 @@ function applyResultAndAdvance(t: TournamentState, played: Match, res: GameResul
 		t.bracket.final.score = { s1: res.s1, s2: res.s2 };
 		t.champion = winner;
 		t.stage = "DONE";
-
-		/* MODIF 2 : quand le tournoi est terminé, on envoie toutes les données au backend
-		   via POST /tournaments/result. On collecte :
-		   - les joueurs (nom + si c'est une IA)
-		   - tous les matchs joués (scores + gagnant + round)
-		   - le nom du champion */
-		saveTournamentToBackend(t);
-	}
-}
-
-/**
- * Collecte les données du tournoi terminé et les envoie au backend
- * Le backend crée les users, le tournoi, les matchs en une seule requête
- */
-async function saveTournamentToBackend(t: TournamentState) {
-	/* Récupérer tous les joueurs uniques du bracket */
-	const playerSet = new Set<string>();
-	const playersData: { name: string; isAi: boolean }[] = [];
-
-	const allMatches = [
-		...t.bracket.quarterfinal,
-		...t.bracket.semifinal,
-		t.bracket.final,
-	];
-
-	for (const m of allMatches) {
-		for (const p of [m.p1, m.p2]) {
-			if (!playerSet.has(p.name)) {
-				playerSet.add(p.name);
-				playersData.push({ name: p.name, isAi: p.ai });
-			}
-		}
-	}
-
-	/* Construire la liste des matchs avec scores (seulement ceux joués) */
-	let roundNum = 1;
-	const matchesData = allMatches
-		.filter(m => m.score) /* seulement les matchs joués */
-		.map((m) => {
-			const winner = m.score!.s1 > m.score!.s2 ? m.p1 : m.p2;
-			return {
-				player1Name: m.p1.name,
-				player2Name: m.p2.name,
-				scorePlayer1: m.score!.s1,
-				scorePlayer2: m.score!.s2,
-				winnerName: winner.name,
-				round: roundNum++,
-			};
-		});
-
-	/* Nom unique pour le tournoi (avec timestamp pour éviter les doublons) */
-	const tournamentName = `Tournament ${new Date().toLocaleString()}`;
-
-	try {
-		const res = await fetch(`${API_URL}/tournaments/result`, {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({
-				name: tournamentName,
-				players: playersData,
-				matches: matchesData,
-				championName: t.champion!.name,
-			}),
-		});
-		const json = await res.json();
-		console.log("Tournoi sauvegardé:", json);
-	} catch (err) {
-		console.error("Erreur sauvegarde tournoi:", err);
 	}
 }
 
@@ -495,6 +390,19 @@ function buildBracketFromPlayers(players: Player[]): Bracket {
 
 async function CreateMatch(inner: HTMLDivElement, match: Match, onDone: (res: GameResult) => void) {
     
+	if (match.p1.ai && match.p2.ai) {
+		const winnerSide: 1 | 2 = Math.random() < 0.5 ? 1 : 2;
+
+		const loserScore = Math.floor(Math.random() * 1);
+		const winScore = 1;
+
+		const s1 = winnerSide === 1 ? winScore : loserScore;
+		const s2 = winnerSide === 2 ? winScore : loserScore;
+
+		onDone({ winnerSide, s1, s2 });
+		return;
+  }
+	
     inner.innerHTML = "";
 
     const gameWrap = document.createElement("div");
@@ -556,35 +464,6 @@ async function CreateMatch(inner: HTMLDivElement, match: Match, onDone: (res: Ga
 			return mergeKeyboardWithAIP2(kb, ai);
 			});
 		}
-		// 3) IA vs IA
-		else if (p1IsAI && p2IsAI) {
-			controller.setInputSource((state: PongState, dt: number) => {
-				const autoStart = state.phase === "LOBBY";
-
-				const towardP2 = state.ballVX > 0;
-				const towardP1 = state.ballVX < 0;
-
-				const aiForP2 = aiP2(state, dt);
-
-				const mirrored = mirrorStateForP2(state);
-				const aiMirrored = aiP2(mirrored, dt);
-
-				const p2Move = towardP2
-				? { up: aiForP2.p2.up, down: aiForP2.p2.down }
-				: recenterPaddle(state, 1);
-
-				const p1Move = towardP1
-				? { up: aiMirrored.p2.up, down: aiMirrored.p2.down }
-				: recenterPaddle(state, 0);
-
-				return {
-				p1: { ...p1Move, start: autoStart, togglePause: false },
-				p2: { ...p2Move, start: autoStart, togglePause: false },
-				p3: { up: false, down: false, start: autoStart },
-				p4: { up: false, down: false, start: autoStart },
-				};
-			});
-		}
 	}
 
 	window.addEventListener("resize", onResize);
@@ -640,8 +519,7 @@ export default function createLocalTournament(): HTMLDivElement {
     title.textContent = "Enter players names";
     title.className = `
         text-white text-2xl font-semibold
-        self-start mb-2
-    `;
+        self-start mb-2`;
     fromBlock.appendChild(title);
 
     for (let i = 1; i <= 8; i++) {

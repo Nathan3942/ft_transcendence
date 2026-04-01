@@ -6,16 +6,14 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 15:46:15 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/16 15:16:19 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/01 19:07:05 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import { createButton } from "../components/button/button.js";
 import makeButtonBlock from "../components/button/buttonBlock.js";
+import { getRouter } from "../handler/routeHandler.js";
 
-function navigate(path: string) {
-	window.dispatchEvent(new CustomEvent("navigate", { detail: { path } }));
-}
 
 export default function chooseBrowse(): HTMLDivElement {
 	const outer = document.createElement("div");
@@ -32,7 +30,7 @@ export default function chooseBrowse(): HTMLDivElement {
 			extraClasses:btnClasses,
 			buttonText: "Browse Match",
 			f: () => {
-				navigate("/browse-games");
+				getRouter().lazyLoad("/browse-games");
 			},
 			icon: "assets/images/plus-large-svgrepo-com.svg",
 			iconAlt: "Icon",
@@ -45,7 +43,7 @@ export default function chooseBrowse(): HTMLDivElement {
 			buttonText: "Browse Tournaments",
 			// href: "/browse-games",
 			f: async () => {
-				navigate("/browse-tournaments");
+				getRouter().lazyLoad("/browse-tournaments");
 			},
 			icon: "assets/images/list-svgrepo-com.svg",
 			iconAlt: "Icon",

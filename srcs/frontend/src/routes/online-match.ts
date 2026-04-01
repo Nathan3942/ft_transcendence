@@ -6,17 +6,15 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 17:15:35 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/01 18:43:11 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/01 19:11:26 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import { getCurrentMatchId, getCurrentMatchMode, setCurrentTournamentId } from "../services/onlineStore.js";
 import { drawPong } from "../game/pong_render.js";
 import { toRenderState, type RenderState, type ServerGameState, type GameSlot } from "../game/server_state_adapter.js";
+import { getRouter } from "../handler/routeHandler.js";
 
-function navigate(path: string) {
-	window.dispatchEvent(new CustomEvent("navigate", { detail: { path } }));
-}
 
 type Dir = -1 | 0 | 1;
 
@@ -298,7 +296,7 @@ export default function onlineMatch(): HTMLDivElement {
 		if (msg.type === "match_full") {
 			alert("Match full");
 			cleanup();
-			navigate("/browse-games");
+			getRouter().lazyLoad("/browse-games");
 			return;
 		}
 
@@ -313,7 +311,7 @@ export default function onlineMatch(): HTMLDivElement {
 			if (msg.tournamentId) {
 				setCurrentTournamentId(String(msg.tournamentId));
 				setTimeout(() => {
-					navigate("/online-tournament");
+					getRouter().lazyLoad("/online-tournament");
 				}, 1500);
 				return;
 			}
@@ -321,7 +319,7 @@ export default function onlineMatch(): HTMLDivElement {
 			setTimeout(() => {
 				alert(`Winner: ${winner}`);
 				cleanup();
-				navigate("/game-online");
+				getRouter().lazyLoad("/game-online");
 			}, 1500);
 			return;
 		}

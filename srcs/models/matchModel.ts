@@ -2,11 +2,14 @@
 
 export type MatchStatus = 'pending' | 'in_progress' | 'finished';
 
+export type ModeStatus = '1v1' | '2v2' | '3p' | '4p';
+
 export interface Match {
   id: number;
   tournamentId: number | null;
   round: number | null;
   status: MatchStatus;
+  mode: ModeStatus;
   winnerId: number | null;
   startedAt: string | null;
   finishedAt: string | null;
@@ -20,7 +23,7 @@ export interface MatchPlayer {
   score: number | null;
 }
 
-export interface MatchWithPlayers extends Match { // ajoute un tableau a la table matchPlayer
+export interface MatchWithPlayers extends Match {
   players: {
     userId: number;
     score: number | null;

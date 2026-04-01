@@ -12,47 +12,87 @@ const lazyInit = (
 export const routes: Route[] = [
 	{
 		path: "/",
-		component: lazy(() => import("./home.js")),
+		component: lazy(() => import("./home")),
 		guarded: [authGuard]
 	},
 	{
 		path: "/leaderboard",
-		component: lazy(() => import("./leaderboard.js")),
+		component: lazy(() => import("./leaderboard")),
 		// guarded: [authGuard]
 	},
 	{
 		path: "/user-profile",
-		component: lazy(() => import("./user-profile.js")),
-		init: lazyInit(() => import("./user-profile-init.js")),
+		component: lazy(() => import("./user-profile")),
+		init: lazyInit(() => import("./user-profile-init")),
 		guarded: [authGuard]
 	},
 	{
 		path: "/user-settings",
-		component: lazy(() => import("./user-settings.js")),
-		init: lazyInit(() => import("./user-settings-init.js")),
+		component: lazy(() => import("./user-settings")),
+		init: lazyInit(() => import("./user-settings-init")),
 		guarded: [authGuard]
 	},
 	{
 		path: "/login",
-		component: lazy(() => import("./login-page.js"))
+		component: lazy(() => import("./login-page"))
 	},
 	{
 		path: "/game-local",
-		component: lazy(() => import("./game-local.js")),
+		component: lazy(() => import("./game-local")),
 		guarded: [authGuard]
 	},
 	{
 		path: "/game-local-ai",
-		component: lazy(() => import("./game-local-ai.js")),
+		component: lazy(() => import("./game-local-ai")),
 		guarded: [authGuard]
 	},
 	{
 		path: "/game-online",
-		component: lazy(() => import("./game-online.js")),
+		component: lazy(() => import("./game-online")),
 		guarded: [authGuard]
 	},
 	{
 		path: "/about",
-		component: lazy(() => import("./about.js"))
+		component: lazy(() => import("./about"))
+	},
+	{
+		path: "/game-online",
+		component: lazy(() => import("./game-online")),
+		guarded: [authGuard]
+	},
+	{
+		path: "/online-tournament",
+		component: lazy(() => import("./online-tournament")),
+		guarded: [authGuard]
+	},
+	{
+		path: "/choose-browse",
+		component: lazy(() => import("./choose-browse")),
+		guarded: [authGuard]
+	},
+	{
+		path: "/online-match",
+		component: lazy(() => import("./online-match")),
+		guarded: [authGuard]
+	},
+	{
+		path: "/browse-games",
+		component: lazy(() => import("./browse-games")),
+		guarded: [authGuard]
+	},
+	{
+		path: "/browse-tournaments",
+		component: lazy(() => import("./browse-tournaments")),
+		guarded: [authGuard]
+	},
+	{
+		path: "/online-mode",
+		component: lazy(() => import("./online-mode")),
+		guarded: [authGuard]
+	},
+	{
+		path: "/tournament-local",
+		component: lazy(() => import("./tournament-local")),
+		guarded: [authGuard]
 	}
 ]

@@ -6,16 +6,13 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 16:33:40 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/01 18:43:11 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/01 19:06:31 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+import { getRouter } from "../handler/routeHandler.js";
 import { deleteTournament, listOnlineTournament, type Tournament } from "../services/online.js";
 import { setCurrentTournamentId } from "../services/onlineStore.js";
-
-function navigate(path: string) {
-  	window.dispatchEvent(new CustomEvent("navigate", { detail: { path } }));
-}
 
 function formatWinner(winnerId: number | null) {
   	return winnerId === null ? "—" : `#${winnerId}`;
@@ -53,7 +50,7 @@ function tournamentRow(t: Tournament, onDeleted: () => void): HTMLDivElement {
 		// ✅ adapte à ton routing
 		// Si tu as une page tournament dédiée :
 		setCurrentTournamentId(String(t.id));
-		navigate(`/online-tournament`);
+		getRouter().lazyLoad(`/online-tournament`);
 
 		// Sinon si tu utilises /game-online/:id :
 		// navigate(`/game-online/${t.id}`);
@@ -100,7 +97,7 @@ export default function createBrowseTournamentsPage(): HTMLDivElement {
     const back = document.createElement("button");
     back.className = "px-4 py-2 rounded bg-gray-300 dark:bg-gray-700";
     back.textContent = "Back";
-    back.onclick = () => navigate("/game-online");
+    back.onclick = () => getRouter().lazyLoad("/game-online");
 
     header.append(h1, back);
 

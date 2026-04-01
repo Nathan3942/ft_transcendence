@@ -6,16 +6,13 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 14:42:50 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/01 18:43:11 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/01 19:05:33 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+import { getRouter } from "../handler/routeHandler.js";
 import { listOnlineMatches, deleteMatch, type Match } from "../services/online.js";
 import { setCurrentMatchId } from "../services/onlineStore.js";
-
-function navigate(path: string) {
-	window.dispatchEvent(new CustomEvent("navigate", { detail: { path } }));
-}
 
 function matchRow(m: Match, onDeleted: () => void): HTMLDivElement {
 	const row = document.createElement("div");
@@ -47,7 +44,7 @@ function matchRow(m: Match, onDeleted: () => void): HTMLDivElement {
 			confirm(`Match ${m.id} finished`);
 		else {
 			setCurrentMatchId(String(m.id));
-			navigate("/online-match");
+			getRouter().lazyLoad("/online-match");
 		}
 	};
 
@@ -88,7 +85,7 @@ export default function createBrowseGamesPage(): HTMLDivElement {
 	const back = document.createElement("button");
 	back.className = "px-4 py-2 rounded bg-gray-300 dark:bg-gray-700";
 	back.textContent = "Back";
-	back.onclick = () => navigate("/game-online");
+	back.onclick = () => getRouter().lazyLoad("/game-online");
 
 	header.append(h1, back);
 

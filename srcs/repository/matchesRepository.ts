@@ -1,13 +1,8 @@
 /* centralise toutes les requetes a la database qui concernent les matchs*/
 
+import { getDatabase } from '../database';
 import { queryAll, queryOne, queryExecute } from '../database/queryWrapper'
-import { Match, MatchPlayer, MatchWithPlayers, MatchStatus } from '../models/matchModel'
-
-function nowLocal(): string {
-    const d = new Date()
-    const pad = (n: number) => n.toString().padStart(2, '0')
-    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
-}
+import { Match, MatchPlayer, MatchWithPlayers, MatchStatus, ModeStatus } from '../models/matchModel'
 
 
 export function getAllMatches(): Match[] {
@@ -17,6 +12,7 @@ export function getAllMatches(): Match[] {
             tournament_id as tournamentId,
             round,
             status,
+            mode,
             winner_id as winnerId,
             started_at as startedAt,
             finished_at as finishedAt,
@@ -33,6 +29,7 @@ export function getMatchById(id: string | number): Match | null {
             tournament_id as tournamentId,
             round,
             status,
+            mode,
             winner_id as winnerId,
             started_at as startedAt,
             finished_at as finishedAt,
@@ -46,31 +43,52 @@ export function getMatchById(id: string | number): Match | null {
 export function createMatch({
     tournamentId,
     round,
-    status = 'pending'
+    status = 'pending',
+    mode = '1v1',
 }: {
     tournamentId: number | null;
     round: number | null;
     status?: MatchStatus;
+    mode?: ModeStatus;
 }): Match {
     const result = queryExecute(
-        'INSERT INTO matches (tournament_id, round, status) VALUES (?, ?, ?)',
-        [tournamentId, round, status]
+    'INSERT INTO matches (tournament_id, round, status, mode) VALUES (?, ?, ?, ?)',
+    [tournamentId, round, status, mode]
     );
     return {
         id: result.lastInsertRowid as number,
         tournamentId,
         round,
         status,
+        mode,
         winnerId: null,
         startedAt: null,
         finishedAt: null,
-        createdAt: nowLocal()
+        createdAt: new Date().toISOString()
     };
 }
 
 
 export function deleteMatch(id: string | number) {
-    return queryExecute('DELETE FROM matches WHERE id = ?', [id])
+
+    const db = getDatabase(); // selon ton projet
+
+    db.exec("BEGIN");
+
+    try {
+        queryExecute("DELETE FROM match_player WHERE match_id = ?", [id]);
+        const result = queryExecute("DELETE FROM matches WHERE id = ?", [id]);
+
+        db.exec("COMMIT");
+        return result;
+    }
+    catch (err) {
+        db.exec("ROLLBACK");
+        throw err;
+    }
+
+    // queryExecute("DELETE FROM match_player WHERE match_id = ?", [id]);
+    // return queryExecute('DELETE FROM matches WHERE id = ?', [id])
 }
 
 
@@ -145,7 +163,7 @@ export function updateMatchStatus(matchId: number, status: MatchStatus) {
 
 
 export function startMatch(matchId: number) {
-    const now = nowLocal()
+    const now = new Date().toISOString()
     return queryExecute(
         'UPDATE matches SET status = ?, started_at = ? WHERE id = ?',
         ['in_progress', now, matchId]
@@ -154,7 +172,7 @@ export function startMatch(matchId: number) {
 
 
 export function finishMatch(matchId: number, winnerId: number | null) {
-    const now = nowLocal()
+    const now = new Date().toISOString()
     return queryExecute(
         'UPDATE matches SET status = ?, finished_at = ?, winner_id = ? WHERE id = ?',
         ['finished', now, winnerId, matchId]
@@ -169,6 +187,7 @@ export function getMatchesByStatus(status: MatchStatus): Match[] {
             tournament_id as tournamentId,
             round,
             status,
+            mode,
             winner_id as winnerId,
             started_at as startedAt,
             finished_at as finishedAt,
@@ -184,14 +203,15 @@ export function createFinishedMatchWithPlayers(
     player1Id: number,
     scorePlayer1: number,
     player2Id: number | null,
-    scorePlayer2: number
+    scorePlayer2: number,
+    mode: ModeStatus
 ): MatchWithPlayers {
-    const now = nowLocal()
+    const now = new Date().toISOString()
 
     // Create match with status finished and finished_at set
     const matchResult = queryExecute(
-        'INSERT INTO matches (tournament_id, round, status, winner_id, started_at, finished_at) VALUES (?, ?, ?, ?, ?, ?)',
-        [null, null, 'finished', winnerId, now, now]
+        'INSERT INTO matches (tournament_id, round, status, winner_id, finished_at) VALUES (?, ?, ?, ?, ?)',
+        [null, null, 'finished', winnerId, now]
     )
 
     const matchId = matchResult.lastInsertRowid as number
@@ -220,8 +240,9 @@ export function createFinishedMatchWithPlayers(
         tournamentId: null,
         round: null,
         status: 'finished',
+        mode,
         winnerId,
-        startedAt: now,
+        startedAt: null,
         finishedAt: now,
         createdAt: now,
         players

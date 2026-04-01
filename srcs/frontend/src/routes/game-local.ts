@@ -4,6 +4,8 @@ import makeButtonBlock from "../components/button/buttonBlock.js";
 import { startPong } from "../game/pong.js";
 /* MODIF 1 : on importe PongEvents pour typer le callback onGameOver */
 import type { ModeId, PongEvents } from "../game/pong_core.js";
+import { getRouter } from "../handler/routeHandler.js";
+import createLocalTournament from "./tournament-local.js";
 
 /* URL de base de l'API backend */
 const API_URL = `http://${window.location.hostname}:3000/api/v1`;
@@ -121,7 +123,9 @@ export default function createGameLocalPage(): HTMLDivElement {
 			extraClasses: btnClasses,
 			buttonText: "Local Tournament",
 			href: "/local-tournament",
-			// f: () => createLocalTournament(),
+			f: () => {
+				getRouter().lazyLoad("/tournament-local");
+			},
 			icon: "assets/images/trophy-svgrepo-com.svg",
 			iconAlt: "Icon",
 			iconBClass: "h-10 pr-3 dark:invert"
