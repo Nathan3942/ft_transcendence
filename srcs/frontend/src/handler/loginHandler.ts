@@ -154,7 +154,7 @@ export async function authenticate(): Promise<boolean | string> {
 		if (resp.status === 200) {
 			
 			const respJson = await resp.json() as loginResponse;
-			const respUser = respJson.data.user;
+			const respUser = respJson.data;
 
 			setItem<number>("id", respUser.id);
 			setItem<string>("username", respUser.username);

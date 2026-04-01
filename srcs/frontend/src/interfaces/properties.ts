@@ -28,9 +28,7 @@ export interface registrationRequest {
 }
 
 export interface loginResponse {
-	data: {
-		user: user;
-	};
+	data: user;
 }
 
 export interface user {
