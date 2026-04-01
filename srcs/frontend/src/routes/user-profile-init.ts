@@ -1,0 +1,191 @@
+import { renderMessage } from "../components/popup/popup.js";
+import { API_BASE } from "../handler/loginHandler.js";
+import { getLocalId } from "../helpers/apiHelper.js";
+import { getLocalUserAvatar } from "../helpers/avatarHelper.js";
+import { getItem } from "../helpers/localStoragehelper.js";
+import type { user, userMatchHistoryResponse, userStatsResponse } from "../interfaces/properties.js";
+
+async function fetchUserStats(userId: number): Promise<userStatsResponse> {
+	const resp = await fetch(`${API_BASE}/users/${userId}/stats`, {
+		method: "GET",
+		credentials: "include"
+	})
+
+	if (resp.ok) {
+		const respJson = await resp.json() as userStatsResponse;
+		return respJson;
+	} else if (resp.status === 400)
+		throw new Error("400: Invalid user ID");
+	else if (resp.status === 404 && resp.text.length === 0) {
+		renderMessage("You appear to be offline, please try again later.");
+		throw new Error("404: Offline");
+	} else if (resp.status === 404)
+		throw new Error("404: User not found");
+	else
+		throw new Error(`Unexpected error: ${resp.status}`);
+}
+
+async function fetchMatchHistory(userId: number): Promise<userMatchHistoryResponse> {
+	const resp = await fetch(`${API_BASE}/users/${userId}/matches`, {
+		method: "GET",
+		credentials: "include"
+	})
+
+	if (resp.ok) {
+		const respJson = await resp.json() as userMatchHistoryResponse;
+		return respJson;
+	} else if (resp.status === 400)
+		throw new Error("400: Invalid user ID");
+	else if (resp.status === 401)
+		throw new Error("401: Not authenticated")
+	else if (resp.status === 404 && resp.text.length === 0) {
+		renderMessage("You appear to be offline, please try again later.");
+		throw new Error("404: Offline");
+	} else if (resp.status === 404)
+		throw new Error("404: User not found");
+	else
+		throw new Error(`Unexpected error: ${resp.status}`);
+}
+
+export default async function initUserProfile(): Promise<void> {
+
+	// Initialisation of document elements
+	const pfp = document.getElementById("profilePfp") as HTMLImageElement;
+	const username = document.getElementById("profileUsername") as HTMLHeadingElement;
+	const onlineStatus = document.getElementById("onlineStatus") as HTMLParagraphElement;
+
+	const userStatsDiv = document.getElementById("userStats") as HTMLDivElement;
+	const matchHistoryTable = document.getElementById("matchHistory") as HTMLTableElement;
+
+	// Initialisation of user stats
+	const id = getLocalId();
+	if (!id) {
+		console.error("Error: No user id found, cannot load statistics");
+		userStatsDiv.innerHTML = `
+			<div class="col-span-4 pl-6">
+				Error: No user id found, cannot load statistics...
+			</div>
+		`;
+		matchHistoryTable.innerHTML =  `
+			<div class="pl-6">
+				Error: No user id found, cannot load match history...
+			</div>
+		`
+		return ;
+	}
+
+	let  userInfo: user | string;
+	
+	
+	/* if (id == getLocalId()) { */
+		 userInfo = {
+			id: id,
+			username: getItem<string>("username") ?? "null",
+			display_name: getItem<string>("display_name") ?? "null",
+			avatar_url: getLocalUserAvatar(),
+			is_online: getItem<boolean>("is_online") ?? false
+		};
+	/* } else {
+		userInfo = getOnlineUser();
+		if (typeof userInfo === "string" ) {
+			console.warn(`Warning: Cannot get user information for id: ${id} for reason "${userInfo}"... Aborting page init`);
+
+			return ;
+		};
+	} */
+
+	username.innerText = userInfo.username;
+	if (userInfo.avatar_url)
+		pfp.src = userInfo.avatar_url;
+	if (userInfo.is_online) {
+		onlineStatus.innerText = "Online";
+	} else {
+		onlineStatus.innerText = "Offline";
+	}
+
+
+	try {
+		const dataStats = await fetchUserStats(id);
+		const userStats = dataStats.data;
+
+		// Test Values
+		/* const userStats = {
+			userId: 1,
+			username: "Player1",
+			totalMatches: 100,
+			wins: 70,
+			losses: 30,
+			winrate: 0.7,
+			tournamentsWon: 5,
+		}; */
+
+		document.getElementById("totalMatches")!.textContent = userStats.totalMatches.toString();
+		document.getElementById("tournamentsWon")!.textContent = userStats.tournamentsWon.toString();
+		document.getElementById("wins")!.textContent = userStats.wins.toString();
+		document.getElementById("losses")!.textContent = userStats.losses.toString();
+		document.getElementById("winrate")!.textContent = `${userStats.winrate * 100}%`;
+
+		const winCircle = document.getElementById("winCircle");
+		if (winCircle instanceof SVGCircleElement) {
+			const lossCircle = document.getElementById("lossCircle")!;
+
+			const circumference = 251.2;
+			const winPercentage = userStats.winrate;
+			const lossPercentage = 1 - winPercentage;
+			const winDegrees = winPercentage * 360;
+
+			winCircle.style.strokeDashoffset = (circumference - (winPercentage * circumference)).toString();
+			lossCircle.style.transform = `rotate(${winDegrees}deg)`;
+			lossCircle.style.transformOrigin = "center";
+			lossCircle.style.strokeDashoffset = (circumference - (lossPercentage * circumference)).toString();
+		}
+
+	} catch (e) {
+		console.error(`Error: Unable to fetch user stats: ${e}`);
+		userStatsDiv.innerHTML = `
+			<div class="col-span-4 pl-6">
+				Error: Unable to fetch user stats: ${e}
+			</div>
+		`;
+	}
+
+	try {
+
+		const matchHistoryArray = (await fetchMatchHistory(id)).data;
+		const tbody = matchHistoryTable.querySelector("tbody")!;
+
+		tbody.innerHTML = "";
+
+		for (let i = matchHistoryArray.length - 1; i >= 0; --i) {
+			const match = matchHistoryArray[i];
+			const newRow = tbody.insertRow();
+			newRow.classList.add("text-center");
+			
+			const cell1 = newRow.insertCell(0); // Match ID
+			const cell2 = newRow.insertCell(1); // Opponent Info
+			const cell3 = newRow.insertCell(2); // Score
+			const cell4 = newRow.insertCell(3); // Result
+			const cell5 = newRow.insertCell(4); // Date
+
+			cell1.textContent = match.matchId.toString();
+			cell2.textContent = match.opponentName; // Make button that rerouts to opponents profile
+			cell3.textContent = `${match.userScore} - ${match.opponentScore}`;
+			if (match.won)
+				cell4.classList.add("text-green-600", "dark:text-green-400");
+			else
+				cell4.classList.add("text-red-600", "text-red-400");
+			cell4.textContent = match.won ? "Win" : "Loss";
+			const date: string[] = match.finishedAt.split("T");
+			cell5.textContent = `${date.at(0)} - ${date.at(1)?.replace("Z", "")}`;
+
+		}
+	} catch (e) {
+		console.error(`Error: Unable to fetch match history: ${e}`);
+		matchHistoryTable.classList.remove("border");
+		matchHistoryTable.innerHTML = `
+			<div class="col-span-4 pl-6">
+				Error: Unable to fetch match history: ${e}
+			</div>
+		`;
+	}
+}
