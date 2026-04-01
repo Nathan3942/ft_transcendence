@@ -64,19 +64,20 @@ export default function initUSerSettings(): void {
 		
 		authenticate();
 
-		const form = new FormData();
+		const payload: Record<string, string> = {};
 		if (username != getItem<string>("username"))
-			form.append("username", username);
+			payload["username"] = username;
 		if (email != getItem<string>("email"))
-			form.append("email", email);
+			payload["email"] = email;
 
-		if (!form.has("email") || !form.has("username"))
+		if (!payload["email"] && !payload["username"])
 			throw "You have not entered any new values";
 
-		const resp = await fetch(`${API_BASE}/users/${getLocalId}}`, {
+		const resp = await fetch(`${API_BASE}/users/${getLocalId()}`, {
 			method: "PATCH",
 			credentials: "include",
-			body: form
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(payload)
 		})
 
 		if (resp.ok) {
@@ -88,7 +89,7 @@ export default function initUSerSettings(): void {
 			throw new Error("400: Invalid fields");
 		} else if (resp.status === 403) {
 			throw new Error("403: You dont have the permissions to modify this data");
-		} else if (resp.status === 404 && resp.text.length === 0) {
+		} else if (resp.status === 404 && (await resp.text).length === 0) {
 			renderMessage("You appear to be offline. Please try again later");
 			throw new Error("You are offline, please try again later");
 		} else if (resp.status === 404) {
