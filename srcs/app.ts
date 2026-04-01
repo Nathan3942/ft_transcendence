@@ -9,7 +9,7 @@ import { initDatabase, checkDatabaseHealth, initTables } from './database'
 import v1Routes from './routes/v1'
 import { errorHandler, notFoundHandler } from './utils/ErrorHandler'
 import { registerRateLimit } from './plugins/rateLimit'
-import { env, isDev } from './config/env'
+import { env, isDev, isProd } from './config/env'
 
 /**
  * creation et config du server fastify
@@ -43,8 +43,17 @@ export async function buildApp(): Promise<FastifyInstance> {
   // Static — sert les fichiers uploadés depuis /uploads
   await app.register(staticFiles, {
     root: path.join(process.cwd(), 'uploads'),
-    prefix: '/uploads/'
+    prefix: '/uploads/',
+    decorateReply: false
   })
+
+  // Static — sert le frontend buildé en production
+  if (isProd) {
+    await app.register(staticFiles, {
+      root: path.join(process.cwd(), 'srcs/frontend/dist'),
+      prefix: '/'
+    })
+  }
 
   //rate limit pour eviter trop de request
   await registerRateLimit(app)
@@ -58,7 +67,19 @@ export async function buildApp(): Promise<FastifyInstance> {
   app.register(v1Routes, { prefix: '/api/v1' })
 
   app.setErrorHandler(errorHandler)
-  app.setNotFoundHandler(notFoundHandler)
+
+  // En prod : fallback SPA pour les routes frontend (pushState)
+  if (isProd) {
+    app.setNotFoundHandler((request, reply) => {
+      if (!request.url.startsWith('/api/')) {
+        reply.sendFile('index.html')
+      } else {
+        notFoundHandler(request, reply)
+      }
+    })
+  } else {
+    app.setNotFoundHandler(notFoundHandler)
+  }
 
   return app
 }
