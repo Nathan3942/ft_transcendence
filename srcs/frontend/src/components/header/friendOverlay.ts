@@ -194,7 +194,7 @@ export async function populateFriendOverlay(mode: number): Promise<void> {
 				friendId: parseInt(friendInput.value)
 			}
 
-			const resp = await fetch(`${API_BASE}/${getLocalId}/friends`, {
+			const resp = await fetch(`${API_BASE}/users/${getLocalId()}/friends`, {
 				method: "POST",
 				credentials: "include",
 				body: JSON.stringify(form)
@@ -212,7 +212,7 @@ export async function populateFriendOverlay(mode: number): Promise<void> {
 				if (!statusMsg.classList.contains("text-red-500"))
 					statusMsg.classList.add("text-red-500");
 
-				if (resp.status === 404 && resp.text.length === 0) {
+				if (resp.status === 404) {
 					console.error("Error 404: The user you are trying to friend cannot be found");
 					statusMsg.innerText = `Error 404: The user you are trying to friend cannot be found`;
 				} else {
@@ -334,7 +334,7 @@ export async function populateFriendOverlay(mode: number): Promise<void> {
 					icon: "/assets/images/check-green-svgrepo-com.svg?raw",
 					iconBClass: "w-7 h-7 mr-3",
 					f: async () => {
-						const resp = await replyToFriendRequest("accept", id, request.requester_id)
+						const resp = await replyToFriendRequest("accept", id, request.requester_id);
 						if (resp === "200") {
 							populateFriendOverlay(1);
 						} else {
@@ -346,7 +346,7 @@ export async function populateFriendOverlay(mode: number): Promise<void> {
 					icon: "/assets/images/xmark-red-svgrepo-com.svg?raw",
 					iconBClass: "w-7 h-7",
 					f: async () => {
-						const resp = await replyToFriendRequest("reject", id, request.requester_id)
+						const resp = await replyToFriendRequest("reject", id, request.requester_id);
 						if (resp === "200") {
 							populateFriendOverlay(1);
 						} else {
