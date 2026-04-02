@@ -13,16 +13,16 @@ export function buildFriendOverlay(): HTMLDivElement {
 	overlay.id = "headerFriendOverlay";
 
 	const rightElement = document.createElement("div");
-	rightElement.classList.add("w-3/5", "h-full",
+	rightElement.classList.add("hidden", "md:flex", "md:w-3/5", "h-full",
 		"bg-gray-100/20", "dark:bg-gray-900/30");
-		
+
 	rightElement.innerHTML = `
 		<button id="closeFriendOverlayButton"></button>
 	`;
 
 	const leftElement = document.createElement("div");
 	leftElement.classList.add("flex", "flex-col",
-		"overflow-y-auto", "w-2/5", "h-full",
+		"overflow-y-auto", "w-full", "md:w-2/5", "h-full",
 		"bg-gray-300", "dark:bg-gray-700");
 	
 	const inputClasses = [
@@ -46,6 +46,9 @@ export function buildFriendOverlay(): HTMLDivElement {
 
 	leftElement.innerHTML = `
 
+		<div class="flex md:hidden fixed right-0 pt-2 pr-2">
+			<button id="closeFriendOverlayMobile" class="text-gray-600 dark:text-gray-300 hover:text-red-500 dark:hover:text-red-400 text-2xl leading-none px-2 py-1">✕</button>
+		</div>
 		<section class="pt-4 m-4">
 			<h1 class="text-2xl animate-blink">▐ Add Friend</h1>
 			<form id="addFriendForm">
@@ -173,6 +176,7 @@ export async function populateFriendOverlay(mode: number): Promise<void> {
 	const closeOverlay = document.getElementById("closeFriendOverlayButton") as HTMLButtonElement;
 	const addFriendButton = document.getElementById("addFriendButton") as HTMLButtonElement;
 	const addFriendForm = document.getElementById("addFriendForm") as HTMLFormElement;
+	const mobileClose = document.getElementById("closeFriendOverlayMobile") as HTMLButtonElement;
 
 	if (mode == 0) {
 		if (overlay!.classList.contains("hidden"))
@@ -230,6 +234,12 @@ export async function populateFriendOverlay(mode: number): Promise<void> {
 			document.getElementById("headerFriendOverlay")!.classList.add("hidden");
 		}
 	}));
+
+	if (mobileClose) {
+		mobileClose.addEventListener("click", () => {
+			document.getElementById("headerFriendOverlay")!.classList.add("hidden");
+		});
+	}
 
 	const buttonClasses = [
 		"w-full py-2 mt-2",

@@ -94,11 +94,11 @@ export default function createGameLocalPage(): HTMLDivElement {
 	const inner = document.createElement("div");
 
 	outer.className = "flex flex-col flex-1 justify-center items-end"
-	inner.className = "text-3xl w-9/12 h-2/3 flex flex-col items-end justify-evenly";
+	inner.className = "text-3xl w-full md:w-9/12 h-2/3 flex flex-col items-center md:items-end justify-evenly";
 
 	outer.append(createBackButton("bg-blue-300 dark:bg-blue-900", "/"));
 
-	const btnClasses = "w-full h-full flex flex-row p-4"; 
+	const btnClasses = "flex flex-row p-4"; 
 	inner.append(
 		makeButtonBlock("bg-blue-300 dark:bg-blue-900", createButton({
 			id: "vs-ai-button",

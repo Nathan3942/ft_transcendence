@@ -23,7 +23,7 @@ export default function buildUserProfile(): HTMLDivElement {
 	].join(" ");
 
 	const outer = document.createElement("div");
-	outer.className = "flex flex-1 md:flex-row flex-col bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-white p-4";
+	outer.className = "overflow-y-auto flex flex-1 md:flex-row flex-col bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-white p-4";
 	outer.innerHTML = `
 		<section class="w-full md:w-1/6 pb-4 md:pb-0 md:pr-4 flex md:flex-col flex-row items-center pt-4 md:pt-10 border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700">
 			<img id="profilePfp" src="assets/images/user-svgrepo-com.svg" alt="avatar" class="w-24 md:w-40 aspect-square shrink-0 border-2 border-gray-300 dark:border-gray-700">

@@ -6,7 +6,8 @@ export default function buildAboutPage(): HTMLDivElement {
 
 	const userCard = [
 		"team-card",
-		"relative w-11/12 hover:w-full",
+		"relative md:w-11/12 md:hover:w-full",
+		"mx-4 md:mx-0",
 		"transition-all duration-200",
 		"hover:shadow-lg",
 		"group"
@@ -21,11 +22,11 @@ export default function buildAboutPage(): HTMLDivElement {
 	].join(" ");
 
 	outer.innerHTML = `
-		<div class="w-9/12 flex flex-col gap-8">
+		<div class="w-full md:w-9/12 flex flex-col gap-8">
 			<div class="flex items-center gap-4 mt-8">
 				<h1 class="text-4xl font-bold animate-blink">▐ ABOUT</h1>
 			</div>
-			<div class="scanlines relative w-11/12 bg-gray-700 dark:bg-gray-800 border border-gray-600 dark:border-gray-700 p-6 text-white">
+			<div class="scanlines relative md:w-11/12 mx-4 md:mx-0 bg-gray-700 dark:bg-gray-800 border border-gray-600 dark:border-gray-700 p-6 text-white">
 				<p class="text-xs uppercase tracking-widest text-gray-400 mb-3">&gt; ./about --project</p>
 				<p class="text-sm leading-relaxed text-gray-200">
 					ft_transcendence is the final project of 42's Common Core. We built a real-time multiplayer Pong platform from scratch — full-stack, containerised with Docker, secured end-to-end, and loaded with features like live tournaments, friend systems, and match history / statistics. All using pure TypeScript and Tailwind CSS!
@@ -84,7 +85,7 @@ export default function buildAboutPage(): HTMLDivElement {
 					</div>
 				</div>
 			</div>
-			<div class="w-11/12 border border-dashed border-gray-400 dark:border-gray-600 p-5">
+			<div class="md:w-11/12 mx-4 md:mx-0 border border-dashed border-gray-400 dark:border-gray-600 p-5">
 				<p class="text-xs uppercase tracking-widest opacity-50 mb-4">&gt; ./about --stack</p>
 				<div class="flex flex-wrap gap-2 text-xs">
 					<span class="${techStackBlocks}">TypeScript</span>

@@ -7,7 +7,7 @@ export default function createHomePage(): HTMLDivElement {
 	const inner = document.createElement("div");
 
 	outer.className = "flex flex-1 flex-col justify-center items-end";
-	inner.className = "text-3xl w-9/12 h-2/3 flex flex-col items-end justify-between";
+	inner.className = "text-3xl w-full md:w-9/12 h-2/3 flex flex-col items-center md:items-end justify-evenly";
 
 	const buttonClasses: string = "w-full h-full flex flex-row p-4";
 	const iconBClasses: string = "h-10 w-10 pr-2 dark:invert";
