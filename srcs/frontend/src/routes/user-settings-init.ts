@@ -25,6 +25,8 @@ export default function initUSerSettings(): void {
 	const confirmationButton = document.getElementById("confirmationButton") as HTMLButtonElement;
 	const deleteStatus = document.getElementById("deleteStatus") as HTMLParagraphElement;
 
+	const headerAvatar = document.getElementById("header-user-pfp") as HTMLImageElement; 
+
 	// Declaration of Functions
 	async function uploadAvatar(file: File): Promise<string> {
 		const form = new FormData();
@@ -139,7 +141,7 @@ export default function initUSerSettings(): void {
 				const savedUrl = await uploadAvatar(file);
 				profileImg.src = url;
 				URL.revokeObjectURL(url);
-				setItem<string>("avatar_url", savedUrl);
+				setItem<string>("avatar_url", url);
 				profileImg.classList.remove("dark:invert");
 				if (avatarMsg) {
 					if (!avatarMsg.classList.contains("text-green-600"))
@@ -148,6 +150,8 @@ export default function initUSerSettings(): void {
 						avatarMsg.classList.remove ("text-red-600");
 					avatarMsg.innerText = "Avatar Updated sucessfully";
 				}
+				if (headerAvatar)
+					headerAvatar.src = url;
 			} catch (e) {
 				profileImg.src = getLocalUserAvatar();
 				console.error(e);
