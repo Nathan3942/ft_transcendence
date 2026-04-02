@@ -31,7 +31,7 @@ export default function createUserSettingsPage(): HTMLDivElement {
 				<section class="${sectionClasses}">
 					<p class="${labelClasses}">Avatar</p>
 					<div class="flex items-center gap-4">
-						<div class="relative w-20 h-20 border-2 border-gray-400 dark:border-gray-500 overflow-hidden flex-shrink-0 bg-gray-200 dark:bg-gray-700">
+						<div class="relative w-40 h-40 border-2 border-gray-400 dark:border-gray-500 overflow-hidden flex-shrink-0 bg-gray-200 dark:bg-gray-700">
 							<img id="profileImg" src="${getLocalUserAvatar()}" alt="Profile picture"
 								class="w-full h-full object-cover"/>
 							<label for="avatarInput"

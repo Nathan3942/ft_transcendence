@@ -26,7 +26,7 @@ export default function buildUserProfile(): HTMLDivElement {
 	outer.className = "flex flex-1 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-white p-4";
 	outer.innerHTML = `
 		<section class="w-1/6 h-full flex flex-col items-center pt-10 border-r border-gray-200 dark:border-gray-700 pr-4">
-			<img id="profilePfp" src="assets/images/user-svgrepo-com.svg" alt="avatar" class="w-20 h-20 border-2 border-gray-300 dark:border-gray-700">
+			<img id="profilePfp" src="assets/images/user-svgrepo-com.svg" alt="avatar" class="w-40 h-40 border-2 border-gray-300 dark:border-gray-700">
 			<h1 id="profileUsername" class="text-2xl font-bold pt-3"></h1>
 			<p id="userIdDisplay" class="pt-2 text-gray-500 dark:text-gray-400">ID: </p>
 			<p id="onlineStatus" class="pt-2"></p>
