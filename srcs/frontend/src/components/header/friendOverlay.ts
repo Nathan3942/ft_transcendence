@@ -1,8 +1,8 @@
-import { API_BASE } from "../../handler/loginHandler.js";
-import { getLocalId } from "../../helpers/apiHelper.js";
-import type { AddFriendRequest, Friend, FriendRequest, FriendRequestResponse, FriendResponse, PatchFriendRequest } from "../../interfaces/properties.js";
-import { createButton } from "../button/button.js";
-import { renderMessage } from "../popup/popup.js";
+import { API_BASE } from "../../handler/loginHandler";
+import { getLocalId } from "../../helpers/apiHelper";
+import type { AddFriendRequest, Friend, FriendRequest, FriendRequestResponse, FriendResponse, PatchFriendRequest } from "../../interfaces/properties";
+import { createButton } from "../button/button";
+import { renderMessage } from "../popup/popup";
 
 export function buildFriendOverlay(): HTMLDivElement {
 	const overlay = document.createElement("div");
@@ -93,9 +93,6 @@ async function getFriendList(id: number): Promise<FriendResponse> {
 	if (resp.ok) {
 		const respJson = await resp.json() as FriendResponse
 		return respJson;
-	} else if (resp.status === 404 && resp.text.length == 0) {
-		renderMessage("You appear to be offline, please try again later.");
-		throw new Error(`You appear to be offline, please try again later.`);
 	} else if (resp.status === 404) {
 		throw new Error(`404: The specified user does not seem to exist.`);
 	} else {
@@ -116,10 +113,6 @@ async function removeFriend(id: number): Promise<string> {
 	} else if (resp.status === 403) {
 		console.error("Error 403: User does not have the rights to terminate this friendship");
 		return "Error: User does not have the rights to terminate this friendship";
-	} else if (resp.status === 404 && resp.text.length === 0) {
-		console.error("Error 404: You appear to be offline, please try again later");
-		renderMessage("You appear to be offline, please try again later.");
-		return "You appear to be offline, please try again later.";
 	} else if (resp.status === 404) {
 		console.error(`Error 404: You are not friends with ${id}`);
 		return `Error, you are not friends with ${id}`;
@@ -141,8 +134,6 @@ async function getFriendRequests(id: number): Promise<FriendRequestResponse> {
 		return jsonResp;
 	} else if (resp.status === 403) {
 		throw new Error("Error: 403: You do not have permission to view this users friend requests");
-	} else if (resp.status === 404 && resp.text.length === 0) {
-		throw new Error("You appear to be offline, please try again later.");
 	} else if (resp.status === 404) {
 		throw new Error("Error: 404: The requested user was not found");
 	} else {
@@ -168,8 +159,6 @@ async function replyToFriendRequest(state: "accept" | "reject", uid: number, fri
 		return "Error: 400: Invalid action performed";
 	} else if (resp.status === 403) {
 		return "Error: 403: You do not have permission to view this users friend requests";
-	} else if (resp.status === 404 && resp.text.length === 0) {
-		return "You appear to be offline, please try again later.";
 	} else if (resp.status === 404) {
 		return "Error: 404: The requested user was not found";
 	} else {
@@ -224,12 +213,11 @@ export async function populateFriendOverlay(mode: number): Promise<void> {
 					statusMsg.classList.add("text-red-500");
 
 				if (resp.status === 404 && resp.text.length === 0) {
-					console.error("Error 404: You appear to be offline, please try again later");
-					statusMsg.innerText = `You appear to be offline, please try again later`;
-					renderMessage("You appear to be offline, please try again later.");
+					console.error("Error 404: The user you are trying to friend cannot be found");
+					statusMsg.innerText = `Error 404: The user you are trying to friend cannot be found`;
 				} else {
-					console.error(`Error: ${resp.status}: ${resp.text}`);
-					statusMsg.innerText = `Error: ${resp.status}: ${resp.text}`;
+					console.error(`Error: ${resp.status}: ${resp.statusText}`);
+					statusMsg.innerText = `Error: ${resp.status}: ${resp.statusText}`;
 				}
 			}
 		})
