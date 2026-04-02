@@ -52,6 +52,7 @@ export default async function initUserProfile(): Promise<void> {
 	// Initialisation of document elements
 	const pfp = document.getElementById("profilePfp") as HTMLImageElement;
 	const username = document.getElementById("profileUsername") as HTMLHeadingElement;
+	const userIdDisplay = document.getElementById("userIdDisplay") as HTMLParagraphElement;
 	const onlineStatus = document.getElementById("onlineStatus") as HTMLParagraphElement;
 
 	const userStatsDiv = document.getElementById("userStats") as HTMLDivElement;
@@ -97,7 +98,11 @@ export default async function initUserProfile(): Promise<void> {
 	username.innerText = userInfo.username;
 	if (userInfo.avatar_url)
 		pfp.src = userInfo.avatar_url;
+	if (userIdDisplay)
+		userIdDisplay.append(`${userInfo.id}`);
 	if (userInfo.is_online) {
+		onlineStatus.classList.remove("text-gray-500", "dark:text-gray-400");
+		onlineStatus.classList.add("text-green-700", "text-green-500");
 		onlineStatus.innerText = "Online";
 	} else {
 		onlineStatus.innerText = "Offline";
