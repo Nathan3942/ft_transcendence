@@ -9,6 +9,7 @@ export function createButton(props: buttonProps): HTMLButtonElement {
 
 	if (props.icon) {
 		const img = document.createElement("img");
+		img.id = props.iconId ?? "";
 		img.src = props.icon;
 		img.alt = props.iconAlt ?? "";
 		img.className = props.iconBClass ?? "";
