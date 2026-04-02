@@ -1,8 +1,8 @@
-import { logoutHandler } from "../../handler/loginHandler.js";
-import { getLocalUserAvatar } from "../../helpers/avatarHelper.js";
-import { getItem } from "../../helpers/localStoragehelper.js";
-import { createButton } from "../button/button.js";
-import { populateFriendOverlay } from "./friendOverlay.js";
+import { logoutHandler } from "../../handler/loginHandler";
+import { BASE_PFP, getLocalUserAvatar } from "../../helpers/avatarHelper";
+import { getItem } from "../../helpers/localStoragehelper";
+import { createButton } from "../button/button";
+import { populateFriendOverlay } from "./friendOverlay";
 
 export default function createHeader(): HTMLHeadElement {
 
@@ -48,14 +48,21 @@ export default function createHeader(): HTMLHeadElement {
 			})
 		);
 
+		const avatar = getLocalUserAvatar();
+		let bclasses = ""
+		if (avatar == BASE_PFP)
+			bclasses = "h-8 w-8 dark:invert";
+		else
+			bclasses = "h-8 w-8";
+
 		const userProfileBtn = createButton({
 				id: "user-profile-dropdown",
 				extraClasses: "relative group",
 				// f: () => show user menu dropdown
-				icon: getLocalUserAvatar(),
+				icon: avatar,
 				iconId: "header-user-pfp",
 				iconAlt: "Icon",
-				iconBClass: "h-8 w-8 dark:invert"
+				iconBClass: bclasses
 			});
 
 		userProfileBtn.append(bridge, userDropdown);
