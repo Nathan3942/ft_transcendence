@@ -26,6 +26,7 @@ export default function createHeader(): HTMLHeadElement {
 		const bridge = document.createElement("div");
 		bridge.className = "absolute w-full h-4 right-0 z-10 group-hover:visible";
 
+		userDropdown.id = "userDropdown"
 		userDropdown.className = "invisible opacity-0 absolute mt-3.5 right-0 px-2 bg-gray-200 dark:bg-gray-800 shadow-lg py-2 transition-opacity duration-150 group-hover:visible group-hover:opacity-100 z-10";
 		userDropdown.append((
 			createButton({
@@ -58,7 +59,16 @@ export default function createHeader(): HTMLHeadElement {
 		const userProfileBtn = createButton({
 				id: "user-profile-dropdown",
 				extraClasses: "relative group",
-				// f: () => show user menu dropdown
+				f: () => {
+					const isOpen = !userDropdown.classList.contains("invisible");
+					if (isOpen) {
+						userDropdown.classList.add("invisible", "opacity-0");
+						userDropdown.classList.remove("opacity-100");
+					} else {
+						userDropdown.classList.remove("invisible", "opacity-0");
+						userDropdown.classList.add("opacity-100");
+					}
+				},
 				icon: avatar,
 				iconId: "header-user-pfp",
 				iconAlt: "Icon",
