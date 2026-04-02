@@ -12,6 +12,7 @@
 
 import { createButton } from "../components/button/button";
 import makeButtonBlock from "../components/button/buttonBlock";
+import createSoftBackLoad from "../components/button/softLoadButton";
 import { startPong } from "../game/pong";
 import type { PongInput, PongState } from "../game/pong_core";
 
@@ -509,8 +510,10 @@ export default function createLocalTournament(): HTMLDivElement {
     const outer = document.createElement("div");
 	const inner = document.createElement("div");
 
-	outer.className = "flex flex-1 flex-col justify-center items-center";
+	outer.className = "overflow-y-auto flex flex-1 flex-col justify-center items-center";
 	inner.className = "text-3xl w-9/12 h-2/3 flex flex-col items-center gap-8";
+
+	outer.append(createSoftBackLoad("bg-cyan-300 dark:bg-cyan-900", "/game-local"))
 
     const fromBlock = document.createElement("div");
     fromBlock.className = "w-full flex flex-col gap-3 p-6 bg-blue-300 dark:bg-blue-900 rounded-xl";

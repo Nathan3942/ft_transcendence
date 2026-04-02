@@ -10,6 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+import createBackButton from "../components/button/backButton.js";
 import { createButton } from "../components/button/button.js";
 import makeButtonBlock from "../components/button/buttonBlock.js";
 import { getRouter } from "../handler/routeHandler.js";
@@ -24,10 +25,11 @@ export default function createGameOnlinePage(): HTMLDivElement {
 	outer.className = "flex flex-col flex-1 justify-center items-end"
 	inner.className = "text-3xl w-9/12 h-2/3 flex flex-col items-end justify-evenly";
 
+	outer.append(createBackButton("bg-green-300 dark:bg-green-900", "/"));
 	
 	const btnClasses = "w-full h-full flex flex-row p-4"; 
 	inner.append(
-		makeButtonBlock("bg-yellow-300 dark:bg-green-900", createButton({
+		makeButtonBlock("bg-green-300 dark:bg-green-800", createButton({
 			id: "create-match-button",
 			extraClasses:btnClasses,
 			buttonText: "Create Match",
@@ -39,7 +41,7 @@ export default function createGameOnlinePage(): HTMLDivElement {
 			iconBClass: "h-10 pr-3 dark:invert"
 			})
 		),
-		makeButtonBlock("bg-yellow-400 dark:bg-yellow-900", createButton({
+		makeButtonBlock("bg-lime-200 dark:bg-lime-800", createButton({
 			id: "create-tournament-button",
 			extraClasses: btnClasses,
 			buttonText: "Create Tournament",
@@ -53,7 +55,7 @@ export default function createGameOnlinePage(): HTMLDivElement {
 			iconBClass: "h-10 pr-3 dark:invert"
 			})
 		),
-		makeButtonBlock("bg-orange-400 dark:bg-orange-900", createButton({
+		makeButtonBlock("bg-emerald-300 dark:bg-emerald-900", createButton({
 			id: "browse-matches-button",
 			extraClasses: btnClasses,
 			buttonText: "Browse Games",

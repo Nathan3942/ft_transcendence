@@ -1,3 +1,5 @@
+import createBackButton from "../components/button/backButton";
+
 export default function buildAboutPage(): HTMLDivElement {
 	const outer = document.createElement("div");
 	outer.className = "flex flex-1 justify-center overflow-y-auto";
@@ -97,5 +99,8 @@ export default function buildAboutPage(): HTMLDivElement {
 			</div>
 		</div>
 	`
+
+	outer.append(createBackButton("bg-purple-300 dark:bg-purple-900", "/"));
+
 	return outer;
 }

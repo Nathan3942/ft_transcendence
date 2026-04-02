@@ -12,12 +12,15 @@
 
 import { createButton } from "../components/button/button.js";
 import makeButtonBlock from "../components/button/buttonBlock.js";
+import createSoftBackLoad from "../components/button/softLoadButton.js";
 import { getRouter } from "../handler/routeHandler.js";
 
 
 export default function chooseBrowse(): HTMLDivElement {
 	const outer = document.createElement("div");
 	const inner = document.createElement("div");
+
+	outer.append(createSoftBackLoad("bg-emerald-300 dark:bg-emerald-900", "/game-online"))
 
 	outer.className = "flex flex-col flex-1 justify-center items-end"
 	inner.className = "text-3xl w-9/12 h-2/3 flex flex-col items-end justify-evenly";
