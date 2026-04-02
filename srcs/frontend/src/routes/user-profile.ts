@@ -29,7 +29,7 @@ export default function buildUserProfile(): HTMLDivElement {
 			<img id="profilePfp" src="assets/images/user-svgrepo-com.svg" alt="avatar" class="w-20 h-20 border-2 border-gray-300 dark:border-gray-700">
 			<h1 id="profileUsername" class="text-2xl font-bold pt-3"></h1>
 			<p id="userIdDisplay" class="pt-2 text-gray-500 dark:text-gray-400">ID: </p>
-			<p id="onlineStatus" class="pt-2 text-gray-500 dark:text-gray-400"></p>
+			<p id="onlineStatus" class="pt-2"></p>
 		</section>
 		<section class="w-5/6 h-full flex flex-col pl-4">
 			<div class="flex flex-col mt-4">

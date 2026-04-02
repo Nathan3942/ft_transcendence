@@ -101,10 +101,10 @@ export default async function initUserProfile(): Promise<void> {
 	if (userIdDisplay)
 		userIdDisplay.append(`${userInfo.id}`);
 	if (userInfo.is_online) {
-		onlineStatus.classList.remove("text-gray-500", "dark:text-gray-400");
 		onlineStatus.classList.add("text-green-700", "text-green-500");
 		onlineStatus.innerText = "Online";
 	} else {
+		onlineStatus.classList.add("text-gray-500", "dark:text-gray-400");
 		onlineStatus.innerText = "Offline";
 	}
 
