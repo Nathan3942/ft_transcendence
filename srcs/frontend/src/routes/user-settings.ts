@@ -5,7 +5,7 @@ export default function createUserSettingsPage(): HTMLDivElement {
 	const outer = document.createElement("div");
 	outer.className = "overflow-y-auto flex flex-1 flex-col bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white";
 
-	const sectionClasses = "mt-8 ml-6 w-5/6";
+	const sectionClasses = "mt-8 mx-4 md:ml-6 md:mr-0 md:w-5/6";
 	const inputClasses = [
 		"mt-1 w-full px-3 py-2",
 		"bg-white dark:bg-gray-800",
@@ -19,14 +19,14 @@ export default function createUserSettingsPage(): HTMLDivElement {
 	const labelClasses = "block text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-1";
 
 	outer.innerHTML = `
-		<div class="pl-6 pt-8 flex items-center gap-3">
+		<div class="px-4 md:pl-6 pt-8 flex items-center gap-3">
 			<span class="font-mono font-black text-xl tracking-tight uppercase text-gray-900 dark:text-white animate-blink">
 				▐ User Settings</span>
 		</div>
 
-		<section class="flex flex-1 flex-row">
+		<section class="flex flex-1 flex-col md:flex-row">
 
-			<section class="flex flex-col w-3/8">
+			<section class="flex flex-col w-full md:w-3/8">
 			
 				<section class="${sectionClasses}">
 					<p class="${labelClasses}">Avatar</p>
@@ -48,7 +48,7 @@ export default function createUserSettingsPage(): HTMLDivElement {
 					</div>
 				</section>
 
-				<div class="mt-8 ml-6 w-5/6 border-t-2 border-dashed border-gray-300 dark:border-gray-700"></div>
+				<div class="mt-8 mx-4 md:ml-6 md:mr-0 md:w-5/6 border-t-2 border-dashed border-gray-300 dark:border-gray-700"></div>
 
 				<section class="${sectionClasses}">
 					<p class="${labelClasses} text-base mb-3">▸ Profile Info</p>
@@ -71,7 +71,7 @@ export default function createUserSettingsPage(): HTMLDivElement {
 					</form>
 				</section>
 
-				<div class="mt-8 ml-6 w-5/6 border-t-2 border-dashed border-gray-300 dark:border-gray-700"></div>
+				<div class="mt-8 mx-4 md:ml-6 md:mr-0 md:w-5/6 border-t-2 border-dashed border-gray-300 dark:border-gray-700"></div>
 
 				<section class="${sectionClasses} mb-12">
 					<p class="${labelClasses} text-base mb-3">▸ Change Password</p>
@@ -101,8 +101,8 @@ export default function createUserSettingsPage(): HTMLDivElement {
 
 			</section>
 			
-			<section class="flex flex-col w-3/8">
-				<p class="${labelClasses}">Delete Account</p>
+			<section class="flex flex-col w-full md:w-3/8 mx-4 md:mx-0 mb-12">
+				<p class="${labelClasses} mt-8 md:mt-8">Delete Account</p>
 				<button id="deleteButton"></button>
 				<div id="confirmationDiv" class="hidden">
 					<p class="w-2/3 text-orange-500 mt-5">Are you sure you want to delete your account? <span class="font-bold">This action is irreversable!!</span></p>
