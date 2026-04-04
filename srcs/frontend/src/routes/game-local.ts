@@ -98,7 +98,7 @@ export default function createGameLocalPage(): HTMLDivElement {
 
 	outer.append(createBackButton("bg-blue-300 dark:bg-blue-900", "/"));
 
-	const btnClasses = "flex flex-row p-4"; 
+	const btnClasses = "flex flex-row p-4 w-full"; 
 	inner.append(
 		makeButtonBlock("bg-blue-300 dark:bg-blue-900", createButton({
 			id: "vs-ai-button",

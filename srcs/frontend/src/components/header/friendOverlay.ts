@@ -2,7 +2,6 @@ import { API_BASE } from "../../handler/loginHandler";
 import { getLocalId } from "../../helpers/apiHelper";
 import type { AddFriendRequest, Friend, FriendRequest, FriendRequestResponse, FriendResponse, PatchFriendRequest } from "../../interfaces/properties";
 import { createButton } from "../button/button";
-import { renderMessage } from "../popup/popup";
 
 export function buildFriendOverlay(): HTMLDivElement {
 	const overlay = document.createElement("div");
@@ -17,7 +16,7 @@ export function buildFriendOverlay(): HTMLDivElement {
 		"bg-gray-100/20", "dark:bg-gray-900/30");
 
 	rightElement.innerHTML = `
-		<button id="closeFriendOverlayButton"></button>
+		<button id="closeFriendOverlayButton" class="cursor-pointer"></button>
 	`;
 
 	const leftElement = document.createElement("div");
@@ -47,7 +46,7 @@ export function buildFriendOverlay(): HTMLDivElement {
 	leftElement.innerHTML = `
 
 		<div class="flex md:hidden fixed right-0 pt-2 pr-2">
-			<button id="closeFriendOverlayMobile" class="text-gray-600 dark:text-gray-300 hover:text-red-500 dark:hover:text-red-400 text-2xl leading-none px-2 py-1">✕</button>
+			<button id="closeFriendOverlayMobile" class="text-gray-600 dark:text-gray-300 hover:text-red-500 dark:hover:text-red-400 text-2xl leading-none px-2 py-1 cursor-pointer">✕</button>
 		</div>
 		<section class="pt-4 m-4">
 			<h1 class="text-2xl animate-blink">▐ Add Friend</h1>

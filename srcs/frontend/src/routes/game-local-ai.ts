@@ -299,7 +299,7 @@ export default function createLocalAIGamePage(): HTMLDivElement {
 
 	outer.append(createBackButton("bg-blue-300 dark:bg-blue-900", "/game-local"));
 
-	const btnClasses = "flex flex-row p-4"; 
+	const btnClasses = "flex flex-row p-4 w-full"; 
 	inner.append(
 		makeButtonBlock("bg-cyan-300 dark:bg-cyan-900", createButton({
 			id: "diff-easy-btn",

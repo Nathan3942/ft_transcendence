@@ -14,8 +14,8 @@ import createBackButton from "../components/button/backButton.js";
 import { createButton } from "../components/button/button.js";
 import makeButtonBlock from "../components/button/buttonBlock.js";
 import { getRouter } from "../handler/routeHandler.js";
-import { createOnlineMatch, createOnlineTournament } from "../services/online.js";
-import { setCurrentMatchId, getCurrentMatchId, setCurrentTournamentId } from "../services/onlineStore.js";
+import { createOnlineTournament } from "../services/online.js";
+import { setCurrentTournamentId } from "../services/onlineStore.js";
 
 
 export default function createGameOnlinePage(): HTMLDivElement {
@@ -27,7 +27,7 @@ export default function createGameOnlinePage(): HTMLDivElement {
 
 	outer.append(createBackButton("bg-green-300 dark:bg-green-900", "/"));
 	
-	const btnClasses = "w-full h-full flex flex-row p-4"; 
+	const btnClasses = "w-full h-full flex flex-row p-4 w-full"; 
 	inner.append(
 		makeButtonBlock("bg-green-300 dark:bg-green-800", createButton({
 			id: "create-match-button",
