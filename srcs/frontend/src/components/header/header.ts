@@ -1,4 +1,5 @@
 import { logoutHandler } from "../../handler/loginHandler";
+import { getLocalId } from "../../helpers/apiHelper";
 import { BASE_PFP, getLocalUserAvatar } from "../../helpers/avatarHelper";
 import { getItem } from "../../helpers/localStoragehelper";
 import { createButton } from "../button/button";
@@ -31,7 +32,7 @@ export default function createHeader(): HTMLHeadElement {
 		userDropdown.append((
 			createButton({
 				id: "user-profile-button",
-				href: "/user-profile",
+				href: `/user-profile/${getLocalId()}`,
 				buttonText: "Profile",
 				extraClasses: "hover:opacity-80"
 			})),

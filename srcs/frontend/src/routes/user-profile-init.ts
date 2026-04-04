@@ -1,9 +1,25 @@
+import { createButton } from "../components/button/button.js";
 import { renderMessage } from "../components/popup/popup.js";
 import { API_BASE } from "../handler/loginHandler.js";
 import { getLocalId } from "../helpers/apiHelper.js";
-import { getLocalUserAvatar } from "../helpers/avatarHelper.js";
+import { BASE_PFP, getLocalUserAvatar } from "../helpers/avatarHelper.js";
 import { getItem } from "../helpers/localStoragehelper.js";
-import type { user, userMatchHistoryResponse, userStatsResponse } from "../interfaces/properties.js";
+import type { RouteParams, user, userMatchHistoryResponse, userStatsResponse } from "../interfaces/properties.js";
+
+async function fetchUser(userId: number): Promise<user> {
+	const resp = await fetch(`${API_BASE}/users/${userId}`, {
+		method: "GET",
+		credentials: "include"
+	});
+
+	if (resp.ok) {
+		const respJson = await resp.json() as { data: user };
+		return respJson.data;
+	} else if (resp.status === 404)
+		throw new Error("404: User not found");
+	else
+		throw new Error(`Unexpected error: ${resp.status}`);
+}
 
 async function fetchUserStats(userId: number): Promise<userStatsResponse> {
 	const resp = await fetch(`${API_BASE}/users/${userId}/stats`, {
@@ -16,10 +32,7 @@ async function fetchUserStats(userId: number): Promise<userStatsResponse> {
 		return respJson;
 	} else if (resp.status === 400)
 		throw new Error("400: Invalid user ID");
-	else if (resp.status === 404 && resp.text.length === 0) {
-		renderMessage("You appear to be offline, please try again later.");
-		throw new Error("404: Offline");
-	} else if (resp.status === 404)
+	else if (resp.status === 404)
 		throw new Error("404: User not found");
 	else
 		throw new Error(`Unexpected error: ${resp.status}`);
@@ -38,16 +51,13 @@ async function fetchMatchHistory(userId: number): Promise<userMatchHistoryRespon
 		throw new Error("400: Invalid user ID");
 	else if (resp.status === 401)
 		throw new Error("401: Not authenticated")
-	else if (resp.status === 404 && resp.text.length === 0) {
-		renderMessage("You appear to be offline, please try again later.");
-		throw new Error("404: Offline");
-	} else if (resp.status === 404)
+	else if (resp.status === 404)
 		throw new Error("404: User not found");
 	else
 		throw new Error(`Unexpected error: ${resp.status}`);
 }
 
-export default async function initUserProfile(): Promise<void> {
+export default async function initUserProfile(params?: RouteParams): Promise<void> {
 
 	// Initialisation of document elements
 	const pfp = document.getElementById("profilePfp") as HTMLImageElement;
@@ -59,7 +69,7 @@ export default async function initUserProfile(): Promise<void> {
 	const matchHistoryTable = document.getElementById("matchHistory") as HTMLTableElement;
 
 	// Initialisation of user stats
-	const id = getLocalId();
+	const id = params?.id ? parseInt(params.id, 10) : null;
 	if (!id) {
 		console.error("Error: No user id found, cannot load statistics");
 		userStatsDiv.innerHTML = `
@@ -74,26 +84,30 @@ export default async function initUserProfile(): Promise<void> {
 		`
 		return ;
 	}
+	
+	let userInfo: user;
 
-	let  userInfo: user | string;
-	
-	
-	/* if (id == getLocalId()) { */
-		 userInfo = {
+	if (id === getLocalId()) {
+		userInfo = {
 			id: id,
 			username: getItem<string>("username") ?? "null",
 			display_name: getItem<string>("display_name") ?? "null",
 			avatar_url: getLocalUserAvatar(),
 			is_online: getItem<boolean>("is_online") ?? false
 		};
-	/* } else {
-		userInfo = getOnlineUser();
-		if (typeof userInfo === "string" ) {
-			console.warn(`Warning: Cannot get user information for id: ${id} for reason "${userInfo}"... Aborting page init`);
-
+	} else {
+		try {
+			userInfo = await fetchUser(id);
+		} catch (e) {
+			console.error(`Error: Cannot get user information for id ${id}: ${e}`);
+			pfp.src = BASE_PFP;
+			username.innerText = "User not found";
+			userIdDisplay.append(`${id}`);
+			userStatsDiv.innerHTML = `<div class="col-span-4 pl-6">User not found.</div>`;
+			matchHistoryTable.innerHTML = `<div class="pl-6">User not found.</div>`;
 			return ;
-		};
-	} */
+		}
+	}
 
 	username.innerText = userInfo.username;
 	if (userInfo.avatar_url)
@@ -112,17 +126,6 @@ export default async function initUserProfile(): Promise<void> {
 	try {
 		const dataStats = await fetchUserStats(id);
 		const userStats = dataStats.data;
-
-		// Test Values
-		/* const userStats = {
-			userId: 1,
-			username: "Player1",
-			totalMatches: 100,
-			wins: 70,
-			losses: 30,
-			winrate: 0.7,
-			tournamentsWon: 5,
-		}; */
 
 		document.getElementById("totalMatches")!.textContent = userStats.totalMatches.toString();
 		document.getElementById("tournamentsWon")!.textContent = userStats.tournamentsWon.toString();
@@ -173,7 +176,12 @@ export default async function initUserProfile(): Promise<void> {
 			const cell5 = newRow.insertCell(4); // Date
 
 			cell1.textContent = match.matchId.toString();
-			cell2.textContent = match.opponentName; // Make button that rerouts to opponents profile
+			cell2.append(createButton({
+				buttonText: match.opponentName,
+				href: `/user-profile/${match.opponentId}`,
+				id: `profile-button-${match.opponentId}`,
+				extraClasses: "hover:opacity-80"
+			}));
 			cell3.textContent = `${match.userScore} - ${match.opponentScore}`;
 			if (match.won)
 				cell4.classList.add("text-green-600", "dark:text-green-400");

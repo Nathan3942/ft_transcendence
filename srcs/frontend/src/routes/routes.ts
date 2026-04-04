@@ -28,7 +28,7 @@ export const routes: Route[] = [
 		// guarded: [authGuard]
 	},
 	{
-		path: "/user-profile",
+		path: "/user-profile/:id",
 		component: lazy(() => import("./user-profile")),
 		init: lazyInit(() => import("./user-profile-init")),
 		guarded: [authGuard]
