@@ -102,7 +102,7 @@ function createLoginForm(): HTMLDivElement {
 			}
 			console.log("Login succeeded:", result);
 
-			window.location.href = "/dashboard";
+			window.location.href = "/";
 		} catch (err: any) {
 			console.error(err);
 			errorMsg.textContent = err ?? "Login failed";
@@ -247,7 +247,7 @@ function createRegistrationForm(): HTMLDivElement {
 				throw new Error(`Unexpected error: ${result}`);
 			}
 
-			window.location.href = "/dashboard";
+			window.location.href = "/";
 		} catch(err: any) {
 			console.error(err);
 			errorMsg.innerText = err ?? "Registration failed";
