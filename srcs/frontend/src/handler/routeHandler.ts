@@ -1,5 +1,5 @@
 import { renderError } from "../components/popup/popup.js";
-import type { Route } from "../interfaces/properties.js";
+import type { Route, RouteParams } from "../interfaces/properties.js";
 import create404Page from "../routes/404page.js";
 import createTestPage from "../routes/test.js";
 import { authenticate } from "./loginHandler.js";
@@ -59,10 +59,41 @@ export class Router {
 		}
 	};
 
+	private findMatchingRoutes(path: string): { route: Route, params: RouteParams} | null {
+		const urlSegments = path.split("/").filter(s => s.length > 0);
+
+		for (const [storedPath, route] of this.routeMap.entries()) {
+			const routeSegments = storedPath.split("/").filter(s => s.length > 0);
+			const params: Record<string, string> = {};
+			let isMatch = true;
+
+			if (urlSegments.length !== routeSegments.length)
+				continue;
+
+			for (let i = 0; i < routeSegments.length; ++i) {
+				const routePart = routeSegments[i];
+				const urlPart = urlSegments[i];
+
+				if (routePart.startsWith(":")) {
+					const paramName = routePart.slice(1);
+					params[paramName] = urlPart;
+				} else if (routePart !== urlPart) {
+					isMatch = false;
+					break;
+				}
+			}
+			if (isMatch)
+				return {route, params};
+		}
+		return null;
+	}
+
 	private async handleLocation(path: string): Promise<void> {
-		const route = this.routeMap.get(path) ?? this.routeMap.get("*");
-		if (!route)
+		const match = this.findMatchingRoutes(path);
+		if (!match)
 			return this.renderNotFound();
+
+		const {route, params} = match;
 
 		if (route.guarded) {
 			for (const g of route.guarded) {
@@ -77,10 +108,10 @@ export class Router {
 		}
 
 		try {
-			const component = await route.component();
+			const component = await route.component(params);
 			this.replaceRoot(component);
 			if (route.init)
-				route.init()
+				route.init(params)
 		} catch (err) {
 			console.error("Failed to load component for", path, err);
 			renderError(`Component for: ${path} failed to load...`);

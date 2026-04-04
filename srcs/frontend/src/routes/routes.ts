@@ -2,12 +2,19 @@ import { authGuard} from "../handler/routeHandler.js";
 import type { Route } from "../interfaces/properties.js";
 
 const lazy = <T extends HTMLElement>(
-	loader: () => Promise<{default: () => T | Promise<T>}>
-) => async () => (await loader()).default();
+	loader: () => Promise<{default: (params?: Record<string, string>) => T | Promise<T>}>
+	) => async (params?: Record<string, string>) => {
+	const module = await loader();
+	return module.default(params);
+};
 
 const lazyInit = (
-	loader: () => Promise<{default: () => void | Promise<void>}>
-) => async () => (await loader()).default();
+	loader: () => Promise<{ default: (params?: Record<string, string>) => void | Promise<void> }>
+	) => async (params?: Record<string, string>) => {
+	const module = await loader();
+	return module.default(params);
+};
+
 
 export const routes: Route[] = [
 	{
