@@ -1,5 +1,4 @@
 import { createButton } from "../components/button/button.js";
-import { renderMessage } from "../components/popup/popup.js";
 import { API_BASE } from "../handler/loginHandler.js";
 import { getLocalId } from "../helpers/apiHelper.js";
 import { BASE_PFP, getLocalUserAvatar } from "../helpers/avatarHelper.js";
@@ -159,7 +158,12 @@ export default async function initUserProfile(params?: RouteParams): Promise<voi
 
 	try {
 
-		const matchHistoryArray = (await fetchMatchHistory(id)).data;
+		// const matchHistoryArray = (await fetchMatchHistory(id)).data;
+		const matchHistoryArray = [
+			{ matchId: 1, opponentId: 2, opponentName: "alice", userScore: 5, opponentScore: 3, won: true, finishedAt: "2026-04-01T12:00:00Z" },
+			{ matchId: 2, opponentId: 3, opponentName: "bob", userScore: 2, opponentScore: 5, won: false, finishedAt: "2026-04-02T14:30:00Z" },
+			{ matchId: 3, opponentId: 4, opponentName: "charlie", userScore: 5, opponentScore: 1, won: true, finishedAt: "2026-04-03T09:15:00Z" },
+		];
 		const tbody = matchHistoryTable.querySelector("tbody")!;
 
 		tbody.innerHTML = "";
@@ -180,7 +184,7 @@ export default async function initUserProfile(params?: RouteParams): Promise<voi
 				buttonText: match.opponentName,
 				href: `/user-profile/${match.opponentId}`,
 				id: `profile-button-${match.opponentId}`,
-				extraClasses: "hover:opacity-80"
+				extraClasses: "hover:opacity-80 cursor-pointer"
 			}));
 			cell3.textContent = `${match.userScore} - ${match.opponentScore}`;
 			if (match.won)
