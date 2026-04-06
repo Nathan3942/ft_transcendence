@@ -115,7 +115,7 @@ export default function createUserSettingsPage(): HTMLDivElement {
 				<div class="mt-8 mx-4 md:ml-6 md:mr-0 md:w-5/6 border-t-2 border-dashed border-gray-300 dark:border-gray-700"></div>
 
 				<section class="${sectionClasses} mb-12">
-					<p class="${labelClasses} text-base mb-3">▸ ${t("dangerZone")}</p>
+					<p class="${labelClasses} text-base mb-3">▸ ${t("settings.dangerZone")}</p>
 					<p class="${labelClasses}">${t("settings.deleteAccount")}</p>
 					<button id="deleteButton"></button>
 					<div id="confirmationDiv" class="hidden">
