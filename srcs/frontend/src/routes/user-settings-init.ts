@@ -1,9 +1,10 @@
-import { createButton } from "../components/button/button.js";
-import { renderError, renderMessage } from "../components/popup/popup.js";
-import { API_BASE, authenticate, clearLoginInfo, redirectToLogin } from "../handler/loginHandler.js";
-import { getLocalId } from "../helpers/apiHelper.js";
-import { getLocalUserAvatar } from "../helpers/avatarHelper.js";
-import { getItem, setItem } from "../helpers/localStoragehelper.js";
+import { createButton } from "../components/button/button";
+import { renderError, renderMessage } from "../components/popup/popup";
+import { API_BASE, authenticate, clearLoginInfo, redirectToLogin } from "../handler/loginHandler";
+import { getLocalId } from "../helpers/apiHelper";
+import { getLocalUserAvatar } from "../helpers/avatarHelper";
+import { getItem, setItem } from "../helpers/localStoragehelper";
+import { setLocale } from "../i18n/i18n";
 
 export default function initUSerSettings(): void {
 
@@ -25,7 +26,9 @@ export default function initUSerSettings(): void {
 	const confirmationButton = document.getElementById("confirmationButton") as HTMLButtonElement;
 	const deleteStatus = document.getElementById("deleteStatus") as HTMLParagraphElement;
 
-	const headerAvatar = document.getElementById("header-user-pfp") as HTMLImageElement; 
+	const headerAvatar = document.getElementById("header-user-pfp") as HTMLImageElement;
+
+	const languageDropdownButton = document.getElementById("language-settings-button") as HTMLButtonElement;
 
 	// Declaration of Functions
 	async function uploadAvatar(file: File): Promise<string> {
@@ -197,14 +200,62 @@ export default function initUSerSettings(): void {
 		})
 	}
 
+	const languageButtonClasses = [
+		"w-full px-4 py-1 text-left cursor-pointer",
+		"text-gray-800 dark:text-gray-100",
+		"hover:bg-gray-300 dark:hover:bg-gray-600"
+	].join(" ")
+	
+	if (languageDropdownButton) {
+		const newLanguageButton = createButton({
+			id: "language-settings-button",
+			extraClasses: [
+				"px-3 py-1.5 text-left cursor-pointer relative group",
+				"bg-gray-100 dark:bg-gray-800",
+				"hover:bg-gray-300 dark:hover:bg-gray-600",
+				"text-gray-800 dark:text-gray-100",
+				"border border-gray-400 dark:border-gray-500",
+				"transition-colors duration-100"
+			].join(" "),
+			buttonText: `${getItem("locale") ?? "en"} ▾`
+		});
+
+		const languageDropDown = document.createElement("div");
+		languageDropDown.className = [
+			"flex flex-col w-full absolute left-0 top-full z-10",
+			"invisible group-hover:visible",
+			"bg-gray-100 dark:bg-gray-800",
+			"border border-gray-400 dark:border-gray-500",
+			"shadow-md"
+		].join(" ");
+
+		languageDropDown.append(
+			createButton({
+				id: "language-en-button",
+				extraClasses: languageButtonClasses,
+				buttonText: "en",
+				f: () => setLocale("en")
+			}),
+			createButton({
+				id: "language-fr-button",
+				extraClasses: languageButtonClasses,
+				buttonText: "fr",
+				f: () => setLocale("fr")
+			})
+		);
+
+		newLanguageButton.append(languageDropDown);
+		languageDropdownButton.replaceWith(newLanguageButton);
+	}
+
 	const redButtonClasses = [
-		"w-1/3 py-2 mt-2",
+		"w-full mb:w-2/3 py-2 mt-2",
 		"bg-red-400 dark:bg-red-800",
 		"hover:bg-red-500 hover:dark:bg-red-700",
 		"active:brightness-95 dark:active:brightness-110",
 		"transition-colors duration-100"
-	].join(" ")
-
+	].join(" ");
+	
 	if (deleteButton) {
 
 		deleteButton.replaceWith(createButton({
@@ -231,5 +282,6 @@ export default function initUSerSettings(): void {
 			}
 		}))
 	}
+
 
 }

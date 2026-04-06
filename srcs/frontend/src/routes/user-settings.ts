@@ -1,5 +1,6 @@
 import { getLocalUserAvatar } from "../helpers/avatarHelper.js";
 import { getItem } from "../helpers/localStoragehelper.js";
+import { t } from "../i18n/i18n.js";
 
 export default function createUserSettingsPage(): HTMLDivElement {
 	const outer = document.createElement("div");
@@ -101,14 +102,29 @@ export default function createUserSettingsPage(): HTMLDivElement {
 
 			</section>
 			
-			<section class="flex flex-col w-full md:w-3/8 mx-4 md:mx-0 mb-12">
-				<p class="${labelClasses} mt-8 md:mt-8">Delete Account</p>
-				<button id="deleteButton"></button>
-				<div id="confirmationDiv" class="hidden">
-					<p class="w-2/3 text-orange-500 mt-5">Are you sure you want to delete your account? <span class="font-bold">This action is irreversable!!</span></p>
-					<button id="confirmationButton"></button>
-					<p id="deleteStatus" class="w-2/3 mt-3 text-red-500"></p>
-				</div>
+			<section class="flex flex-col w-full md:w-3/8">
+
+				<section class="${sectionClasses}">
+					<p class="${labelClasses} text-base mb-3">▸ ${t("settings.language")}</p>
+					<button id="language-settings-button" class="relative group">
+						<div id="language-dropdown" class="flex flex-col items-start invisible opacity-0 absolute left-0 mt-1 bg-gray-200 dark:bg-gray-700 shadow-lg py-1 transition-opacity duration-150 group-hover:visible group-hover:opacity-100 z-10">
+						</div>
+					</button>
+				</section>
+
+				<div class="mt-8 mx-4 md:ml-6 md:mr-0 md:w-5/6 border-t-2 border-dashed border-gray-300 dark:border-gray-700"></div>
+
+				<section class="${sectionClasses} mb-12">
+					<p class="${labelClasses} text-base mb-3">▸ Danger Zone</p>
+					<p class="${labelClasses}">Delete Account</p>
+					<button id="deleteButton"></button>
+					<div id="confirmationDiv" class="hidden">
+						<p class="w-2/3 text-orange-500 mt-5">Are you sure you want to delete your account? <span class="font-bold">This action is irreversable!!</span></p>
+						<button id="confirmationButton"></button>
+						<p id="deleteStatus" class="w-2/3 mt-3 text-red-500"></p>
+					</div>
+				</section>
+
 			</section>
 	
 		</section
