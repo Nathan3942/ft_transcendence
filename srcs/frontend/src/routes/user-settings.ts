@@ -75,20 +75,20 @@ export default function createUserSettingsPage(): HTMLDivElement {
 				<div class="mt-8 mx-4 md:ml-6 md:mr-0 md:w-5/6 border-t-2 border-dashed border-gray-300 dark:border-gray-700"></div>
 
 				<section class="${sectionClasses} mb-12">
-					<p class="${labelClasses} text-base mb-3">▸ Change Password</p>
+					<p class="${labelClasses} text-base mb-3">▸ ${t("settings.changePassword")}</p>
 					<form id="pwdForm" class="space-y-4">
 						<div>
-							<label for="currentPwd" class="${labelClasses}">Current Password</label>
+							<label for="currentPwd" class="${labelClasses}">${t("settings.currentPassword")}</label>
 							<input type="password" id="currentPwd" required
 								class="${inputClasses}"/>
 						</div>
 						<div>
-							<label for="newPwd" class="${labelClasses}">New Password</label>
+							<label for="newPwd" class="${labelClasses}">${t("settings.newPassword")}</label>
 							<input type="password" id="newPwd" required minlength="8"
 								class="${inputClasses}"/>
 						</div>
 						<div>
-							<label for="confirmPwd" class="${labelClasses}">Confirm New Password</label>
+							<label for="confirmPwd" class="${labelClasses}">${t("settings.confirmPassword")}</label>
 							<input type="password" id="confirmPwd" required minlength="8"
 								class="${inputClasses}"/>
 						</div>
@@ -115,11 +115,12 @@ export default function createUserSettingsPage(): HTMLDivElement {
 				<div class="mt-8 mx-4 md:ml-6 md:mr-0 md:w-5/6 border-t-2 border-dashed border-gray-300 dark:border-gray-700"></div>
 
 				<section class="${sectionClasses} mb-12">
-					<p class="${labelClasses} text-base mb-3">▸ Danger Zone</p>
-					<p class="${labelClasses}">Delete Account</p>
+					<p class="${labelClasses} text-base mb-3">▸ ${t("dangerZone")}</p>
+					<p class="${labelClasses}">${t("settings.deleteAccount")}</p>
 					<button id="deleteButton"></button>
 					<div id="confirmationDiv" class="hidden">
-						<p class="w-2/3 text-orange-500 mt-5">Are you sure you want to delete your account? <span class="font-bold">This action is irreversable!!</span></p>
+						<p class="text-orange-500 mt-5">${t("settings.deleteAccountConfirmation1")}
+						<br><span class="font-bold">${t("settings.deleteAccountConfirmation2")}</span></p>
 						<button id="confirmationButton"></button>
 						<p id="deleteStatus" class="w-2/3 mt-3 text-red-500"></p>
 					</div>

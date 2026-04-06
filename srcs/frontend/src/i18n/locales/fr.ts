@@ -17,8 +17,18 @@ const fr: TranslationDict = {
 		username: "Nom d'utilisateur",
 		email: "Email",
 		saveChanges: "Enregistrer les Modifications",
+		changePassword: "Modifier le mot de passe",
+		currentPassword: "Mot de passe actuel",
+		newPassword: "Nouveau mot de passe",
 		updatePassword: "Modifier le mot de passe",
-		language: "Langue"
+		confirmPassword: "Confirmer le nouveau mot de passe",
+		language: "Langue",
+		dangerZone: "Zone dangereuse",
+		deleteAccount: "Supprimer le compte",
+		deleteAccountButton: "Supprimer le compte ?",
+		deleteAccountConfirmation1: "Êtes-vous sûr de vouloir supprimer votre compte ?",
+		deleteAccountConfirmation2: "Cette opération est irréversible !!",
+		deleteAccountConfirmed: "Je suis sûr, supprimez mon compte"
 	},
 
 	errors: {

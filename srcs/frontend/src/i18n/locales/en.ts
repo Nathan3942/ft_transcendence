@@ -17,8 +17,18 @@ const en: TranslationDict = {
 		username: "Username",
 		email: "Email",
 		saveChanges: "Save Changes",
+		changePassword: "Change Password",
+		currentPassword: "Current Password",
+		newPassword: "New password",
 		updatePassword: "Update Password",
-		language: "Language"
+		confirmPassword: "Confirm New Password",
+		language: "Language",
+		dangerZone: "Danger Zone",
+		deleteAccount: "Delete Account",
+		deleteAccountButton: "Delete Account?",
+		deleteAccountConfirmation1: "Are you sure you want to delete your account?",
+		deleteAccountConfirmation2: "This action is irreversable!!",
+		deleteAccountConfirmed: "I'm sure, delete my account"
 	},
 
 	errors: {

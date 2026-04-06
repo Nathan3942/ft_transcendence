@@ -261,14 +261,14 @@ export default function initUSerSettings(): void {
 		deleteButton.replaceWith(createButton({
 			id: "deleteButton",
 			extraClasses: redButtonClasses,
-			buttonText: "Delete Account?",
+			buttonText: t("settings.deleteAccountButton"),
 			f: () => {confirmationDiv.classList.remove("hidden")}
 		}));
 
 		confirmationButton.replaceWith(createButton({
 			id: "confirmationButton",
 			extraClasses: redButtonClasses,
-			buttonText: "Im sure, Delete my account",
+			buttonText: t("settings.deleteAccountConfirmed"),
 			f: async () => {
 				const resp = await deleteUser();
 				if (resp === "200") {
