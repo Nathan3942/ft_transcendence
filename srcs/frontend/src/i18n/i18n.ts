@@ -13,7 +13,8 @@ let currentLocale: Locale = (getItem("locale") as Locale) ?? "en";
 
 export function t(key: string): string {
 	return key.split(".").reduce<TranslationValue>((o, k) => {
-		if (typeof o === "string") return o;
+		if (typeof o === "string")
+			return o;
 		return o[k];
 	}, translations[currentLocale]) as string ?? key;
 }
