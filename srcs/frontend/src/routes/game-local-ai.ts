@@ -1,6 +1,7 @@
-import { createButton } from "../components/button/button.js";
-import makeButtonBlock from "../components/button/buttonBlock.js";
-import createBackButton from "../components/button/backButton.js";
+import { createButton } from "../components/button/button";
+import makeButtonBlock from "../components/button/buttonBlock";
+import createBackButton from "../components/button/backButton";
+import { t } from "../i18n/i18n";
 
 import { startPong } from "../game/pong.js";
 /* MODIF 1 : on importe PongEvents pour le callback onGameOver */
@@ -304,14 +305,14 @@ export default function createLocalAIGamePage(): HTMLDivElement {
 		makeButtonBlock("bg-cyan-300 dark:bg-cyan-900", createButton({
 			id: "diff-easy-btn",
 			extraClasses:btnClasses,
-			buttonText: "Easy",
+			buttonText: t("gameLocalAi.easy"),
 			f: () => InitAiGame(1, outer)
 			})
 		),
 		makeButtonBlock("bg-sky-300 dark:bg-sky-900", createButton({
 			id: "diff-medium-btn",
 			extraClasses: btnClasses,
-			buttonText: "Medium",
+			buttonText: t("gameLocalAi.medium"),
 			f: () => InitAiGame(2, outer),
 			href: "/game-local-ai-medium"
 			})
@@ -319,7 +320,7 @@ export default function createLocalAIGamePage(): HTMLDivElement {
 		makeButtonBlock("bg-indigo-300 dark:bg-indigo-900", createButton({
 			id: "diff-hard-btn",
 			extraClasses: btnClasses,
-			buttonText: "Hard",
+			buttonText: t("gameLocalAi.hard"),
 			f: () => InitAiGame(3, outer)
 			})
 		)

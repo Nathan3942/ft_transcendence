@@ -2,6 +2,7 @@ import { logoutHandler } from "../../handler/loginHandler";
 import { getLocalId } from "../../helpers/apiHelper";
 import { BASE_PFP, getLocalUserAvatar } from "../../helpers/avatarHelper";
 import { getItem } from "../../helpers/localStoragehelper";
+import { t } from "../../i18n/i18n";
 import { createButton } from "../button/button";
 import { populateFriendOverlay } from "./friendOverlay";
 
@@ -33,19 +34,19 @@ export default function createHeader(): HTMLHeadElement {
 			createButton({
 				id: "user-profile-button",
 				href: `/user-profile/${getLocalId()}`,
-				buttonText: "Profile",
+				buttonText: t("nav.profile"),
 				extraClasses: "hover:opacity-80"
 			})),
 			createButton({
 				id: "user-settings-button",
 				href: "/user-settings",
-				buttonText: "Settings",
+				buttonText: t("nav.settings"),
 				extraClasses: "hover:opacity-80"
 			}),
 			createButton({
 				id: "logout-button",
 				f: () => logoutHandler(),
-				buttonText: "Logout",
+				buttonText: t("nav.logout"),
 				extraClasses: "hover:opacity-80"
 			})
 		);
@@ -99,13 +100,13 @@ export default function createHeader(): HTMLHeadElement {
 		navbar.append(
 			createButton({
 				id: "leaderboard-header-button",
-				buttonText: "Leaderboard",
+				buttonText: t("nav.leaderboard"),
 				href: "/leaderboard",
 				extraClasses: "hover:text-red-900 dark:hover:text-red-500 transition-colors duration-200"
 			}),
 			createButton({
 				id: "login-header-button",
-				buttonText: "Login",
+				buttonText: t("nav.login"),
 				href: "/login",
 				extraClasses: "hover:text-blue-900 dark:hover:text-blue-400 transition-colors duration-200"
 			})

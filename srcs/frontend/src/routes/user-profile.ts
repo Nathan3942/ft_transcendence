@@ -1,3 +1,5 @@
+import { t } from "../i18n/i18n";
+
 export default function buildUserProfile(): HTMLDivElement {
 	const thClasses = [
 		"py-2 px-4",
@@ -35,14 +37,14 @@ export default function buildUserProfile(): HTMLDivElement {
 		</section>
 		<section class="w-full md:w-5/6 flex flex-col md:pl-4 pt-4 md:pt-0">
 			<div class="flex flex-col mt-4">
-				<h2 class="text-xl font-bold mb-2 text-gray-800 dark:text-white">▐ User Stats</h2>
+				<h2 class="text-xl font-bold mb-2 text-gray-800 dark:text-white">▐ ${t("profile.userStats")}</h2>
 				<div id="userStats" class="w-full grid grid-cols-2 md:grid-cols-4 gap-4">
 					<div class="${statBoxClasses}">
-						<h2 class="${h2Classes}">Total Matches</h2>
+						<h2 class="${h2Classes}">${t("profile.totalMatches")}</h2>
 						<p id="totalMatches" class="text-3xl"></p>
 					</div>
 					<div class="${statBoxClasses}">
-						<h2 class="${h2Classes}">Tournaments Won</h2>
+						<h2 class="${h2Classes}">${t("profile.tournamentsWon")}</h2>
 						<p id="tournamentsWon" class="text-3xl"></p>
 					</div>
 					<div class="${statBoxClasses} relative">
@@ -76,27 +78,27 @@ export default function buildUserProfile(): HTMLDivElement {
 					</div>
 					<div class="${statBoxClasses} flex flex-col justify-evenly">
 						<div class="flex flex-row justify-center">
-							<p class="pr-1 text-gray-600 dark:text-gray-300">Wins:</p>
+							<p class="pr-1 text-gray-600 dark:text-gray-300">${t("profile.wins")}:</p>
 							<p id="wins" class="font-bold"></p>
 						</div>
 						<div class="flex flex-row justify-center">
-							<p class="pr-1 text-gray-600 dark:text-gray-300">Losses:</p>
+							<p class="pr-1 text-gray-600 dark:text-gray-300">${t("profile.losses")}:</p>
 							<p id="losses" class="font-bold"></p>
 						</div>
 					</div>
 				</div>
 			</div>
 			<div class="mt-6 flex-1 overflow-y-auto">
-				<h2 class="text-xl font-bold mb-2 text-gray-800 dark:text-white">▐ Match History</h2>
+				<h2 class="text-xl font-bold mb-2 text-gray-800 dark:text-white">▐ ${t("profile.matchHistory")}</h2>
 				<div class="overflow-x-auto">
 					<table id="matchHistory" class="w-full border border-gray-200 dark:border-gray-700">
 						<thead>
 							<tr>
-								<th class="${thClasses} hidden md:table-cell">Match ID</th>
-								<th class="${thClasses}">Opponent</th>
-								<th class="${thClasses}">Score</th>
-								<th class="${thClasses}">Result</th>
-								<th class="${thClasses}">Date</th>
+								<th class="${thClasses} hidden md:table-cell">${t("profile.matchId")}</th>
+								<th class="${thClasses}">${t("profile.opponent")}</th>
+								<th class="${thClasses}">${t("profile.score")}</th>
+								<th class="${thClasses}">${t("profile.result")}</th>
+								<th class="${thClasses}">${t("profile.date")}</th>
 							</tr>
 						</thead>
 						<tbody></tbody>

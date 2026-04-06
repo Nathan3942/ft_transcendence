@@ -1,6 +1,6 @@
-import { getLocalUserAvatar } from "../helpers/avatarHelper.js";
-import { getItem } from "../helpers/localStoragehelper.js";
-import { t } from "../i18n/i18n.js";
+import { getLocalUserAvatar } from "../helpers/avatarHelper";
+import { getItem } from "../helpers/localStoragehelper";
+import { t } from "../i18n/i18n";
 
 export default function createUserSettingsPage(): HTMLDivElement {
 	const outer = document.createElement("div");
@@ -22,7 +22,7 @@ export default function createUserSettingsPage(): HTMLDivElement {
 	outer.innerHTML = `
 		<div class="px-4 md:pl-6 pt-8 flex items-center gap-3">
 			<span class="font-mono font-black text-xl tracking-tight uppercase text-gray-900 dark:text-white animate-blink">
-				▐ User Settings</span>
+				▐ ${t("settings.title")}</span>
 		</div>
 
 		<section class="flex flex-1 flex-col md:flex-row">
@@ -30,7 +30,7 @@ export default function createUserSettingsPage(): HTMLDivElement {
 			<section class="flex flex-col w-full md:w-3/8">
 			
 				<section class="${sectionClasses}">
-					<p class="${labelClasses}">Avatar</p>
+					<p class="${labelClasses}">${t("settings.avatar")}</p>
 					<div class="flex items-center gap-4">
 						<div class="relative w-40 h-40 border-2 border-gray-400 dark:border-gray-500 overflow-hidden flex-shrink-0 bg-gray-200 dark:bg-gray-700">
 							<img id="profileImg" src="${getLocalUserAvatar()}" alt="Profile picture"
@@ -44,7 +44,7 @@ export default function createUserSettingsPage(): HTMLDivElement {
 							<input type="file" id="avatarInput" accept="image/*" class="hidden"/>
 						</div>
 						<div id="avatarMsg" class="font-mono text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-							Click the picture<br>to upload a<br>new avatar.
+							${t("settings.avatarMessage")}
 						</div>
 					</div>
 				</section>
@@ -52,15 +52,15 @@ export default function createUserSettingsPage(): HTMLDivElement {
 				<div class="mt-8 mx-4 md:ml-6 md:mr-0 md:w-5/6 border-t-2 border-dashed border-gray-300 dark:border-gray-700"></div>
 
 				<section class="${sectionClasses}">
-					<p class="${labelClasses} text-base mb-3">▸ Profile Info</p>
+					<p class="${labelClasses} text-base mb-3">▸ ${t("settings.profileInfo")}</p>
 					<form id="userInfoForm" class="space-y-4">
 						<div>
-							<label class="${labelClasses}" for="usernameInput">Username</label>
+							<label class="${labelClasses}" for="usernameInput">${t("settings.username")}</label>
 							<input type="text" required id="usernameInput" placeholder="John Doe" value="${getItem("username") ?? ""}"
 								class="${inputClasses}"/>
 						</div>
 						<div>
-							<label class="${labelClasses}" for="emailInput">Email</label>
+							<label class="${labelClasses}" for="emailInput">${t("settings.email")}</label>
 							<input type="email" required id="emailInput" placeholder="john.doe@example.com" value="${getItem("email") ?? ""}"
 								class="${inputClasses}"/>
 						</div>

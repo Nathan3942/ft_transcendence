@@ -10,10 +10,11 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-import { createButton } from "../components/button/button.js";
-import makeButtonBlock from "../components/button/buttonBlock.js";
-import createSoftBackLoad from "../components/button/softLoadButton.js";
-import { getRouter } from "../handler/routeHandler.js";
+import { createButton } from "../components/button/button";
+import makeButtonBlock from "../components/button/buttonBlock";
+import createSoftBackLoad from "../components/button/softLoadButton";
+import { getRouter } from "../handler/routeHandler";
+import { t } from "../i18n/i18n";
 
 
 export default function chooseBrowse(): HTMLDivElement {
@@ -31,7 +32,7 @@ export default function chooseBrowse(): HTMLDivElement {
 		makeButtonBlock("bg-yellow-300 dark:bg-green-900", createButton({
 			id: "create-match-button",
 			extraClasses:btnClasses,
-			buttonText: "Browse Match",
+			buttonText: t("browse.browseMatch"),
 			f: () => {
 				getRouter().lazyLoad("/browse-games");
 			},
@@ -43,7 +44,7 @@ export default function chooseBrowse(): HTMLDivElement {
 		makeButtonBlock("bg-yellow-400 dark:bg-yellow-900", createButton({
 			id: "browse-matches-button",
 			extraClasses: btnClasses,
-			buttonText: "Browse Tournaments",
+			buttonText: t("browse.browseTournaments"),
 			// href: "/browse-games",
 			f: async () => {
 				getRouter().lazyLoad("/browse-tournaments");

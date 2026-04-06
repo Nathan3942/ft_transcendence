@@ -4,7 +4,7 @@ import { API_BASE, authenticate, clearLoginInfo, redirectToLogin } from "../hand
 import { getLocalId } from "../helpers/apiHelper";
 import { getLocalUserAvatar } from "../helpers/avatarHelper";
 import { getItem, setItem } from "../helpers/localStoragehelper";
-import { setLocale } from "../i18n/i18n";
+import { setLocale, t } from "../i18n/i18n";
 
 export default function initUSerSettings(): void {
 
@@ -129,7 +129,7 @@ export default function initUSerSettings(): void {
 			id: "submitPass",
 			type: "submit",
 			extraClasses: buttonClasses,
-			buttonText: "▶ Update Password"
+			buttonText: `▶ ${t("settings.updatePassword")}`
 		}));
 	}
 
@@ -174,7 +174,7 @@ export default function initUSerSettings(): void {
 			id: "submitInfoChange",
 			type: "submit",
 			extraClasses: buttonClasses,
-			buttonText: "▶ Save Changes"
+			buttonText: `▶ ${t("settings.saveChanges")}`
 		}));
 	}
 	

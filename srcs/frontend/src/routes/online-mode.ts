@@ -10,13 +10,14 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-import { createButton } from "../components/button/button.js";
-import makeButtonBlock from "../components/button/buttonBlock.js";
-import createSoftBackLoad from "../components/button/softLoadButton.js";
-import { getRouter } from "../handler/routeHandler.js";
-import { createOnlineMatch } from "../services/online.js";
-import { setCurrentMatchId, setCurrentMatchMode } from "../services/onlineStore.js";
-import onlineMatch from "./online-match.js";
+import { createButton } from "../components/button/button";
+import makeButtonBlock from "../components/button/buttonBlock";
+import createSoftBackLoad from "../components/button/softLoadButton";
+import { getRouter } from "../handler/routeHandler";
+import { t } from "../i18n/i18n";
+import { createOnlineMatch } from "../services/online";
+import { setCurrentMatchId, setCurrentMatchMode } from "../services/onlineStore";
+import onlineMatch from "./online-match";
 
 function navigate(path: string) {
 	window.dispatchEvent(new CustomEvent("navigate", { detail: { path } }));
@@ -61,7 +62,7 @@ export default function chooseOnlineMode(): HTMLDivElement {
 		makeButtonBlock("bg-teal-300 dark:bg-teal-800", createButton({
 			id: "3p-mode-btn",
 			extraClasses: btnClasses,
-			buttonText: "3 Players",
+			buttonText: t("onlineMode.threePlayers"),
 			f: async () => {
 				const match = await createOnlineMatch(3);
 				setCurrentMatchMode(3);
@@ -73,7 +74,7 @@ export default function chooseOnlineMode(): HTMLDivElement {
 		makeButtonBlock("bg-lime-300 dark:bg-lime-800", createButton({
 			id: "4p-mode-btn",
 			extraClasses: btnClasses,
-			buttonText: "4 Players",
+			buttonText: t("onlineMode.fourPlayers"),
 			f: async () => {
 				const match = await createOnlineMatch(4);
 				setCurrentMatchMode(4);

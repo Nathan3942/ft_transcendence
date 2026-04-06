@@ -1,10 +1,12 @@
+import { t } from "../i18n/i18n";
+
 export default function create404Page(): HTMLDivElement  {
 	const template = document.createElement("template");
 
 	template.innerHTML = `
 	<div class="flex-1 flex flex-col items-center justify-center">
 		<h1 class="text-6xl font-bold text-center" id="error-title">404</h1>
-		<p class="text-4xl text-center" id="error-text">Page Not Found</p>
+		<p class="text-4xl text-center" id="error-text">${t("errors.pageNotFound")}</p>
 	</div>
 	`;
 

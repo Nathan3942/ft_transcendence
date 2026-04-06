@@ -1,5 +1,6 @@
-import { createButton } from "../components/button/button.js";
-import makeButtonBlock from "../components/button/buttonBlock.js";
+import { createButton } from "../components/button/button";
+import makeButtonBlock from "../components/button/buttonBlock";
+import { t } from "../i18n/i18n";
 
 export default function createHomePage(): HTMLDivElement {
 
@@ -16,7 +17,7 @@ export default function createHomePage(): HTMLDivElement {
 		makeButtonBlock("bg-blue-300 dark:bg-blue-900", createButton({
 			id: "local-button",
 			extraClasses: buttonClasses,
-			buttonText: "Local Play",
+			buttonText: t("home.localPlay"),
 			icon: "assets/images/monitor-svgrepo-com.svg?raw",
 			iconAlt: "Icon",
 			iconBClass: iconBClasses,
@@ -25,7 +26,7 @@ export default function createHomePage(): HTMLDivElement {
 		makeButtonBlock("bg-green-300 dark:bg-green-900", createButton({
 			id: "online-button",
 			extraClasses: buttonClasses,
-			buttonText: "Online Play",
+			buttonText: t("home.onlinePlay"),
 			icon: "assets/images/globe-svgrepo-com.svg?raw",
 			iconAlt: "Icon",
 			iconBClass: iconBClasses,
@@ -34,7 +35,7 @@ export default function createHomePage(): HTMLDivElement {
 		makeButtonBlock("bg-red-300 dark:bg-red-900", createButton({
 			id: "leaderboard-button",
 			extraClasses: buttonClasses,
-			buttonText: "Leaderboard",
+			buttonText: t("home.leaderboard"),
 			icon: "assets/images/square-poll-vertical-svgrepo-com.svg?raw",
 			iconAlt: "Icon",
 			iconBClass: iconBClasses,
@@ -43,7 +44,7 @@ export default function createHomePage(): HTMLDivElement {
 		makeButtonBlock("bg-purple-300 dark:bg-purple-900", createButton({
 			id: "about-button",
 			extraClasses: buttonClasses,
-			buttonText: "About",
+			buttonText: t("home.about"),
 			icon: "assets/images/circle-information-svgrepo-com.svg?raw",
 			iconAlt: "Icon",
 			iconBClass: iconBClasses,

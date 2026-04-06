@@ -10,15 +10,16 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-import { getRouter } from "../handler/routeHandler.js";
-import { deleteTournament, listOnlineTournament, type Tournament } from "../services/online.js";
-import { setCurrentTournamentId } from "../services/onlineStore.js";
+import { getRouter } from "../handler/routeHandler";
+import { deleteTournament, listOnlineTournament, type Tournament } from "../services/online";
+import { setCurrentTournamentId } from "../services/onlineStore";
+import { t } from "../i18n/i18n";
 
 function formatWinner(winnerId: number | null) {
   	return winnerId === null ? "—" : `#${winnerId}`;
 }
 
-function tournamentRow(t: Tournament, onDeleted: () => void): HTMLDivElement {
+function tournamentRow(tmnt: Tournament, onDeleted: () => void): HTMLDivElement {
 	const row = document.createElement("div");
 	row.className =
 		"w-full flex items-center justify-between p-3 rounded bg-white dark:bg-gray-800";
@@ -29,13 +30,13 @@ function tournamentRow(t: Tournament, onDeleted: () => void): HTMLDivElement {
 
 	const title = document.createElement("div");
 	title.className = "text-lg font-semibold";
-	title.textContent = `Tournament #${t.id} — ${t.name}`;
+	title.textContent = `Tournament #${tmnt.id} — ${t.name}`;
 
 	const meta = document.createElement("div");
 	meta.className = "text-sm opacity-70";
-	meta.textContent = `Status: ${t.status}, Winner: ${formatWinner(
-		t.winnerId
-	)}, Created: ${t.createdAt}`;
+	meta.textContent = `Status: ${tmnt.status}, Winner: ${formatWinner(
+		tmnt.winnerId
+	)}, Created: ${tmnt.createdAt}`;
 
 	left.append(title, meta);
 
@@ -45,11 +46,11 @@ function tournamentRow(t: Tournament, onDeleted: () => void): HTMLDivElement {
 
 	const openBtn = document.createElement("button");
 	openBtn.className = "px-4 py-2 rounded bg-blue-600 text-white";
-	openBtn.textContent = "Open";
+	openBtn.textContent = t("browseTournaments.open");
 	openBtn.onclick = () => {
 		// ✅ adapte à ton routing
 		// Si tu as une page tournament dédiée :
-		setCurrentTournamentId(String(t.id));
+		setCurrentTournamentId(String(tmnt.id));
 		getRouter().lazyLoad(`/online-tournament`);
 
 		// Sinon si tu utilises /game-online/:id :
@@ -58,15 +59,15 @@ function tournamentRow(t: Tournament, onDeleted: () => void): HTMLDivElement {
 
 	const delBtn = document.createElement("button");
 	delBtn.className = "px-4 py-2 rounded bg-red-600 text-white";
-	delBtn.textContent = "Delete";
+	delBtn.textContent = t("common.delete");
 	delBtn.onclick = async () => {
-		const ok = confirm(`Delete tournament #${t.id} ?`);
+		const ok = confirm(`Delete tournament #${tmnt.id} ?`);
 		if (!ok)
 			return;
 
 		try {
 			// ✅ si tu as une API delete tournoi :
-			await deleteTournament(t.id);
+			await deleteTournament(tmnt.id);
 			onDeleted();
 
 			alert("Delete tournament API not implemented yet.");
@@ -92,11 +93,11 @@ export default function createBrowseTournamentsPage(): HTMLDivElement {
 
     const h1 = document.createElement("div");
     h1.className = "text-2xl font-bold";
-    h1.textContent = "Browse Tournaments";
+    h1.textContent = t("browseTournaments.title");
 
     const back = document.createElement("button");
     back.className = "px-4 py-2 rounded bg-gray-300 dark:bg-gray-700";
-    back.textContent = "Back";
+    back.textContent = t("common.back");
     back.onclick = () => getRouter().lazyLoad("/game-online");
 
     header.append(h1, back);
@@ -104,7 +105,7 @@ export default function createBrowseTournamentsPage(): HTMLDivElement {
     // ---- status + list container ----
     const status = document.createElement("div");
     status.className = "text-sm opacity-70 shrink-0";
-    status.textContent = "Loading tournaments...";
+    status.textContent = t("browseTournaments.loading");
 
 	const panel = document.createElement("div");
 	panel.className = "flex-1 min-h-0 overflow-y-auto rounded bg-black/5 dark:bg-white/5 p-3";
@@ -116,7 +117,7 @@ export default function createBrowseTournamentsPage(): HTMLDivElement {
     page.append(header, status, panel);
 
     async function load() {
-        status.textContent = "Loading tournaments...";
+        status.textContent = t("browseTournaments.loading");
         list.innerHTML = "";
 
         try {
@@ -127,7 +128,7 @@ export default function createBrowseTournamentsPage(): HTMLDivElement {
         const tournaments = await listOnlineTournament();
 
         if (!Array.isArray(tournaments) || tournaments.length === 0) {
-            status.textContent = "No tournament yet. Create one!";
+            status.textContent = t("browseTournaments.empty");
             return;
         }
 

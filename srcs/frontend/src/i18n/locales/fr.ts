@@ -1,0 +1,141 @@
+import type { TranslationDict } from "../i18n";
+
+const fr: TranslationDict = {
+	nav: {
+		profile: "Profil",
+		settings: "Paramètres",
+		logout: "Déconnexion",
+		leaderboard: "Classement",
+		login: "Connexion"
+	},
+
+	settings: {
+		title: "Paramètres Utilisateur",
+		avatar: "Avatar",
+		avatarMessage: "Cliquez sur l'image pour choisir un nouvel avatar.",
+		profileInfo: "Informations de profil",
+		username: "Nom d'utilisateur",
+		email: "Email",
+		saveChanges: "Enregistrer les Modifications",
+		updatePassword: "Modifier le mot de passe",
+		language: "Langue"
+	},
+
+	errors: {
+		pageNotFound: "Page Introuvable"
+	},
+
+	home: {
+		localPlay: "Jeu Local",
+		onlinePlay: "Jeu En-Ligne",
+		leaderboard: "Classements",
+		about: "À propos"
+	},
+
+	login: {
+		title: "Connexion",
+		emailPlaceholder: "Email",
+		passwordPlaceholder: "Mot de passe",
+		loginButton: "Connexion",
+		noAccount: "Pas encore de compte ?",
+		registerLink: "S'inscrire.",
+		registerTitle: "Inscription",
+		usernamePlaceholder: "Nom d'utilisateur",
+		confirmPasswordPlaceholder: "Confirmer le mot de passe",
+		registerButton: "S'inscrire",
+		alreadyAccount: "Déjà un compte ?",
+		loginLink: "Se connecter."
+	},
+
+	leaderboard: {
+		userName: "Nom d'utilisateur",
+		wins: "Victoires",
+		losses: "Défaites",
+		totalMatches: "Matchs Totaux",
+		winrate: "Taux de Victoire"
+	},
+
+	browse: {
+		browseMatch: "Parcourir les Matchs",
+		browseTournaments: "Parcourir les Tournois"
+	},
+
+	onlineMode: {
+		threePlayers: "3 Joueurs",
+		fourPlayers: "4 Joueurs"
+	},
+
+	browseGames: {
+		title: "Parcourir les Matchs",
+		loading: "Chargement des matchs...",
+		empty: "Aucun match pour l'instant. Créez-en un !",
+		join: "Rejoindre"
+	},
+
+	browseTournaments: {
+		title: "Parcourir les Tournois",
+		loading: "Chargement des tournois...",
+		empty: "Aucun tournoi pour l'instant. Créez-en un !",
+		open: "Ouvrir"
+	},
+
+	common: {
+		back: "Retour",
+		delete: "Supprimer"
+	},
+
+	profile: {
+		userStats: "Statistiques",
+		totalMatches: "Matchs Totaux",
+		tournamentsWon: "Tournois Gagnés",
+		matchHistory: "Historique des Matchs",
+		matchId: "ID du Match",
+		opponent: "Adversaire",
+		score: "Score",
+		result: "Résultat",
+		date: "Date",
+		wins: "Victoires",
+		losses: "Défaites"
+	},
+
+	gameLocal: {
+		playerVsAi: "Joueur vs IA",
+		playerVsPlayer: "Joueur vs Joueur",
+		localTournament: "Tournoi Local"
+	},
+
+	gameOnline: {
+		createMatch: "Créer un Match",
+		createTournament: "Créer un Tournoi",
+		browseGames: "Parcourir les Matchs"
+	},
+
+	about: {
+		title: "À PROPOS",
+		projectDescription: "ft_transcendence est le projet final du Tronc Commun de 42. Nous avons construit de zéro une plateforme Pong multijoueur en temps réel — full-stack, containerisée avec Docker, sécurisée de bout en bout, avec des fonctionnalités comme les tournois en direct, le système d'amis, et l'historique des matchs. Le tout en TypeScript pur et Tailwind CSS !",
+		frontendRole: "Frontend",
+		frontendBio: "A réalisé presque tout ce que vous pouvez voir, des mises en page aux effets subtils que vous ne remarquerez peut-être jamais.",
+		backendRole: "Backend",
+		backendBio: "A conçu la mécanique en coulisses, gère tout ce qui concerne l'API, la base de données, l'authentification et la sécurité.",
+		gameRole: "Jeu",
+		gameBio: "A développé le jeu, entraîné les IA adverses, et transformé ce site en quelque chose que vous pouvez vraiment jouer !"
+	},
+
+	gameLocalAi: {
+		easy: "Facile",
+		medium: "Moyen",
+		hard: "Difficile"
+	},
+
+	loginErrors: {
+		emailEmpty: "Le champ email est vide",
+		passwordEmpty: "Le champ mot de passe est vide",
+		usernameEmpty: "Le champ nom d'utilisateur est vide",
+		passwordsMismatch: "Les mots de passe ne correspondent pas",
+		invalidCredentials: "Identifiants invalides",
+		missingFields: "Champ(s) manquant(s) ou mot de passe trop court (min. 8 caractères)",
+		usernameEmailTaken: "Nom d'utilisateur ou email déjà utilisé"
+	}
+};
+
+export default fr;

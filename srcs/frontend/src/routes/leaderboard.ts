@@ -1,7 +1,8 @@
-import createBackButton from "../components/button/backButton.js";
-import { createButton } from "../components/button/button.js";
-import { API_BASE } from "../handler/loginHandler.js";
-import { getItem } from "../helpers/localStoragehelper.js";
+import createBackButton from "../components/button/backButton";
+import { createButton } from "../components/button/button";
+import { API_BASE } from "../handler/loginHandler";
+import { getItem } from "../helpers/localStoragehelper";
+import { t } from "../i18n/i18n";
 
 // Variable names subject to change with proper backend integration
 type userInfo = {
@@ -173,7 +174,7 @@ export default async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 	const tr = document.createElement("tr");
 	const userNames = document.createElement("th");
 	userNames.className = "text-left py-3 px-4";
-	userNames.append("User Name");
+	userNames.append(t("leaderboard.userName"));
 	const pos = document.createElement("th");
 	pos.className = "text-left py-3 px-4 w-15";
 	pos.append("#")
@@ -182,10 +183,10 @@ export default async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 	tr.append(
 		pos,
 		userNames,
-		createThElement("Wins", "winsButton", "wins"),
-		createThElement("Losses", "lossButton", "losses"),
-		createThElement("Total Matches", "totalMatchButton", "totalMatches"),
-		createThElement("Winrate", "winrateButton", "winrate"),
+		createThElement(t("leaderboard.wins"), "winsButton", "wins"),
+		createThElement(t("leaderboard.losses"), "lossButton", "losses"),
+		createThElement(t("leaderboard.totalMatches"), "totalMatchButton", "totalMatches"),
+		createThElement(t("leaderboard.winrate"), "winrateButton", "winrate"),
 	)
 	
 	tHead.append(tr);

@@ -1,7 +1,7 @@
 import './style.css';
-import { initRouter, Router } from './handler/routeHandler.js';
-import { routes } from './routes/routes.js';
-import { getItem, setItem } from './helpers/localStoragehelper.js';
+import { initRouter, Router } from './handler/routeHandler';
+import { routes } from './routes/routes';
+import { getItem, setItem } from './helpers/localStoragehelper';
 
 
 const appElement = document.getElementById("app") as HTMLElement;

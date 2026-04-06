@@ -10,12 +10,13 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-import createBackButton from "../components/button/backButton.js";
-import { createButton } from "../components/button/button.js";
-import makeButtonBlock from "../components/button/buttonBlock.js";
-import { getRouter } from "../handler/routeHandler.js";
-import { createOnlineTournament } from "../services/online.js";
-import { setCurrentTournamentId } from "../services/onlineStore.js";
+import createBackButton from "../components/button/backButton";
+import { createButton } from "../components/button/button";
+import makeButtonBlock from "../components/button/buttonBlock";
+import { getRouter } from "../handler/routeHandler";
+import { t } from "../i18n/i18n";
+import { createOnlineTournament } from "../services/online";
+import { setCurrentTournamentId } from "../services/onlineStore";
 
 
 export default function createGameOnlinePage(): HTMLDivElement {
@@ -32,7 +33,7 @@ export default function createGameOnlinePage(): HTMLDivElement {
 		makeButtonBlock("bg-green-300 dark:bg-green-800", createButton({
 			id: "create-match-button",
 			extraClasses:btnClasses,
-			buttonText: "Create Match",
+			buttonText: t("gameOnline.createMatch"),
 			f: () => {
 				getRouter().lazyLoad("/online-mode");
 			},
@@ -44,7 +45,7 @@ export default function createGameOnlinePage(): HTMLDivElement {
 		makeButtonBlock("bg-lime-200 dark:bg-lime-800", createButton({
 			id: "create-tournament-button",
 			extraClasses: btnClasses,
-			buttonText: "Create Tournament",
+			buttonText: t("gameOnline.createTournament"),
 			f: async () => {
 				const tournament = await createOnlineTournament();
 				setCurrentTournamentId(String(tournament.id));
@@ -58,7 +59,7 @@ export default function createGameOnlinePage(): HTMLDivElement {
 		makeButtonBlock("bg-emerald-300 dark:bg-emerald-900", createButton({
 			id: "browse-matches-button",
 			extraClasses: btnClasses,
-			buttonText: "Browse Games",
+			buttonText: t("gameOnline.browseGames"),
 			href: "/browse-games",
 			f: async () => {
 				getRouter().lazyLoad("/choose-browse");
