@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 17:26:14 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/05 18:18:53 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/02 06:15:11 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,3 +55,4 @@ export function setCurrentMatchMode(mode: number) {
 export function getCurrentMatchMode() {
 	return currentMatchMode;
 }
+

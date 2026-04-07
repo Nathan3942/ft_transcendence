@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 15:45:30 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/13 16:15:00 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/02 06:20:49 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -192,7 +192,7 @@ export class GameManager {
 			(evt) => {
 				if (evt.type === "game_over") {
 					const winnerSlot = evt.winnerSlot as GameSlot;
-					const winnerUserId = this.games.get(id)?.players[winnerSlot]?.clientId ?? null;
+					const winnerUserId = this.games.get(id)?.players[winnerSlot]?.userId ?? null;
 					
 					updateMatchStatus(id, "finished");
 
@@ -309,6 +309,7 @@ export class GameManager {
 
 		const game = this.games.get(gameId)!;
 		game.players[slot] = { clientId, userId };
+		console.log(`\n\nUserid : ${userId}\n\n`);
 	}
 
 	isCurentPlayer(gameId: GameId, slot: "left" | "right", clientId: string): boolean {
