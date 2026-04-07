@@ -278,6 +278,9 @@ export async function populateFriendOverlay(mode: number): Promise<void> {
 
 			li.innerHTML = `
 				<img src="${friend.avatar_url}" alt=${friend.display_name} class="w-10 h-10" />
+				<span id="presence-dot-${friend.id}"
+					class="absolute bottom-0 right-0 w-2 h-2 rounded-full ${friend.is_online ? 'bg-green-500' : 'bg-gray-400'}">
+				</span>
 				<div class="flex flex-col">
 					<p class="font-medium">${friend.display_name}</p>
 					<p class="font-sm>">@${friend.username}</p>

@@ -69,7 +69,7 @@ export default async function initUserProfile(params?: RouteParams): Promise<voi
 		`
 		return ;
 	}
-	
+
 	let userInfo: user;
 
 	if (id === getLocalId()) {

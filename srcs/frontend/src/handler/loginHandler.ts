@@ -1,6 +1,7 @@
 import { renderError, renderMessage } from "../components/popup/popup";
 import { setItem } from "../helpers/localStoragehelper";
 import type { authResponse, loginRequest, loginResponse, registrationRequest } from "../interfaces/properties";
+import { startPresence, stopPresence } from "../services/presence";
 
 export const API_BASE = `/api/v1`;
 
@@ -111,6 +112,7 @@ export async function logoutHandler() {
 			renderError(`Logout failed: ${resp.status}: ${err}`);
 			throw new Error(`Logout failed: ${resp.status}: ${err}`);
 		}
+		// stopPresence();
 		clearLoginInfo();
 
 		redirectToLogin();
@@ -168,6 +170,8 @@ export async function authenticate(): Promise<boolean | string> {
 				setItem<string>("created_at", respUser.created_at);
 
 			setItem<boolean>("loggedIn", true);
+
+			// startPresence();
 
 			return true;
 		}
