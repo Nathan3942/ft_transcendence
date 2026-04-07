@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 17:15:35 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/01 19:11:26 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/02 06:29:33 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -302,7 +302,7 @@ export default function onlineMatch(): HTMLDivElement {
 
 		if (msg.type === "game_over") {
 			const winner = msg.winnerName ?? msg.winnerUserId ?? msg.winnerSlot;
-			status.textContent = `Winner: ${winner}`;
+			status.textContent = `Winner: ${winner} aka `;
 			if (unbindInput) {
 				unbindInput();
 				unbindInput = null;

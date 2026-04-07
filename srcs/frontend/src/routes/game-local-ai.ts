@@ -47,8 +47,9 @@ const AI_MEDIUM: Genome = {
 
 //	Hard genome 
 export async function loadHardGenome(): Promise<Genome> {
-	const res = await fetch("/ai/genome/hard.json", { cache: "no-cache" });
-	if (!res.ok) throw new Error(`Cannot load /ai/genome/hard.json (${res.status})`);
+	const res = await fetch("../game/ai/genome/hard.json", { cache: "no-cache" });
+	if (!res.ok)
+		throw new Error(`Cannot load /ai/genome/hard.json (${res.status})`);
 	return (await res.json()) as Genome;
 }
 
@@ -156,7 +157,7 @@ async function InitAiGame(diffNum: number, pageRoot: HTMLDivElement) {
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({ username: "Player 1" }),
 	});
-	const p1Id = (await res1.json()).data.id;
+	//const p1Id = (await res1.json()).data.id;
 
 	// remplace le menu par le canvas
 	pageRoot.innerHTML = "";
@@ -177,10 +178,11 @@ async function InitAiGame(diffNum: number, pageRoot: HTMLDivElement) {
 	canvas.height = rect.height || window.innerHeight;
 
 	// load hard genome
-	const hardGenome = await loadHardGenome();
+	// const hardGenome = await loadHardGenome();
 
 	// policy selon diff
-	const genome = genomeForDifficulty(diff, hardGenome);
+	const genome = genomeForDifficulty(diff, hardGenome as Genome);
+
 	const aiPolicy = makeAIPolicyP2(genome);
 
 	// lance pong

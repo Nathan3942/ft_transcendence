@@ -17,18 +17,20 @@ const API_URL = `http://${window.location.hostname}:3000/api/v1`;
 async function createLocalMatch(outer: HTMLDivElement, p1Name: string, p2Name: string)
 {
 	/* Etape A : créer ou récupérer les 2 joueurs dans le backend */
-	const res1 = await fetch(`${API_URL}/users`, {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify({ username: p1Name }),
-	});
-	const res2 = await fetch(`${API_URL}/users`, {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify({ username: p2Name }),
-	});
-	const p1Id = (await res1.json()).data.id;
-	const p2Id = (await res2.json()).data.id;
+
+	/* variable vide ce qui bloque le jeu */
+	// const res1 = await fetch(`${API_URL}/users`, {
+	// 	method: "POST",
+	// 	headers: { "Content-Type": "application/json" },
+	// 	body: JSON.stringify({ username: p1Name }),
+	// });
+	// const res2 = await fetch(`${API_URL}/users`, {
+	// 	method: "POST",
+	// 	headers: { "Content-Type": "application/json" },
+	// 	body: JSON.stringify({ username: p2Name }),
+	// });
+	// const p1Id = (await res1.json()).data.id;
+	// const p2Id = (await res2.json()).data.id;
 
 	outer.innerHTML = "";
 	outer.style.width = "100vw";

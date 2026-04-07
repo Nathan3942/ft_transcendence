@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 16:32:13 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/01 22:57:37 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/02 06:56:07 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@ import type { PongInput, PongState } from "../game/pong_core";
 import { makeAIPolicyP2 } from "../game/ai/policy";
 
 import { loadHardGenome, genomeForDifficulty, createKeyMap, keyboardToInput, bindKeyboard, mergeKeyboardWithAIP2 } from "./game-local-ai";
+import hardGenome from "../game/ai/genomes/hard.json";
 // import { creatTextInput } from "../components/TextInput/TextInput";
 
 type Player = {
@@ -174,59 +175,59 @@ function renderMatch(match: Match, title: string): HTMLDivElement {
 
 function renderBracket(bracket: Bracket): HTMLDivElement {
 
-  const root = document.createElement("div");
-  root.className = "w-full max-w-6xl mx-auto mt-10";
+	const root = document.createElement("div");
+	root.className = "w-full max-w-6xl mx-auto mt-10";
 
-  const header = document.createElement("div");
-  header.className = "grid gap-x-12 mb-6";
-  header.style.gridTemplateColumns = "repeat(3, 1fr)";
+	const header = document.createElement("div");
+	header.className = "grid gap-x-12 mb-6";
+	header.style.gridTemplateColumns = "repeat(3, 1fr)";
 
-  const mkTitle = (txt: string) => {
-    const t = document.createElement("div");
-    t.textContent = txt;
-    t.className = "text-white/80 text-base text-center";
-    return t;
-  };
+	const mkTitle = (txt: string) => {
+		const t = document.createElement("div");
+		t.textContent = txt;
+		t.className = "text-white/80 text-base text-center";
+		return t;
+	};
 
-  header.appendChild(mkTitle("Quarterfinals"));
-  header.appendChild(mkTitle("Semifinals"));
-  header.appendChild(mkTitle("Final"));
-
-
-  const body = document.createElement("div");
-  body.className = "grid gap-x-12 items-center justify-items-center";
-  body.style.gridTemplateColumns = "repeat(3, 1fr)";
-  body.style.gridTemplateRows = "repeat(7, auto)";
+	header.appendChild(mkTitle("Quarterfinals"));
+	header.appendChild(mkTitle("Semifinals"));
+	header.appendChild(mkTitle("Final"));
 
 
-  body.style.rowGap = "2px";
+	const body = document.createElement("div");
+	body.className = "grid gap-x-12 items-center justify-items-center";
+	body.style.gridTemplateColumns = "repeat(3, 1fr)";
+	body.style.gridTemplateRows = "repeat(7, auto)";
 
-  const place = (el: HTMLElement, col: number, row: number) => {
-    el.style.gridColumnStart = String(col);
-    el.style.gridRowStart = String(row);
-  };
 
-  const qRows = [1, 3, 5, 7];
-  bracket.quarterfinal.forEach((m, i) => {
-    const card = renderMatch(m, `Match ${i + 1}`);
-    place(card, 1, qRows[i]);
-    body.appendChild(card);
-  });
+	body.style.rowGap = "2px";
 
-  const sRows = [2, 6];
-  bracket.semifinal.forEach((m, i) => {
-    const card = renderMatch(m, `Semi ${i + 1}`);
-    place(card, 2, sRows[i]);
-    body.appendChild(card);
-  });
+	const place = (el: HTMLElement, col: number, row: number) => {
+		el.style.gridColumnStart = String(col);
+		el.style.gridRowStart = String(row);
+	};
 
-  const finalCard = renderMatch(bracket.final, "Final");
-  place(finalCard, 3, 4);
-  body.appendChild(finalCard);
+	const qRows = [1, 3, 5, 7];
+	bracket.quarterfinal.forEach((m, i) => {
+		const card = renderMatch(m, `Match ${i + 1}`);
+		place(card, 1, qRows[i]);
+		body.appendChild(card);
+	});
 
-  root.appendChild(header);
-  root.appendChild(body);
-  return root;
+	const sRows = [2, 6];
+	bracket.semifinal.forEach((m, i) => {
+		const card = renderMatch(m, `Semi ${i + 1}`);
+		place(card, 2, sRows[i]);
+		body.appendChild(card);
+	});
+
+	const finalCard = renderMatch(bracket.final, "Final");
+	place(finalCard, 3, 4);
+	body.appendChild(finalCard);
+
+	root.appendChild(header);
+	root.appendChild(body);
+	return root;
 }
 
 function getPlayersFromInputs(count = 8): Player[] {
@@ -401,7 +402,7 @@ async function CreateMatch(inner: HTMLDivElement, match: Match, onDone: (res: Ga
 
 		onDone({ winnerSide, s1, s2 });
 		return;
-  }
+	}
 	
     inner.innerHTML = "";
 
@@ -444,24 +445,22 @@ async function CreateMatch(inner: HTMLDivElement, match: Match, onDone: (res: Ga
 	controller = startPong(canvas, ctx, { mode: "1v1", tournament: true }, {}, events);
 	
 	if (gTournament?.aiLvl) {
-		const hg = await loadHardGenome();
-		const genome = genomeForDifficulty(gTournament.aiLvl, hg);
+		const genome = genomeForDifficulty(gTournament.aiLvl, hardGenome);
 
 		const aiP2 = makeAIPolicyP2(genome);
 
 		const p1IsAI = match.p1.ai;
 		const p2IsAI = match.p2.ai;
 
-		// 1) Humain vs IA
 		if (!p1IsAI && p2IsAI) {
 			const keysDown = createKeyMap();
 			const keysPressed = createKeyMap();
 			unbindKeys = bindKeyboard(keysDown, keysPressed);
 
 			controller.setInputSource((state: PongState, dt: number) => {
-			const kb = keyboardToInput(keysDown, keysPressed);
-			const ai = aiP2(state, dt);
-			return mergeKeyboardWithAIP2(kb, ai);
+				const kb = keyboardToInput(keysDown, keysPressed);
+				const ai = aiP2(state, dt);
+				return mergeKeyboardWithAIP2(kb, ai);
 			});
 		}
 	}
