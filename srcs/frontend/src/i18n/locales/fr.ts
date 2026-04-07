@@ -6,7 +6,24 @@ const fr: TranslationDict = {
 		settings: "Paramètres",
 		logout: "Déconnexion",
 		leaderboard: "Classement",
-		login: "Connexion"
+		login: "Connexion",
+
+		friends: {
+			add: "Ajouter un ami",
+			online: "Amis en ligne",
+			offline: "Amis hors ligne",
+			requests: "Demandes d'amis",
+			idPlaceholder: "ID de l'ami",
+			requestSent: "Demande d'ami envoyée avec succès à ",
+			notFound: "Erreur 404 : L'utilisateur que vous essayez d'ajouter est introuvable",
+			errorNoRights: "Erreur : Vous n'avez pas le droit de mettre fin à cette amitié",
+			errorNotFriends: "Erreur : Vous n'êtes pas ami avec ",
+			errorInvalidAction: "Erreur : Action invalide",
+			errorNoPermission: "Erreur : Vous n'avez pas la permission",
+			errorUserNotFound: "Erreur : L'utilisateur demandé est introuvable",
+			errorUnexpected: "Erreur inattendue : ",
+			removeFriend: "Retirer l'ami"
+		}
 	},
 
 	settings: {
@@ -28,7 +45,14 @@ const fr: TranslationDict = {
 		deleteAccountButton: "Supprimer le compte ?",
 		deleteAccountConfirmation1: "Êtes-vous sûr de vouloir supprimer votre compte ?",
 		deleteAccountConfirmation2: "Cette opération est irréversible !!",
-		deleteAccountConfirmed: "Je suis sûr, supprimez mon compte"
+		deleteAccountConfirmed: "Je suis sûr, supprimez mon compte",
+		usernamePlaceholder: "Jean Dupont",
+		emailPlaceholder: "jean.dupont@example.com",
+		notAllowed: "Vous n'êtes pas autorisé à effectuer cette action. Si vous pensez qu'il s'agit d'une erreur, videz le cache avec 'ctrl + shift + r' et reconnectez-vous",
+		userNotFound: "L'utilisateur demandé est introuvable",
+		infoUpdated: "Informations mises à jour avec succès",
+		avatarUpdated: "Avatar mis à jour avec succès",
+		noNewValues: "Vous n'avez pas entré de nouvelles valeurs"
 	},
 
 	errors: {
@@ -58,6 +82,7 @@ const fr: TranslationDict = {
 	},
 
 	leaderboard: {
+		rank: "#",
 		userName: "Nom d'utilisateur",
 		wins: "Victoires",
 		losses: "Défaites",
@@ -105,7 +130,17 @@ const fr: TranslationDict = {
 		result: "Résultat",
 		date: "Date",
 		wins: "Victoires",
-		losses: "Défaites"
+		losses: "Défaites",
+		online: "En ligne",
+		offline: "Hors ligne",
+		win: "Victoire",
+		loss: "Défaite",
+		userNotFound: "Utilisateur introuvable",
+		profilePicture: "Photo de profil",
+		errorNoIdStats: "Erreur : Aucun identifiant trouvé, impossible de charger les statistiques...",
+		errorNoIdHistory: "Erreur : Aucun identifiant trouvé, impossible de charger l'historique des matchs...",
+		errorFetchStats: "Erreur : Impossible de charger les statistiques : ",
+		errorFetchHistory: "Erreur : Impossible de charger l'historique des matchs : "
 	},
 
 	gameLocal: {
@@ -144,7 +179,9 @@ const fr: TranslationDict = {
 		passwordsMismatch: "Les mots de passe ne correspondent pas",
 		invalidCredentials: "Identifiants invalides",
 		missingFields: "Champ(s) manquant(s) ou mot de passe trop court (min. 8 caractères)",
-		usernameEmailTaken: "Nom d'utilisateur ou email déjà utilisé"
+		usernameEmailTaken: "Nom d'utilisateur ou email déjà utilisé",
+		loginFailed: "Échec de la connexion",
+		registrationFailed: "Échec de l'inscription"
 	}
 };
 

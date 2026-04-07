@@ -6,7 +6,24 @@ const en: TranslationDict = {
 		settings: "Settings",
 		logout: "Logout",
 		leaderboard: "Leaderboard",
-		login: "Login"
+		login: "Login",
+
+		friends: {
+			add: "Add Friend",
+			online: "Online Friends",
+			offline: "Offline Friends",
+			requests: "Friend Requests",
+			idPlaceholder: "Friend ID",
+			requestSent: "Successfully sent a friend request to ",
+			notFound: "Error 404: The user you are trying to friend cannot be found",
+			errorNoRights: "Error: You do not have the rights to terminate this friendship",
+			errorNotFriends: "Error: You are not friends with ",
+			errorInvalidAction: "Error: Invalid action performed",
+			errorNoPermission: "Error: You do not have permission",
+			errorUserNotFound: "Error: The requested user was not found",
+			errorUnexpected: "Error: Unexpected error: ",
+			removeFriend: "Remove friend"
+		}
 	},
 
 	settings: {
@@ -28,7 +45,14 @@ const en: TranslationDict = {
 		deleteAccountButton: "Delete Account?",
 		deleteAccountConfirmation1: "Are you sure you want to delete your account?",
 		deleteAccountConfirmation2: "This action is irreversable!!",
-		deleteAccountConfirmed: "I'm sure, delete my account"
+		deleteAccountConfirmed: "I'm sure, delete my account",
+		usernamePlaceholder: "John Doe",
+		emailPlaceholder: "john.doe@example.com",
+		notAllowed: "You are not allowed to perform this action, if you think this is a mistake, clear your cache with 'ctrl + shift + r' and log back in",
+		userNotFound: "The requested user was not found",
+		infoUpdated: "Information updated successfully",
+		avatarUpdated: "Avatar updated successfully",
+		noNewValues: "You have not entered any new values"
 	},
 
 	errors: {
@@ -58,6 +82,7 @@ const en: TranslationDict = {
 	},
 
 	leaderboard: {
+		rank: "#",
 		userName: "User Name",
 		wins: "Wins",
 		losses: "Losses",
@@ -105,7 +130,17 @@ const en: TranslationDict = {
 		result: "Result",
 		date: "Date",
 		wins: "Wins",
-		losses: "Losses"
+		losses: "Losses",
+		online: "Online",
+		offline: "Offline",
+		win: "Win",
+		loss: "Loss",
+		userNotFound: "User not found",
+		profilePicture: "Profile picture",
+		errorNoIdStats: "Error: No user id found, cannot load statistics...",
+		errorNoIdHistory: "Error: No user id found, cannot load match history...",
+		errorFetchStats: "Error: Unable to fetch user stats: ",
+		errorFetchHistory: "Error: Unable to fetch match history: "
 	},
 
 	gameLocal: {
@@ -144,7 +179,9 @@ const en: TranslationDict = {
 		passwordsMismatch: "Passwords do not match",
 		invalidCredentials: "Invalid credentials",
 		missingFields: "Missing field(s) or password is too short (min. 8 chars)",
-		usernameEmailTaken: "Username or email is already taken"
+		usernameEmailTaken: "Username or email is already taken",
+		loginFailed: "Login failed",
+		registrationFailed: "Registration failed"
 	}
 };
 

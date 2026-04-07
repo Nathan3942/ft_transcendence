@@ -44,10 +44,10 @@ export default function initUSerSettings(): void {
 		if (resp.status === 400) {
 			throw `Failed to upload avatar: ${await resp.text()}`;
 		} else if (resp.status === 403) {
-			renderError("You are not allowed to perform this action, if you think this is a mistake, clear your cache with 'ctrl + shift + r' and log back in");
+			renderError(t("settings.notAllowed"));
 			throw "403: Not allowed";
 		} else if (resp.status === 404) {
-			renderMessage("The requested user was not found");
+			renderMessage(t("settings.userNotFound"));
 			throw "404: Not Found";
 		}
 
@@ -73,7 +73,7 @@ export default function initUSerSettings(): void {
 			payload["email"] = email;
 
 		if (!payload["email"] && !payload["username"])
-			throw "You have not entered any new values";
+			throw t("settings.noNewValues");
 
 		const resp = await fetch(`${API_BASE}/users/${getLocalId()}`, {
 			method: "PATCH",
@@ -85,7 +85,7 @@ export default function initUSerSettings(): void {
 		if (resp.ok) {
 			setItem("username", username);
 			setItem("email", email);
-			return "Information updated sucessfully";
+			return t("settings.infoUpdated");
 		}
 		else if (resp.status === 400) {
 			throw new Error("400: Invalid fields");
@@ -151,7 +151,7 @@ export default function initUSerSettings(): void {
 						avatarMsg.classList.add("text-green-600")
 					if (avatarMsg.classList.contains("text-red-600"))
 						avatarMsg.classList.remove ("text-red-600");
-					avatarMsg.innerText = "Avatar Updated sucessfully";
+					avatarMsg.innerText = t("settings.avatarUpdated");
 				}
 				if (headerAvatar)
 					headerAvatar.src = url;
