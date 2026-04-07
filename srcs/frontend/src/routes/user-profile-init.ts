@@ -1,25 +1,10 @@
 import { createButton } from "../components/button/button";
 import { API_BASE } from "../handler/loginHandler";
-import { getLocalId } from "../helpers/apiHelper";
+import { fetchUser, getLocalId } from "../helpers/apiHelper";
 import { BASE_PFP, getLocalUserAvatar } from "../helpers/avatarHelper";
 import { getItem } from "../helpers/localStoragehelper";
 import { t } from "../i18n/i18n";
 import type { RouteParams, user, userMatchHistoryResponse, userStatsResponse } from "../interfaces/properties";
-
-async function fetchUser(userId: number): Promise<user> {
-	const resp = await fetch(`${API_BASE}/users/${userId}`, {
-		method: "GET",
-		credentials: "include"
-	});
-
-	if (resp.ok) {
-		const respJson = await resp.json() as { data: user };
-		return respJson.data;
-	} else if (resp.status === 404)
-		throw new Error("404: User not found");
-	else
-		throw new Error(`Unexpected error: ${resp.status}`);
-}
 
 async function fetchUserStats(userId: number): Promise<userStatsResponse> {
 	const resp = await fetch(`${API_BASE}/users/${userId}/stats`, {
