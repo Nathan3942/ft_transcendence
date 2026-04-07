@@ -12,7 +12,7 @@
 
 
 
-const API_BASE = `http://${window.location.hostname}:3000/api/v1`;
+const API_BASE = `/api/v1`;
 
 type ApiSuccess<T> = { success: true, data: T };
 type ApiError = { success?: false; error?: string, message?: string; details?: unknown };
