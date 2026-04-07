@@ -1,9 +1,10 @@
-import { createButton } from "../components/button/button.js";
-import { API_BASE } from "../handler/loginHandler.js";
-import { getLocalId } from "../helpers/apiHelper.js";
-import { BASE_PFP, getLocalUserAvatar } from "../helpers/avatarHelper.js";
-import { getItem } from "../helpers/localStoragehelper.js";
-import type { RouteParams, user, userMatchHistoryResponse, userStatsResponse } from "../interfaces/properties.js";
+import { createButton } from "../components/button/button";
+import { API_BASE } from "../handler/loginHandler";
+import { getLocalId } from "../helpers/apiHelper";
+import { BASE_PFP, getLocalUserAvatar } from "../helpers/avatarHelper";
+import { getItem } from "../helpers/localStoragehelper";
+import { t } from "../i18n/i18n";
+import type { RouteParams, user, userMatchHistoryResponse, userStatsResponse } from "../interfaces/properties";
 
 async function fetchUser(userId: number): Promise<user> {
 	const resp = await fetch(`${API_BASE}/users/${userId}`, {
@@ -73,12 +74,12 @@ export default async function initUserProfile(params?: RouteParams): Promise<voi
 		console.error("Error: No user id found, cannot load statistics");
 		userStatsDiv.innerHTML = `
 			<div class="col-span-4 pl-6">
-				Error: No user id found, cannot load statistics...
+				${t("profile.errorNoIdStats")}
 			</div>
 		`;
 		matchHistoryTable.innerHTML =  `
 			<div class="pl-6">
-				Error: No user id found, cannot load match history...
+				${t("profile.errorNoIdHistory")}
 			</div>
 		`
 		return ;
@@ -100,10 +101,10 @@ export default async function initUserProfile(params?: RouteParams): Promise<voi
 		} catch (e) {
 			console.error(`Error: Cannot get user information for id ${id}: ${e}`);
 			pfp.src = BASE_PFP;
-			username.innerText = "User not found";
+			username.innerText = t("profile.userNotFound");
 			userIdDisplay.append(`${id}`);
-			userStatsDiv.innerHTML = `<div class="col-span-4 pl-6">User not found.</div>`;
-			matchHistoryTable.innerHTML = `<div class="pl-6">User not found.</div>`;
+			userStatsDiv.innerHTML = `<div class="col-span-4 pl-6">${t("profile.userNotFound")}.</div>`;
+			matchHistoryTable.innerHTML = `<div class="pl-6">${t("profile.userNotFound")}.</div>`;
 			return ;
 		}
 	}
@@ -115,10 +116,10 @@ export default async function initUserProfile(params?: RouteParams): Promise<voi
 		userIdDisplay.append(`${userInfo.id}`);
 	if (userInfo.is_online) {
 		onlineStatus.classList.add("text-green-700", "text-green-500");
-		onlineStatus.innerText = "Online";
+		onlineStatus.innerText = t("profile.online");
 	} else {
 		onlineStatus.classList.add("text-gray-500", "dark:text-gray-400");
-		onlineStatus.innerText = "Offline";
+		onlineStatus.innerText = t("profile.offline");
 	}
 
 
@@ -151,7 +152,7 @@ export default async function initUserProfile(params?: RouteParams): Promise<voi
 		console.error(`Error: Unable to fetch user stats: ${e}`);
 		userStatsDiv.innerHTML = `
 			<div class="col-span-4 pl-6">
-				Error: Unable to fetch user stats: ${e}
+				${t("profile.errorFetchStats")}${e}
 			</div>
 		`;
 	}
@@ -186,7 +187,7 @@ export default async function initUserProfile(params?: RouteParams): Promise<voi
 				cell4.classList.add("text-green-600", "dark:text-green-400");
 			else
 				cell4.classList.add("text-red-600", "text-red-400");
-			cell4.textContent = match.won ? "Win" : "Loss";
+			cell4.textContent = match.won ? t("profile.win") : t("profile.loss");
 			const date: string[] = match.finishedAt.split("T");
 			cell5.textContent = `${date.at(0)} - ${date.at(1)?.replace("Z", "")}`;
 
@@ -196,7 +197,7 @@ export default async function initUserProfile(params?: RouteParams): Promise<voi
 		matchHistoryTable.classList.remove("border");
 		matchHistoryTable.innerHTML = `
 			<div class="col-span-4 pl-6">
-				Error: Unable to fetch match history: ${e}
+				${t("profile.errorFetchHistory")}${e}
 			</div>
 		`;
 	}

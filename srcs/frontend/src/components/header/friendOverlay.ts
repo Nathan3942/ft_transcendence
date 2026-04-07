@@ -1,5 +1,6 @@
 import { API_BASE } from "../../handler/loginHandler";
 import { getLocalId } from "../../helpers/apiHelper";
+import { t } from "../../i18n/i18n";
 import type { AddFriendRequest, Friend, FriendRequest, FriendRequestResponse, FriendResponse, PatchFriendRequest } from "../../interfaces/properties";
 import { createButton } from "../button/button";
 
@@ -49,9 +50,9 @@ export function buildFriendOverlay(): HTMLDivElement {
 			<button id="closeFriendOverlayMobile" class="text-gray-600 dark:text-gray-300 hover:text-red-500 dark:hover:text-red-400 text-2xl leading-none px-2 py-1 cursor-pointer">✕</button>
 		</div>
 		<section class="pt-4 m-4">
-			<h1 class="text-2xl animate-blink">▐ Add Friend</h1>
+			<h1 class="text-2xl animate-blink">▐ ${t("nav.friends.add")}</h1>
 			<form id="addFriendForm">
-				<input id="addFriendInput" required type="number" placeholder="Friend Id" class="${inputClasses}">
+				<input id="addFriendInput" required type="number" placeholder="${t("nav.friends.idPlaceholder")}" class="${inputClasses}">
 				</input>
 
 				<button id="addFriendButton"></button>
@@ -60,21 +61,21 @@ export function buildFriendOverlay(): HTMLDivElement {
 		</section>
 			<div class="${dividerClasses}"></div>
 		<section class="pt-4 m-4">
-			<h1 class="text-2xl">Online Friends</h1>
+			<h1 class="text-2xl">${t("nav.friends.online")}</h1>
 			<ul id="onlineFriendList" class="${listClasses}">
 
 			</ul>
 		</section>
 			<div class="${dividerClasses}"></div>
 		<section class="pt-4 m-4">
-			<h1 class="text-2xl">Offline Friends</h1>
+			<h1 class="text-2xl">${t("nav.friends.offline")}</h1>
 			<ul id="offlineFriendList" class="${listClasses}">
 
 			</ul>
 		</section>
 			<div class="${dividerClasses}"></div>
 		<section class="pt-4 m-4">
-			<h1 class="text-2xl">Friend Requests</h1>
+			<h1 class="text-2xl">${t("nav.friends.requests")}</h1>
 			<ul id="incomingRequestsList" class="${listClasses}">
 
 			</ul
@@ -114,13 +115,13 @@ async function removeFriend(id: number): Promise<string> {
 		return `200`;
 	} else if (resp.status === 403) {
 		console.error("Error 403: User does not have the rights to terminate this friendship");
-		return "Error: User does not have the rights to terminate this friendship";
+		return t("nav.friends.errorNoRights");
 	} else if (resp.status === 404) {
 		console.error(`Error 404: You are not friends with ${id}`);
-		return `Error, you are not friends with ${id}`;
+		return t("nav.friends.errorNotFriends") + id;
 	} else {
 		console.error(`Error: Unexpected error: ${resp.status}`);
-		return `Error: Unexpected error: ${resp.status}`;
+		return t("nav.friends.errorUnexpected") + resp.status;
 	}
 }
 
@@ -158,13 +159,13 @@ async function replyToFriendRequest(state: "accept" | "reject", uid: number, fri
 	if (resp.ok)
 		return "200";
 	else if (resp.status === 400) {
-		return "Error: 400: Invalid action performed";
+		return t("nav.friends.errorInvalidAction");
 	} else if (resp.status === 403) {
-		return "Error: 403: You do not have permission to view this users friend requests";
+		return t("nav.friends.errorNoPermission");
 	} else if (resp.status === 404) {
-		return "Error: 404: The requested user was not found";
+		return t("nav.friends.errorUserNotFound");
 	} else {
-		return `Error: unexpected error: ${resp.status}: ${resp.text}`;
+		return t("nav.friends.errorUnexpected") + resp.status;
 	}
 }
 
@@ -208,7 +209,7 @@ export async function populateFriendOverlay(mode: number): Promise<void> {
 					statusMsg.classList.add("text-green-600");
 				if (statusMsg.classList.contains("text-red-500"))
 					statusMsg.classList.remove("text-red-500");
-				statusMsg.innerText = `Successfully sent a friend request to ${friendInput.value}`
+				statusMsg.innerText = t("nav.friends.requestSent") + friendInput.value
 			} else {
 				if (statusMsg.classList.contains("text-green-600"))
 					statusMsg.classList.remove("text-green-600");
@@ -217,7 +218,7 @@ export async function populateFriendOverlay(mode: number): Promise<void> {
 
 				if (resp.status === 404) {
 					console.error("Error 404: The user you are trying to friend cannot be found");
-					statusMsg.innerText = `Error 404: The user you are trying to friend cannot be found`;
+					statusMsg.innerText = t("nav.friends.notFound");
 				} else {
 					console.error(`Error: ${resp.status}: ${resp.statusText}`);
 					statusMsg.innerText = `Error: ${resp.status}: ${resp.statusText}`;
@@ -251,7 +252,7 @@ export async function populateFriendOverlay(mode: number): Promise<void> {
 
 	addFriendButton!.replaceWith(createButton({
 		id: "addFriendButton",
-		buttonText: "Add Friend",
+		buttonText: t("nav.friends.add"),
 		type: "submit",
 		extraClasses: buttonClasses,
 	}))
@@ -297,7 +298,7 @@ export async function populateFriendOverlay(mode: number): Promise<void> {
 					extraClasses: "ml-auto mr-2",
 					iconBClass:"h-7 w-7 brightness-130 dark:brightness-120 hover:brightness-70 dark:hover:brightness-80",
 					icon: "/assets/images/xmark-red-svgrepo-com.svg?raw",
-					iconAlt: "Remove friend"
+					iconAlt: t("nav.friends.removeFriend")
 				}));
 
 			if (friend.is_online) {

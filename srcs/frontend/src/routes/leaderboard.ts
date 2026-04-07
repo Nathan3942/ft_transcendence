@@ -177,7 +177,7 @@ export default async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 	userNames.append(t("leaderboard.userName"));
 	const pos = document.createElement("th");
 	pos.className = "text-left py-3 px-4 w-15";
-	pos.append("#")
+	pos.append(t("leaderboard.rank"))
 
 
 	tr.append(

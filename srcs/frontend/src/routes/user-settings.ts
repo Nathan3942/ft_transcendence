@@ -33,7 +33,7 @@ export default function createUserSettingsPage(): HTMLDivElement {
 					<p class="${labelClasses}">${t("settings.avatar")}</p>
 					<div class="flex items-center gap-4">
 						<div class="relative w-40 h-40 border-2 border-gray-400 dark:border-gray-500 overflow-hidden flex-shrink-0 bg-gray-200 dark:bg-gray-700">
-							<img id="profileImg" src="${getLocalUserAvatar()}" alt="Profile picture"
+							<img id="profileImg" src="${getLocalUserAvatar()}" alt="${t("profile.profilePicture")}"
 								class="w-full h-full object-cover"/>
 							<label for="avatarInput"
 								class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 hover:bg-opacity-50 opacity-0 hover:opacity-100 cursor-pointer transition-all duration-150">
@@ -56,12 +56,12 @@ export default function createUserSettingsPage(): HTMLDivElement {
 					<form id="userInfoForm" class="space-y-4">
 						<div>
 							<label class="${labelClasses}" for="usernameInput">${t("settings.username")}</label>
-							<input type="text" required id="usernameInput" placeholder="John Doe" value="${getItem("username") ?? ""}"
+							<input type="text" required id="usernameInput" placeholder="${t("settings.usernamePlaceholder")}" value="${getItem("username") ?? ""}"
 								class="${inputClasses}"/>
 						</div>
 						<div>
 							<label class="${labelClasses}" for="emailInput">${t("settings.email")}</label>
-							<input type="email" required id="emailInput" placeholder="john.doe@example.com" value="${getItem("email") ?? ""}"
+							<input type="email" required id="emailInput" placeholder="${t("settings.emailPlaceholder")}" value="${getItem("email") ?? ""}"
 								class="${inputClasses}"/>
 						</div>
 						<div class="pt-2">

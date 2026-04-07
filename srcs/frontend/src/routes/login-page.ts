@@ -106,7 +106,7 @@ function createLoginForm(): HTMLDivElement {
 			window.location.href = "/";
 		} catch (err: any) {
 			console.error(err);
-			errorMsg.textContent = err ?? "Login failed";
+			errorMsg.textContent = err ?? t("loginErrors.loginFailed");
 			errorMsg.classList.remove("hidden");
 		}
 	});
@@ -251,7 +251,7 @@ function createRegistrationForm(): HTMLDivElement {
 			window.location.href = "/";
 		} catch(err: any) {
 			console.error(err);
-			errorMsg.innerText = err ?? "Registration failed";
+			errorMsg.innerText = err ?? t("loginErrors.registrationFailed");
 			errorMsg.classList.remove("hidden");
 		}
 	})
