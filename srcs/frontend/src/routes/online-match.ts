@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 17:15:35 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/02 06:29:33 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/08 11:03:37 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@ import { getCurrentMatchId, getCurrentMatchMode, setCurrentTournamentId } from "
 import { drawPong } from "../game/pong_render.js";
 import { toRenderState, type RenderState, type ServerGameState, type GameSlot } from "../game/server_state_adapter.js";
 import { getRouter } from "../handler/routeHandler.js";
+import { getItem } from "../helpers/localStoragehelper.js";
 
 
 type Dir = -1 | 0 | 1;
@@ -33,6 +34,10 @@ function getClientId(): string {
 		sessionStorage.setItem(key, v);
 	}
 	return v;
+}
+
+function getUserId(): string | null {
+	return getItem<string>("username") ?? null;
 }
 
 function isHorizontal(slot: GameSlot) {
@@ -66,7 +71,8 @@ function bindInput(ws: WebSocket, gameId: string, slot: GameSlot) {
 			ws.send(JSON.stringify({
 				type: "pause_toggle",
 				gameId,
-				clientId: getClientId()
+				clientId: getClientId(),
+				userId: getUserId()
 			}));
 			return;
 		}
@@ -186,7 +192,7 @@ export default function onlineMatch(): HTMLDivElement {
 		try {
 			const matchId = getCurrentMatchId();
 			if (matchId && ws.readyState === WebSocket.OPEN) {
-				ws.send(JSON.stringify({ type: "leave_game", gameId: matchId, clientId: getClientId() }));
+				ws.send(JSON.stringify({ type: "leave_game", gameId: matchId, clientId: getClientId(), userId: getUserId() }));
 			}
 		}
 		catch {}
@@ -221,6 +227,13 @@ export default function onlineMatch(): HTMLDivElement {
 	window.addEventListener("beforeunload", onBeforeUnload);
 	window.addEventListener("pagehide", onPageHide);
 	window.addEventListener("navigate", onNavigate as any);
+	window.addEventListener("popstate", cleanup);
+	window.addEventListener("pageshow", (event) => {
+	if (event.persisted) {
+			console.log("Page restored from bfcache");
+			window.location.reload();
+		}
+	});
 
 	// RAF loop
 	
@@ -246,9 +259,11 @@ export default function onlineMatch(): HTMLDivElement {
 			type: "join_game",
 			gameId: matchId,
 			clientId: getClientId(),
+			userId: getItem<string>("username"),
 			mode: getCurrentMatchMode(),
 		})
 		);
+		console.log("JOIN USERNAME =", getItem("username"));
 	};
 
 	ws.onmessage = (e) => {
@@ -271,10 +286,11 @@ export default function onlineMatch(): HTMLDivElement {
 		}
 
 		if (msg.type === "game_paused") {
+			
 			if (msg.reason === "Escape")
-				status.textContent = `Paused by ${msg.clientId}`;
+				status.textContent = `Paused by ${msg.userId}`;
 			else
-				status.textContent = `Paused (player ${msg.clientId} disconnected)`;
+				status.textContent = `Paused (player ${msg.userId} disconnected)`;
 			return;
 		}
 
@@ -302,25 +318,29 @@ export default function onlineMatch(): HTMLDivElement {
 
 		if (msg.type === "game_over") {
 			const winner = msg.winnerName ?? msg.winnerUserId ?? msg.winnerSlot;
-			status.textContent = `Winner: ${winner} aka `;
+
+			console.log(`${msg.winnerName}, ${msg.winnerUserId},  ${msg.winnerSlot}`);
+
+			status.textContent = `Winner: ${winner}`;
+			
 			if (unbindInput) {
 				unbindInput();
 				unbindInput = null;
 			}
 
+			setTimeout(() => {
+			cleanup();
+			
+			console.log(`tournament id: ${msg.tournamentId}`);
+
 			if (msg.tournamentId) {
 				setCurrentTournamentId(String(msg.tournamentId));
-				setTimeout(() => {
-					getRouter().lazyLoad("/online-tournament");
-				}, 1500);
-				return;
-			}
-
-			setTimeout(() => {
+				getRouter().lazyLoad("/online-tournament");
+			} else {
 				alert(`Winner: ${winner}`);
-				cleanup();
 				getRouter().lazyLoad("/game-online");
-			}, 1500);
+			}
+		}, 1500);
 			return;
 		}
 

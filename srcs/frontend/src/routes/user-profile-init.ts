@@ -5,6 +5,8 @@ import { getLocalUserAvatar } from "../helpers/avatarHelper.js";
 import { getItem } from "../helpers/localStoragehelper.js";
 import type { user, userMatchHistoryResponse, userStatsResponse } from "../interfaces/properties.js";
 
+
+
 async function fetchUserStats(userId: number): Promise<userStatsResponse> {
 	const resp = await fetch(`${API_BASE}/users/${userId}/stats`, {
 		method: "GET",

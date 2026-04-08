@@ -172,22 +172,25 @@ export async function authenticate(): Promise<boolean | string> {
 			return true;
 		}
 		if (resp.status === 401) {
+			const text = await resp.text();
+			console.warn(`Error 401: ${text}`);
 
-			console.warn(`Error 401: ${await resp.text()}`);
 			renderMessage("You appear to be logged out, please try to log in again");
 			redirectToLogin();
 			return (false);
 		}
 
-		if (resp.status === 404 && (await resp.text()).length === 0) {
-			renderMessage("You appear to be offline. Some features may be unavailable")
+		const text = await resp.text(); // ✅ UNE FOIS
+
+		if (resp.status === 404 && text.length === 0) {
+			renderMessage("You appear to be offline. Some features may be unavailable");
 			return "offline";
 		}
 
 		if (resp.status === 404) {
-			renderMessage(`Error: ${await resp.text()}`);
+			renderMessage(`Error: ${text}`);
 			redirectToLogin();
-			return(false);
+			return false;
 		}
 
 		console.warn("Unexpected auth/me status:", resp.status);

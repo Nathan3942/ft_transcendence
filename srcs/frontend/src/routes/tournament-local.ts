@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 16:32:13 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/02 06:56:07 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/07 17:49:26 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -391,6 +391,13 @@ function buildBracketFromPlayers(players: Player[]): Bracket {
 
 async function CreateMatch(inner: HTMLDivElement, match: Match, onDone: (res: GameResult) => void) {
     
+	let swapped = false;
+
+	if (match.p1.ai && !match.p2.ai) {
+		[match.p1, match.p2] = [match.p2, match.p1];
+		swapped = true;
+	}
+
 	if (match.p1.ai && match.p2.ai) {
 		const winnerSide: 1 | 2 = Math.random() < 0.5 ? 1 : 2;
 

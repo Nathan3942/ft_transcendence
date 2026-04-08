@@ -6,11 +6,12 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/09 15:18:28 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/01 19:08:32 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/08 11:34:56 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import { getRouter } from "../handler/routeHandler.js";
+import { getItem } from "../helpers/localStoragehelper.js";
 import { getCurrentTournamentId, setCurrentMatchId } from "../services/onlineStore.js";
 
 function randomId(): string {
@@ -30,7 +31,9 @@ function getClientId(): string {
 	return v;
 }
 
-
+function getUserId(): string | null {
+	return getItem<string>("username") ?? null;
+}
 
 function createMatchBox(match: any): HTMLDivElement {
 	const box = document.createElement("div");
@@ -38,11 +41,11 @@ function createMatchBox(match: any): HTMLDivElement {
 
 	const p1 = document.createElement("div");
 	p1.className = "px-2 py-1 rounded bg-gray-200 dark:bg-gray-700";
-	p1.textContent = match.player1ClientId ?? "TBD";
+	p1.textContent = match.player1 ?? "TBD";
 
 	const p2 = document.createElement("div");
 	p2.className = "px-2 py-1 rounded bg-gray-200 dark:bg-gray-700";
-	p2.textContent = match.player2ClientId ?? "TBD";
+	p2.textContent = match.player2 ?? "TBD";
 
 	box.append(p1, p2);
 
@@ -189,11 +192,13 @@ export default function onlineTournament(): HTMLDivElement {
 			status.textContent = "No tournamentId (create tournament first).";
 			return;
 		}
-
+		
 		ws.send(JSON.stringify({
 			type: "join_tournament",
 			tournamentId,
 			clientId: getClientId(),
+			userId: getItem<number>("userId"),
+			username: getUserId()
 		}));
 	};
 
