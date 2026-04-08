@@ -32,14 +32,14 @@ async function importUserData(): Promise<userInfo[]> {
 		});
 		if (!response.ok) {
 			if (response.status === 400)
-				throw new Error(`Request error: ${response.status}: ${response.text()}`);
-			
-			throw new Error(`Network error: ${response.status}: ${response.statusText}`);
+				throw new Error(`${t("leaderboard.errorRequest")}: ${response.status}: ${response.text()}`);
+
+			throw new Error(`${t("leaderboard.errorNetwork")}: ${response.status}: ${response.statusText}`);
 		}
 		const jsonData = await response.json();
 
 		if (!Array.isArray(jsonData)) {
-			throw new Error(`Unexpected payload, expected an array`)
+			throw new Error(t("leaderboard.errorUnexpectedPayload"));
 		}
 		
 		const users = jsonData as userInfo[];
@@ -211,7 +211,7 @@ export default async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 		tbody.replaceWith(buildLeaderboard("wins"), );
 	} catch (e) {
 		console.error("Could not load users:", e);
-		tHead.replaceWith(`Error loading leaderboard: Could not load users: ${e}`);
+		tHead.replaceWith(`${t("leaderboard.errorLoading")}: ${e}`);
 	}
 
 	return outer;

@@ -99,7 +99,7 @@ function createLoginForm(): HTMLDivElement {
 				passInput.classList.remove("boder-gray-50");
 				throw new Error(t("loginErrors.invalidCredentials"));
 			} else if (result != 200) {
-				throw new Error(`Unexpected error: ${result}`);
+				throw new Error(`${t("loginErrors.unexpectedError")}: ${result}`);
 			}
 			console.log("Login succeeded:", result);
 
@@ -245,7 +245,7 @@ function createRegistrationForm(): HTMLDivElement {
 				mail.classList.add("border-red-500");
 				throw new Error(t("loginErrors.usernameEmailTaken"));
 			} else if (result != 200) {
-				throw new Error(`Unexpected error: ${result}`);
+				throw new Error(`${t("loginErrors.unexpectedError")}: ${result}`);
 			}
 
 			window.location.href = "/";

@@ -221,7 +221,7 @@ export async function populateFriendOverlay(mode: number): Promise<void> {
 					statusMsg.innerText = t("nav.friends.notFound");
 				} else {
 					console.error(`Error: ${resp.status}: ${resp.statusText}`);
-					statusMsg.innerText = `Error: ${resp.status}: ${resp.statusText}`;
+					statusMsg.innerText = `${t("nav.friends.errorUnexpected")}${resp.status}: ${resp.statusText}`;
 				}
 			}
 		})
@@ -262,7 +262,7 @@ export async function populateFriendOverlay(mode: number): Promise<void> {
 	try {
 		const id = getLocalId()
 		if (!id)
-			throw new Error("Could not find local user ID, please refresh the page and try again")
+			throw new Error(t("nav.friends.errorNoLocalId"))
 
 		const response = await getFriendList(id);
 		const friendList = response.data;
@@ -318,7 +318,7 @@ export async function populateFriendOverlay(mode: number): Promise<void> {
 	try {
 		const id = getLocalId();
 		if (!id)
-			throw new Error("Could not find local user ID, please refresh the page and try again");
+			throw new Error(t("nav.friends.errorNoLocalId"));
 
 		const response = await getFriendRequests(id);
 		const requestList = response.data;

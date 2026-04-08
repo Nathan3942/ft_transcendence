@@ -30,13 +30,13 @@ function tournamentRow(tmnt: Tournament, onDeleted: () => void): HTMLDivElement 
 
 	const title = document.createElement("div");
 	title.className = "text-lg font-semibold";
-	title.textContent = `Tournament #${tmnt.id} — ${t.name}`;
+	title.textContent = `Tournament #${tmnt.id}`;
 
 	const meta = document.createElement("div");
 	meta.className = "text-sm opacity-70";
-	meta.textContent = `Status: ${tmnt.status}, Winner: ${formatWinner(
+	meta.textContent = `${t("browseTournaments.status")}: ${tmnt.status}, ${t("browseTournaments.winner")}: ${formatWinner(
 		tmnt.winnerId
-	)}, Created: ${tmnt.createdAt}`;
+	)}, ${t("browseTournaments.created")}: ${tmnt.createdAt}`;
 
 	left.append(title, meta);
 
@@ -61,7 +61,7 @@ function tournamentRow(tmnt: Tournament, onDeleted: () => void): HTMLDivElement 
 	delBtn.className = "px-4 py-2 rounded bg-red-600 text-white";
 	delBtn.textContent = t("common.delete");
 	delBtn.onclick = async () => {
-		const ok = confirm(`Delete tournament #${tmnt.id} ?`);
+		const ok = confirm(`${t("browseTournaments.deleteConfirm")} #${tmnt.id} ?`);
 		if (!ok)
 			return;
 
@@ -70,10 +70,10 @@ function tournamentRow(tmnt: Tournament, onDeleted: () => void): HTMLDivElement 
 			await deleteTournament(tmnt.id);
 			onDeleted();
 
-			alert("Delete tournament API not implemented yet.");
+			alert(t("browseTournaments.deleteNotImplemented"));
 		}
 		catch (e) {
-			alert(`Delete failed: ${(e as Error).message}`);
+			alert(`${t("browseTournaments.deleteFailed")}: ${(e as Error).message}`);
 		}
 	};
 
@@ -132,14 +132,14 @@ export default function createBrowseTournamentsPage(): HTMLDivElement {
             return;
         }
 
-        status.textContent = `${tournaments.length} tournament(s)`;
+        status.textContent = `${tournaments.length} ${t("browseTournaments.tournamentCount")}`;
 
-        tournaments.forEach((t: Tournament) => {
-            	list.appendChild(tournamentRow(t, load));
+        tournaments.forEach((tmnt: Tournament) => {
+            	list.appendChild(tournamentRow(tmnt, load));
         	});
         }
         catch (e) {
-            status.textContent = `Error: ${(e as Error).message}`;
+            status.textContent = `${t("browseTournaments.error")}: ${(e as Error).message}`;
         }
     }
 

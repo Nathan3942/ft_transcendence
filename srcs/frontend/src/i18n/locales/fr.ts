@@ -22,7 +22,8 @@ const fr: TranslationDict = {
 			errorNoPermission: "Erreur : Vous n'avez pas la permission",
 			errorUserNotFound: "Erreur : L'utilisateur demandé est introuvable",
 			errorUnexpected: "Erreur inattendue : ",
-			removeFriend: "Retirer l'ami"
+			removeFriend: "Retirer l'ami",
+			errorNoLocalId: "Impossible de trouver votre identifiant, veuillez actualiser la page et réessayer"
 		}
 	},
 
@@ -52,7 +53,12 @@ const fr: TranslationDict = {
 		userNotFound: "L'utilisateur demandé est introuvable",
 		infoUpdated: "Informations mises à jour avec succès",
 		avatarUpdated: "Avatar mis à jour avec succès",
-		noNewValues: "Vous n'avez pas entré de nouvelles valeurs"
+		noNewValues: "Vous n'avez pas entré de nouvelles valeurs",
+		errorInvalidFields: "Champs invalides",
+		errorForbidden: "Vous n'avez pas les permissions pour modifier ces données",
+		errorTargetNotFound: "L'utilisateur spécifié n'existe pas",
+		errorUnexpected: "Erreur inattendue",
+		errorDeleteFailed: "Erreur lors de la suppression du compte"
 	},
 
 	errors: {
@@ -87,7 +93,11 @@ const fr: TranslationDict = {
 		wins: "Victoires",
 		losses: "Défaites",
 		totalMatches: "Matchs Totaux",
-		winrate: "Taux de Victoire"
+		winrate: "Taux de Victoire",
+		errorLoading: "Erreur lors du chargement du classement",
+		errorRequest: "Erreur de requête",
+		errorNetwork: "Erreur réseau",
+		errorUnexpectedPayload: "Données inattendues, un tableau est attendu"
 	},
 
 	browse: {
@@ -104,19 +114,35 @@ const fr: TranslationDict = {
 		title: "Parcourir les Matchs",
 		loading: "Chargement des matchs...",
 		empty: "Aucun match pour l'instant. Créez-en un !",
-		join: "Rejoindre"
+		join: "Rejoindre",
+		status: "Statut",
+		mode: "Mode",
+		matchCount: "match(s)",
+		matchFinished: "terminé",
+		deleteConfirm: "Supprimer le match",
+		deleteFailed: "Échec de la suppression",
+		error: "Erreur"
 	},
 
 	browseTournaments: {
 		title: "Parcourir les Tournois",
 		loading: "Chargement des tournois...",
 		empty: "Aucun tournoi pour l'instant. Créez-en un !",
-		open: "Ouvrir"
+		open: "Ouvrir",
+		status: "Statut",
+		winner: "Vainqueur",
+		created: "Créé le",
+		tournamentCount: "tournoi(s)",
+		deleteConfirm: "Supprimer le tournoi",
+		deleteFailed: "Échec de la suppression",
+		deleteNotImplemented: "L'API de suppression de tournoi n'est pas encore implémentée.",
+		error: "Erreur"
 	},
 
 	common: {
 		back: "Retour",
-		delete: "Supprimer"
+		delete: "Supprimer",
+		match: "Match"
 	},
 
 	profile: {
@@ -140,7 +166,10 @@ const fr: TranslationDict = {
 		errorNoIdStats: "Erreur : Aucun identifiant trouvé, impossible de charger les statistiques...",
 		errorNoIdHistory: "Erreur : Aucun identifiant trouvé, impossible de charger l'historique des matchs...",
 		errorFetchStats: "Erreur : Impossible de charger les statistiques : ",
-		errorFetchHistory: "Erreur : Impossible de charger l'historique des matchs : "
+		errorFetchHistory: "Erreur : Impossible de charger l'historique des matchs : ",
+		errorInvalidId: "Identifiant invalide",
+		errorNotAuthenticated: "Non authentifié",
+		errorUnexpected: "Erreur inattendue"
 	},
 
 	gameLocal: {
@@ -181,7 +210,59 @@ const fr: TranslationDict = {
 		missingFields: "Champ(s) manquant(s) ou mot de passe trop court (min. 8 caractères)",
 		usernameEmailTaken: "Nom d'utilisateur ou email déjà utilisé",
 		loginFailed: "Échec de la connexion",
-		registrationFailed: "Échec de l'inscription"
+		registrationFailed: "Échec de l'inscription",
+		unexpectedError: "Erreur inattendue"
+	},
+
+	onlineMatch: {
+		connecting: "Connexion en cours...",
+		canvasError: "Erreur canvas (pas de contexte 2D)",
+		joiningMatch: "Connecté. Connexion au match...",
+		noMatchId: "Aucun ID de match (créez un match d'abord).",
+		waiting: "en attente",
+		starting: "démarrage...",
+		pausedBy: "Mis en pause par",
+		pausedPlayer: "Mis en pause (joueur",
+		playerDisconnected: "déconnecté)",
+		resumed: "Jeu repris",
+		matchFull: "Match complet",
+		winner: "Vainqueur",
+		wsError: "Erreur de connexion",
+		wsClosed: "Connexion fermée"
+	},
+
+	onlineTournament: {
+		quarterFinals: "Quarts de finale",
+		semiFinals: "Demi-finales",
+		final: "Finale",
+		tbd: "À déterminer",
+		winner: "Vainqueur",
+		finished: "terminé",
+		noMatch: "Pas encore de match pour vous",
+		goToMatch: "Aller à mon match",
+		joiningTournament: "Connecté. Connexion au tournoi...",
+		noTournamentId: "Aucun ID de tournoi (créez un tournoi d'abord).",
+		waiting: "en attente",
+		started: "commencé",
+		tournamentFinished: "Tournoi terminé !",
+		tournamentFull: "complet",
+		rejoin: "rejoindre"
+	},
+
+	tournamentLocal: {
+		chooseAiDifficulty: "Choisissez la difficulté de l'IA",
+		champion: "Champion",
+		enterPlayerNames: "Entrez les noms des joueurs",
+		playerNamePlaceholder: "Nom du joueur",
+		continue: "Continuer",
+		playNextMatch: "Jouer le prochain match",
+		restartTournament: "Recommencer le tournoi",
+		quarterFinals: "Quarts de finale",
+		semiFinals: "Demi-finales",
+		final: "Finale",
+		match: "Match",
+		semi: "Demi",
+		bot: "Bot"
 	}
 };
 

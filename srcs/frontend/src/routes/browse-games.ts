@@ -25,11 +25,11 @@ function matchRow(m: Match, onDeleted: () => void): HTMLDivElement {
 
 	const title = document.createElement("div");
 	title.className = "text-lg font-semibold";
-	title.textContent = `Match #${m.id}`;
+	title.textContent = `${t("common.match")} #${m.id}`;
 
 	const meta = document.createElement("div");
 	meta.className = "text-sm opacity-70";
-	meta.textContent = `Status: ${m.status}, Mode: ${m.mode}`;
+	meta.textContent = `${t("browseGames.status")}: ${m.status}, ${t("browseGames.mode")}: ${m.mode}`;
 
 	left.append(title, meta);
 
@@ -42,7 +42,7 @@ function matchRow(m: Match, onDeleted: () => void): HTMLDivElement {
 	joinBtn.textContent = t("browseGames.join");
 	joinBtn.onclick = () => {
 		if (m.status === "finished")
-			confirm(`Match ${m.id} finished`);
+			confirm(`${t("common.match")} ${m.id} ${t("browseGames.matchFinished")}`);
 		else {
 			setCurrentMatchId(String(m.id));
 			getRouter().lazyLoad("/online-match");
@@ -53,14 +53,14 @@ function matchRow(m: Match, onDeleted: () => void): HTMLDivElement {
 	delBtn.className = "px-4 py-2 rounded bg-red-600 text-white";
 	delBtn.textContent = t("common.delete");
 	delBtn.onclick = async () => {
-		const ok = confirm(`Delete match #${m.id} ?`);
-		if (!ok) 
+		const ok = confirm(`${t("browseGames.deleteConfirm")} #${m.id} ?`);
+		if (!ok)
 			return;
 		try {
 			await deleteMatch(m.id);
 			onDeleted(); // refresh list
 		} catch (e) {
-			alert(`Delete failed: ${(e as Error).message}`);
+			alert(`${t("browseGames.deleteFailed")}: ${(e as Error).message}`);
 		}
 	};
 
@@ -120,14 +120,14 @@ export default function createBrowseGamesPage(): HTMLDivElement {
 				return;
 			}
 
-			status.textContent = `${matches.length} match(es)`;
+			status.textContent = `${matches.length} ${t("browseGames.matchCount")}`;
 
 			matches.forEach((m) => {
 				list.appendChild(matchRow(m, load));
 			});
 		}
 		catch (e) {
-			status.textContent = `Error: ${(e as Error).message}`;
+			status.textContent = `${t("browseGames.error")}: ${(e as Error).message}`;
 		}
 	}
 

@@ -22,7 +22,8 @@ const en: TranslationDict = {
 			errorNoPermission: "Error: You do not have permission",
 			errorUserNotFound: "Error: The requested user was not found",
 			errorUnexpected: "Error: Unexpected error: ",
-			removeFriend: "Remove friend"
+			removeFriend: "Remove friend",
+			errorNoLocalId: "Could not find your user ID, please refresh the page and try again"
 		}
 	},
 
@@ -52,7 +53,12 @@ const en: TranslationDict = {
 		userNotFound: "The requested user was not found",
 		infoUpdated: "Information updated successfully",
 		avatarUpdated: "Avatar updated successfully",
-		noNewValues: "You have not entered any new values"
+		noNewValues: "You have not entered any new values",
+		errorInvalidFields: "Invalid fields",
+		errorForbidden: "You don't have the permissions to modify this data",
+		errorTargetNotFound: "The specified user does not exist",
+		errorUnexpected: "Unexpected error",
+		errorDeleteFailed: "Error deleting account"
 	},
 
 	errors: {
@@ -87,7 +93,11 @@ const en: TranslationDict = {
 		wins: "Wins",
 		losses: "Losses",
 		totalMatches: "Total Matches",
-		winrate: "Winrate"
+		winrate: "Winrate",
+		errorLoading: "Error loading leaderboard",
+		errorRequest: "Request error",
+		errorNetwork: "Network error",
+		errorUnexpectedPayload: "Unexpected payload, expected an array"
 	},
 
 	browse: {
@@ -104,19 +114,35 @@ const en: TranslationDict = {
 		title: "Browse Games",
 		loading: "Loading matches...",
 		empty: "No matches yet. Create one!",
-		join: "Join"
+		join: "Join",
+		status: "Status",
+		mode: "Mode",
+		matchCount: "match(es)",
+		matchFinished: "finished",
+		deleteConfirm: "Delete match",
+		deleteFailed: "Delete failed",
+		error: "Error"
 	},
 
 	browseTournaments: {
 		title: "Browse Tournaments",
 		loading: "Loading tournaments...",
 		empty: "No tournament yet. Create one!",
-		open: "Open"
+		open: "Open",
+		status: "Status",
+		winner: "Winner",
+		created: "Created",
+		tournamentCount: "tournament(s)",
+		deleteConfirm: "Delete tournament",
+		deleteFailed: "Delete failed",
+		deleteNotImplemented: "Delete tournament API not implemented yet.",
+		error: "Error"
 	},
 
 	common: {
 		back: "Back",
-		delete: "Delete"
+		delete: "Delete",
+		match: "Match"
 	},
 
 	profile: {
@@ -140,7 +166,10 @@ const en: TranslationDict = {
 		errorNoIdStats: "Error: No user id found, cannot load statistics...",
 		errorNoIdHistory: "Error: No user id found, cannot load match history...",
 		errorFetchStats: "Error: Unable to fetch user stats: ",
-		errorFetchHistory: "Error: Unable to fetch match history: "
+		errorFetchHistory: "Error: Unable to fetch match history: ",
+		errorInvalidId: "Invalid user ID",
+		errorNotAuthenticated: "Not authenticated",
+		errorUnexpected: "Unexpected error"
 	},
 
 	gameLocal: {
@@ -181,7 +210,59 @@ const en: TranslationDict = {
 		missingFields: "Missing field(s) or password is too short (min. 8 chars)",
 		usernameEmailTaken: "Username or email is already taken",
 		loginFailed: "Login failed",
-		registrationFailed: "Registration failed"
+		registrationFailed: "Registration failed",
+		unexpectedError: "Unexpected error"
+	},
+
+	onlineMatch: {
+		connecting: "Connecting...",
+		canvasError: "Canvas error (no 2D context)",
+		joiningMatch: "Connected. Joining match...",
+		noMatchId: "No match ID (create a match first).",
+		waiting: "waiting",
+		starting: "starting...",
+		pausedBy: "Paused by",
+		pausedPlayer: "Paused (player",
+		playerDisconnected: "disconnected)",
+		resumed: "Game resumed",
+		matchFull: "Match full",
+		winner: "Winner",
+		wsError: "Connection error",
+		wsClosed: "Connection closed"
+	},
+
+	onlineTournament: {
+		quarterFinals: "Quarter Finals",
+		semiFinals: "Semi Finals",
+		final: "Final",
+		tbd: "TBD",
+		winner: "Winner",
+		finished: "finished",
+		noMatch: "No match for you yet",
+		goToMatch: "Go to my match",
+		joiningTournament: "Connected. Joining tournament...",
+		noTournamentId: "No tournament ID (create a tournament first).",
+		waiting: "waiting",
+		started: "started",
+		tournamentFinished: "Tournament finished!",
+		tournamentFull: "full",
+		rejoin: "rejoin"
+	},
+
+	tournamentLocal: {
+		chooseAiDifficulty: "Choose AI difficulty",
+		champion: "Champion",
+		enterPlayerNames: "Enter player names",
+		playerNamePlaceholder: "Player name",
+		continue: "Continue",
+		playNextMatch: "Play next match",
+		restartTournament: "Restart tournament",
+		quarterFinals: "Quarterfinals",
+		semiFinals: "Semifinals",
+		final: "Final",
+		match: "Match",
+		semi: "Semi",
+		bot: "Bot"
 	}
 };
 

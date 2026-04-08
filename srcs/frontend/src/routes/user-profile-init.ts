@@ -16,11 +16,11 @@ async function fetchUserStats(userId: number): Promise<userStatsResponse> {
 		const respJson = await resp.json() as userStatsResponse;
 		return respJson;
 	} else if (resp.status === 400)
-		throw new Error("400: Invalid user ID");
+		throw new Error(`400: ${t("profile.errorInvalidId")}`);
 	else if (resp.status === 404)
-		throw new Error("404: User not found");
+		throw new Error(`404: ${t("profile.userNotFound")}`);
 	else
-		throw new Error(`Unexpected error: ${resp.status}`);
+		throw new Error(`${t("profile.errorUnexpected")}: ${resp.status}`);
 }
 
 async function fetchMatchHistory(userId: number): Promise<userMatchHistoryResponse> {
@@ -33,13 +33,13 @@ async function fetchMatchHistory(userId: number): Promise<userMatchHistoryRespon
 		const respJson = await resp.json() as userMatchHistoryResponse;
 		return respJson;
 	} else if (resp.status === 400)
-		throw new Error("400: Invalid user ID");
+		throw new Error(`400: ${t("profile.errorInvalidId")}`);
 	else if (resp.status === 401)
-		throw new Error("401: Not authenticated")
+		throw new Error(`401: ${t("profile.errorNotAuthenticated")}`);
 	else if (resp.status === 404)
-		throw new Error("404: User not found");
+		throw new Error(`404: ${t("profile.userNotFound")}`);
 	else
-		throw new Error(`Unexpected error: ${resp.status}`);
+		throw new Error(`${t("profile.errorUnexpected")}: ${resp.status}`);
 }
 
 export default async function initUserProfile(params?: RouteParams): Promise<void> {

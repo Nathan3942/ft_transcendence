@@ -88,14 +88,20 @@ export default function initUSerSettings(): void {
 			return t("settings.infoUpdated");
 		}
 		else if (resp.status === 400) {
-			throw new Error("400: Invalid fields");
+			throw new Error(`400: ${t("settings.errorInvalidFields")}`);
 		} else if (resp.status === 403) {
-			throw new Error("403: You dont have the permissions to modify this data");
+			throw new Error(`403: ${t("settings.errorForbidden")}`);
 		} else if (resp.status === 404) {
-			throw new Error("404: the specified user you tried to modify does not exist");
+			throw new Error(`404: ${t("settings.errorTargetNotFound")}`);
 		} else {
-			throw new Error(`${resp.status}: Unexpected error`);
+			throw new Error(`${resp.status}: ${t("settings.errorUnexpected")}`);
 		}
+	}
+
+	async function updateLocale(locale: string): Promise<boolean> {
+		// PATCH API call here
+
+		return false;
 	}
 
 	async function deleteUser(): Promise<string> {
@@ -107,9 +113,9 @@ export default function initUSerSettings(): void {
 		if (resp.ok) {
 			return "200";
 		} else if (resp.status === 403 || resp.status  === 404) {
-			return `Error: ${resp.status}: ${resp.statusText}`;
+			return `${t("settings.errorDeleteFailed")}: ${resp.status}`;
 		} else {
-			return `Error: Unexpected Error: ${resp.status}: ${resp.text}`;
+			return `${t("settings.errorDeleteFailed")}: ${resp.status} (${t("settings.errorUnexpected")})`;
 		}
 		
 	}
@@ -234,13 +240,19 @@ export default function initUSerSettings(): void {
 				id: "language-en-button",
 				extraClasses: languageButtonClasses,
 				buttonText: "en",
-				f: () => setLocale("en")
+				f: () => {
+					updateLocale("en");
+					setLocale("en");
+				}
 			}),
 			createButton({
 				id: "language-fr-button",
 				extraClasses: languageButtonClasses,
 				buttonText: "fr",
-				f: () => setLocale("fr")
+				f: () =>  {
+					updateLocale("fr");
+					setLocale("fr");
+				}
 			})
 		);
 

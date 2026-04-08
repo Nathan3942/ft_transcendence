@@ -13,6 +13,7 @@
 import { createButton } from "../components/button/button";
 import makeButtonBlock from "../components/button/buttonBlock";
 import createSoftBackLoad from "../components/button/softLoadButton";
+import { t } from "../i18n/i18n";
 import { startPong } from "../game/pong";
 import type { PongInput, PongState } from "../game/pong_core";
 
@@ -85,7 +86,7 @@ function chooseAiLvl(inner: HTMLDivElement, onPick: (lvl: AiLvl) => void) {
 	inner.className = "w-full flex flex-col items-center gap-6";
 
 	const title = document.createElement("h2");
-	title.textContent = "Choose AI difficulty";
+	title.textContent = t("tournamentLocal.chooseAiDifficulty");
 	title.className = "text-white text-2xl font-semibold";
 	inner.appendChild(title);
 
@@ -104,9 +105,9 @@ function chooseAiLvl(inner: HTMLDivElement, onPick: (lvl: AiLvl) => void) {
 
 	const wrap = document.createElement("div");
 	wrap.className = "w-72 flex flex-col gap-3";
-	wrap.appendChild(makePickBtn("diff-easy-btn", "Easy", "bg-blue-300 dark:bg-blue-900", "easy"));
-	wrap.appendChild(makePickBtn("diff-medium-btn", "Medium", "bg-purple-300 dark:bg-purple-900", "medium"));
-	wrap.appendChild(makePickBtn("diff-hard-btn", "Hard", "bg-red-300 dark:bg-red-900", "hard"));
+	wrap.appendChild(makePickBtn("diff-easy-btn", t("gameLocalAi.easy"), "bg-blue-300 dark:bg-blue-900", "easy"));
+	wrap.appendChild(makePickBtn("diff-medium-btn", t("gameLocalAi.medium"), "bg-purple-300 dark:bg-purple-900", "medium"));
+	wrap.appendChild(makePickBtn("diff-hard-btn", t("gameLocalAi.hard"), "bg-red-300 dark:bg-red-900", "hard"));
 
 	inner.appendChild(wrap);
 }
@@ -141,7 +142,7 @@ function renderChampion(champ: Player): HTMLDivElement {
 	
 	const d = document.createElement("div");
 	d.className = "mt-6 text-white text-3xl font-semibold";
-	d.textContent = `🏆 Champion: ${champ.name}`;
+	d.textContent = `🏆 ${t("tournamentLocal.champion")}: ${champ.name}`;
 	return (d);
 }
 
@@ -190,9 +191,9 @@ function renderBracket(bracket: Bracket): HTMLDivElement {
 		return t;
 	};
 
-	header.appendChild(mkTitle("Quarterfinals"));
-	header.appendChild(mkTitle("Semifinals"));
-	header.appendChild(mkTitle("Final"));
+	header.appendChild(mkTitle(t("tournamentLocal.quarterFinals")));
+	header.appendChild(mkTitle(t("tournamentLocal.semiFinals")));
+	header.appendChild(mkTitle(t("tournamentLocal.final")));
 
 
 	const body = document.createElement("div");
@@ -210,19 +211,19 @@ function renderBracket(bracket: Bracket): HTMLDivElement {
 
 	const qRows = [1, 3, 5, 7];
 	bracket.quarterfinal.forEach((m, i) => {
-		const card = renderMatch(m, `Match ${i + 1}`);
+		const card = renderMatch(m, `${t("tournamentLocal.match")} ${i + 1}`);
 		place(card, 1, qRows[i]);
 		body.appendChild(card);
 	});
 
 	const sRows = [2, 6];
 	bracket.semifinal.forEach((m, i) => {
-		const card = renderMatch(m, `Semi ${i + 1}`);
+		const card = renderMatch(m, `${t("tournamentLocal.semi")} ${i + 1}`);
 		place(card, 2, sRows[i]);
 		body.appendChild(card);
 	});
 
-	const finalCard = renderMatch(bracket.final, "Final");
+	const finalCard = renderMatch(bracket.final, t("tournamentLocal.final"));
 	place(finalCard, 3, 4);
 	body.appendChild(finalCard);
 
@@ -240,7 +241,7 @@ function getPlayersFromInputs(count = 8): Player[] {
 		const raw = (el?.value ?? "").trim();
 
 		if (raw.length === 0)
-			players.push({ id: i, name: `Bot ${botIndex++}`, ai: true });
+			players.push({ id: i, name: `${t("tournamentLocal.bot")} ${botIndex++}`, ai: true });
 		else
 			players.push({ id: i, name: raw, ai: false });
     }
@@ -334,7 +335,7 @@ function buildBracket(inner: HTMLDivElement) {
 
 	const btnClasses = "w-full flex flex-row p-3 justify-center items-center rounded-xl";
 
-	const label = gTournament.stage === "DONE" ? "Restart tournament" : "Play next match";
+	const label = gTournament.stage === "DONE" ? t("tournamentLocal.restartTournament") : t("tournamentLocal.playNextMatch");
 
 	const button = makeButtonBlock(
 		"bg-blue-300 dark:bg-blue-900",
@@ -518,14 +519,14 @@ export default function createLocalTournament(): HTMLDivElement {
     fromBlock.className = "w-full flex flex-col gap-3 p-6 bg-blue-300 dark:bg-blue-900 rounded-xl";
 
     const title = document.createElement("h2");
-    title.textContent = "Enter players names";
+    title.textContent = t("tournamentLocal.enterPlayerNames");
     title.className = `
         text-white text-2xl font-semibold
         self-start mb-2`;
     fromBlock.appendChild(title);
 
     for (let i = 1; i <= 8; i++) {
-        fromBlock.appendChild(createTextInput(`player-${i}`, `Player name ${i}`));
+        fromBlock.appendChild(createTextInput(`player-${i}`, `${t("tournamentLocal.playerNamePlaceholder")} ${i}`));
     }
 
     const btnClasses = "w-1/2 flex flex-row p-4 justify-center";
@@ -535,7 +536,7 @@ export default function createLocalTournament(): HTMLDivElement {
         createButton({
             id: "continue",
             extraClasses: btnClasses,
-            buttonText: "Continue",
+            buttonText: t("tournamentLocal.continue"),
             icon: "assets/images/enter-svgrepo-com.svg",
             f: () => buildBracket(inner),
             iconAlt: "Icon",
