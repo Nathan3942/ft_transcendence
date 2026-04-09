@@ -12,6 +12,7 @@ import { makeAIPolicyP2 } from "../game/ai/policy.js";
 import type { Genome, GAConfig } from "../game/ai/type.js";
 
 import hardGenome from "../game/ai/genomes/hard.json";
+import { getLocalId } from "../helpers/apiHelper.js";
 
 // Vite worker import
 import AIWorker from "../game/ai/worker?worker";
@@ -151,13 +152,7 @@ async function InitAiGame(diffNum: number, pageRoot: HTMLDivElement) {
 
 	const diff: AIDifficulty = diffNum === 1 ? "easy" : diffNum === 2 ? "medium" : "hard";
 
-	/* Créer/récupérer le joueur humain dans le backend */
-	const res1 = await fetch(`${API_URL}/users`, {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify({ username: "Player 1" }),
-	});
-	//const p1Id = (await res1.json()).data.id;
+	const p1Id = getLocalId();
 
 	// remplace le menu par le canvas
 	pageRoot.innerHTML = "";
