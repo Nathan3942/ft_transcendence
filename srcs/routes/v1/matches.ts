@@ -7,6 +7,8 @@
 import { FastifyInstance } from 'fastify'
 import { success } from '../../utils/response'
 import * as matchService from '../../services/matchService'
+import { authenticate } from '../../plugins/authenticate'
+import { ForbiddenError } from '../../utils/appErrors'
 
 export default async function matchesRoutes(server: FastifyInstance) {
 
@@ -99,20 +101,28 @@ export default async function matchesRoutes(server: FastifyInstance) {
     })
 
     /************************* SAVE MATCH RESULT **********************************/
-    server.post('/matches/result', async (request, _reply) => {
-        const { player1Id, player2Id, scorePlayer1, scorePlayer2, winnerId } = request.body as {
+    server.post('/matches/result', { preHandler: authenticate }, async (request, _reply) => {
+        const { player1Id, player2Id, scorePlayer1, scorePlayer2, winnerId, mode } = request.body as {
             player1Id: number;
             player2Id: number | null;
             scorePlayer1: number;
             scorePlayer2: number;
             winnerId: number | null;
+            mode?: string;
         }
+
+        const user = request.user as { id: number; username: string }
+        if (user.id !== player1Id) {
+            throw new ForbiddenError('You can only save matches for yourself')
+        }
+
         const match = matchService.saveMatchResult(
             player1Id,
             player2Id,
             scorePlayer1,
             scorePlayer2,
-            winnerId
+            winnerId,
+            (mode as any) ?? '1v1'
         )
         return success(match)
     })
