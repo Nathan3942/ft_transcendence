@@ -1,6 +1,7 @@
 import { renderError, renderMessage } from "../components/popup/popup";
 import { setItem } from "../helpers/localStoragehelper";
 import type { authResponse, loginRequest, loginResponse, registrationRequest } from "../interfaces/properties";
+import { connectGlobalWS } from "../main";
 
 export const API_BASE = `/api/v1`;
 
@@ -42,6 +43,7 @@ export async function loginHandler(payload: loginRequest): Promise<number> {
 		setItem<string>("created_at", respUser.created_at);
 
 	setItem<boolean>("loggedIn", true);
+	connectGlobalWS();
 	return 200;
 }
 
@@ -82,6 +84,7 @@ export async function registerHandler(payload: registrationRequest): Promise<num
 		setItem<string>("created_at", respUser.created_at);
 
 	setItem<boolean>("loggedIn", true);
+	connectGlobalWS();
 	return 200;
 }
 
@@ -168,6 +171,7 @@ export async function authenticate(): Promise<boolean | string> {
 				setItem<string>("created_at", respUser.created_at);
 
 			setItem<boolean>("loggedIn", true);
+			connectGlobalWS();
 
 			return true;
 		}

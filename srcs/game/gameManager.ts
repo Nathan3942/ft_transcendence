@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 15:45:30 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/08 11:35:13 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/10 16:31:50 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ const PADDLE_H = 120;
 
 
 
-type PlayerInfo = { clientId: string, userId?: string };
+type PlayerInfo = { clientId: string, userId?: number, username?: string };
 
 type Players = Partial<Record<GameSlot, PlayerInfo>>;
 
@@ -306,10 +306,10 @@ export class GameManager {
 		g.loop.setInput(slot as any, input);
 	}
 
-	registerPlayer(gameId: GameId, slot: GameSlot, clientId: string, userId?: string) {
+	registerPlayer(gameId: GameId, slot: GameSlot, clientId: string, userId?: number, username?: string) {
 
 		const game = this.games.get(gameId)!;
-		game.players[slot] = { clientId, userId };
+		game.players[slot] = { clientId, userId, username };
 		console.log(`\n\nUserid : ${userId}\n\n`);
 	}
 

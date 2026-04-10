@@ -13,6 +13,9 @@ import { env, isDev, isProd } from './config/env'
 
 import { wsPlugin } from './ws'
 
+
+
+
 /**
  * creation et config du server fastify
  * plugind db error handler global et routes
@@ -88,3 +91,4 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   return app
 }
+
