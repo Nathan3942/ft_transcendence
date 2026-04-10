@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 15:45:30 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/10 16:31:50 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/10 17:14:56 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -192,9 +192,10 @@ export class GameManager {
 			(evt) => {
 				if (evt.type === "game_over") {
 					const winnerSlot = evt.winnerSlot as GameSlot;
-					const winnerUserId = this.games.get(id)?.players[winnerSlot]?.clientId ?? null;
+					const winnerUserId = this.games.get(id)?.players[winnerSlot]?.username ?? null;
 					
 					updateMatchStatus(id, "finished");
+					deleteMatch(id);
 
 					const match = getMatchById(id);
 					

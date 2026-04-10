@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/09 16:26:29 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/08 11:35:26 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/10 17:46:27 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,10 +76,10 @@ export class TournamentMaganer {
 	) {
 		const t = this.getOrCreateTournament(tournamentId);
 
-		const existing = t.players.find(p => p.clientId === clientId);
+		const existing = t.players.find(p => p.userId === userId);
 
 		if (existing) {
-			existing.userId = userId ?? existing.userId;
+			existing.clientId = clientId; // update si reconnect
 			existing.username = username ?? existing.username;
 			return;
 		}
@@ -101,9 +101,18 @@ export class TournamentMaganer {
 
 	startTournament(tournamentId: string) {
 		const t = this.tournaments.get(tournamentId);
-		if (!t || t.players.length !== 8) return null;
+		if (!t) return null;
 
-		const shuffled = shuffleArray(t.players);
+		const uniquePlayers = Array.from(
+			new Map(t.players.map(p => [p.userId, p])).values()
+		);
+
+		if (uniquePlayers.length !== 8) {
+			console.warn("Tournament needs 8 unique players, got:", uniquePlayers.length);
+			return null;
+		}
+
+		const shuffled = shuffleArray(uniquePlayers);
 
 		const matches = [0, 1, 2, 3].map(() =>
 			createMatch({
@@ -121,7 +130,11 @@ export class TournamentMaganer {
 			const p2 = shuffled[i * 2 + 1];
 			const match = matches[i];
 
-			// DB insert safe
+			if (p1.userId === p2.userId) {
+				console.error("Duplicate player in same match:", p1.userId);
+				continue;
+			}
+
 			if (typeof p1.userId === "number")
 				addPlayerToMatch(match.id, p1.userId, 0);
 
@@ -150,6 +163,9 @@ export class TournamentMaganer {
 		};
 
 		t.bracket = bracket;
+
+		console.log("Tournament started with players:", uniquePlayers.map(p => p.userId));
+
 		return bracket;
 	}
 
@@ -188,18 +204,26 @@ export class TournamentMaganer {
 			mode: "1v1",
 		});
 
-		if (p1.player1Id)
-			addPlayerToMatch(match.id, p1.player1Id, 0);
-		if (p2.player1Id)
-			addPlayerToMatch(match.id, p2.player1Id, 0);
+		if (p1.winner && p1.player1Id && p1.player2Id) {
+			const id = p1.player1 === p1.winner ? p1.player1Id : p1.player2Id;
+			addPlayerToMatch(match.id, id, 0);
+		}
+
+		if (p2.winner && p2.player1Id && p2.player2Id) {
+			const id = p2.player1 === p2.winner ? p2.player1Id : p2.player2Id;
+			addPlayerToMatch(match.id, id, 0);
+		}
+
+		const p1Id = p1.player1 === p1.winner ? p1.player1Id : p1.player2Id;
+		const p2Id = p2.player1 === p2.winner ? p2.player1Id : p2.player2Id;
 
 		return {
 			id: 0,
 			matchId: match.id,
 			player1: p1.winner,
 			player2: p2.winner,
-			player1Id: p1.player1Id,
-			player2Id: p2.player1Id,
+			player1Id: p1Id,
+			player2Id: p2Id,
 			player1ClientId: p1.player1ClientId,
 			player2ClientId: p2.player1ClientId,
 			winner: null,
