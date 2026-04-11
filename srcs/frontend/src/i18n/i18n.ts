@@ -1,13 +1,14 @@
 import { getItem, setItem } from "../helpers/localStoragehelper";
 import en from "./locales/en";
 import fr from "./locales/fr";
+import de from "./locales/de";
 
-type Locale = "en" | "fr";
+type Locale = "en" | "fr" | "de";
 
 export type TranslationValue = string | { [key: string]: TranslationValue };
 export type TranslationDict = { [key: string]: TranslationValue };
 
-const translations: Record<Locale, TranslationDict> = { en, fr };
+const translations: Record<Locale, TranslationDict> = { en, fr, de };
 
 let currentLocale: Locale = (getItem("locale") as Locale) ?? "en";
 

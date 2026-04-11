@@ -253,6 +253,15 @@ export default function initUSerSettings(): void {
 					updateLocale("fr");
 					setLocale("fr");
 				}
+			}),
+			createButton({
+				id: "language-de-button",
+				extraClasses: languageButtonClasses,
+				buttonText: "de",
+				f: () => {
+					updateLocale("de");
+					setLocale("de");
+				}
 			})
 		);
 
