@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 16:53:19 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/01 18:43:11 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/13 14:26:55 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,11 +117,6 @@ export async function deleteMatch(id: string | number): Promise<unknown> {
 export async function deleteTournament(id: string | number): Promise<unknown> {
     return api(`/tournaments/${id}`, { method: "DELETE" });
 }
-
-// export async function browseGames() {
-//     window.location.hash = `#/games`;
-// }
-
 
 
 export async function listOnlineMatches(): Promise<Match[]> {

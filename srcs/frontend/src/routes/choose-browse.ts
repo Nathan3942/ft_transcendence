@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 15:46:15 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/01 19:07:05 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/13 14:10:33 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ export default function chooseBrowse(): HTMLDivElement {
 			f: () => {
 				getRouter().lazyLoad("/browse-games");
 			},
-			icon: "assets/images/plus-large-svgrepo-com.svg",
+			icon: "assets/images/list-svgrepo-com.svg",
 			iconAlt: "Icon",
 			iconBClass: "h-10 pr-3 dark:invert"
 			})

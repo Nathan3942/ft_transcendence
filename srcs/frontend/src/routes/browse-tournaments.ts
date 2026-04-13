@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 16:33:40 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/01 19:06:31 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/13 14:32:40 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,11 +65,8 @@ function tournamentRow(t: Tournament, onDeleted: () => void): HTMLDivElement {
 			return;
 
 		try {
-			// ✅ si tu as une API delete tournoi :
 			await deleteTournament(t.id);
 			onDeleted();
-
-			alert("Delete tournament API not implemented yet.");
 		}
 		catch (e) {
 			alert(`Delete failed: ${(e as Error).message}`);

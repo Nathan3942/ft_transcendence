@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 16:32:13 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/07 17:49:26 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/13 14:07:25 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -540,7 +540,7 @@ export default function createLocalTournament(): HTMLDivElement {
             id: "continue",
             extraClasses: btnClasses,
             buttonText: "Continue",
-            icon: "assets/images/enter-svgrepo-com.svg",
+            icon: "assets/images/enter-svgrepo-com.svg?raw",
             f: () => buildBracket(inner),
             iconAlt: "Icon",
             iconBClass: "h-10 pr-3 dark:invert"
