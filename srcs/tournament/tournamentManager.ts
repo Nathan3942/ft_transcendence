@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/09 16:26:29 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/10 17:46:27 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/11 03:24:35 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -289,7 +289,8 @@ export class TournamentMaganer {
 
 	tryFinishTournament(tournamentId: string) {
 		const t = this.tournaments.get(tournamentId);
-		if (!t?.bracket) return null;
+		if (!t?.bracket)
+			return null;
 
 		const final = t.bracket.final[0];
 
