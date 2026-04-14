@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/13 14:47:51 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/13 16:16:34 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/08 09:59:58 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,10 +33,10 @@ export type WsClientEvent =
 	| { type: "subscribe"; room: WsRoom }
 	| { type: "unsubscribe"; room: WsRoom }
 	// Remote player
-	| { type: "join_game"; gameId: string; clientId: string, mode: ModeId }
-	| { type: "leave_game"; gameId: string }
-	| { type: "join_tournament", tournamentId: string, clientId: string }
-	| { type: "pause_toggle", gameId: string, clientId: string }
+	| { type: "join_game"; gameId: string; clientId: string, userId: string, mode: ModeId }
+	| { type: "leave_game"; gameId: string, clientId: string, userId: string }
+	| { type: "join_tournament", tournamentId: string, clientId: string, userId: number, username: string }
+	| { type: "pause_toggle", gameId: string, clientId: string, userId: string }
 	| { type: "input"; gameId: string; slot: PlayerSlot; input: PaddleInput };
 
 export type GameState = {
@@ -66,7 +66,7 @@ export type WsServerEvent =
 	| { type: "match_ready"; gameId: string; count: number, mode: ModeStr }
 	| { type: "assigned_slot"; gameId: string; slot: GameSlot, mode: ModeId }
 	| { type: "match_full", gameId: string }
-	| { type: "game_paused", reason: string, clientId: string }
+	| { type: "game_paused", reason: string, clientId: string, userId: string }
 	| { type: "game_resumed" }
 	| { type: "tournament_waiting", tournamentId: string, count: number, playerNeeded: number }
 	| { type: "tournament_started", tournamentId: string, count: number, bracket: any }

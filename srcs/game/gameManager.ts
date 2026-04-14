@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 15:45:30 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/02 06:20:49 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/10 17:14:56 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ const PADDLE_H = 120;
 
 
 
-type PlayerInfo = { clientId: string, userId?: string };
+type PlayerInfo = { clientId: string, userId?: number, username?: string };
 
 type Players = Partial<Record<GameSlot, PlayerInfo>>;
 
@@ -192,9 +192,10 @@ export class GameManager {
 			(evt) => {
 				if (evt.type === "game_over") {
 					const winnerSlot = evt.winnerSlot as GameSlot;
-					const winnerUserId = this.games.get(id)?.players[winnerSlot]?.userId ?? null;
+					const winnerUserId = this.games.get(id)?.players[winnerSlot]?.username ?? null;
 					
 					updateMatchStatus(id, "finished");
+					deleteMatch(id);
 
 					const match = getMatchById(id);
 					
@@ -265,12 +266,13 @@ export class GameManager {
 		g.loop.start();
 	}
 
-	pauseGame(gameId: GameId, reason = "player_disconnect", clientId: string | null = null) {
+	pauseGame(gameId: GameId, reason: string, clientId: string, userId: string) {
 		const g = this.games.get(gameId);
 		if (!g)
 			return;
 		g.loop.pause();
-		this.broadcastToRoom(`game:${gameId}`, { type: "game_paused", reason,  clientId});
+		console.log(`Pause: reason ${userId}, ${clientId}`);
+		this.broadcastToRoom(`game:${gameId}`, { type: "game_paused", reason,  clientId, userId });
 		this.broadcastToRoom(`game:${gameId}`, { type: "game_tick", state: g.state });
 	}
 
@@ -305,10 +307,10 @@ export class GameManager {
 		g.loop.setInput(slot as any, input);
 	}
 
-	registerPlayer(gameId: GameId, slot: GameSlot, clientId: string, userId?: string) {
+	registerPlayer(gameId: GameId, slot: GameSlot, clientId: string, userId?: number, username?: string) {
 
 		const game = this.games.get(gameId)!;
-		game.players[slot] = { clientId, userId };
+		game.players[slot] = { clientId, userId, username };
 		console.log(`\n\nUserid : ${userId}\n\n`);
 	}
 

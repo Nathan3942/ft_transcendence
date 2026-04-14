@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 17:15:35 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/02 06:29:33 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/08 11:03:37 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,8 @@ import { getCurrentMatchId, getCurrentMatchMode, setCurrentTournamentId } from "
 import { drawPong } from "../game/pong_render.js";
 import { toRenderState, type RenderState, type ServerGameState, type GameSlot } from "../game/server_state_adapter.js";
 import { getRouter } from "../handler/routeHandler.js";
+import { t } from "../i18n/i18n.js";
+import { getItem } from "../helpers/localStoragehelper.js";
 
 
 type Dir = -1 | 0 | 1;
@@ -33,6 +35,10 @@ function getClientId(): string {
 		sessionStorage.setItem(key, v);
 	}
 	return v;
+}
+
+function getUserId(): string | null {
+	return getItem<string>("username") ?? null;
 }
 
 function isHorizontal(slot: GameSlot) {
@@ -66,7 +72,8 @@ function bindInput(ws: WebSocket, gameId: string, slot: GameSlot) {
 			ws.send(JSON.stringify({
 				type: "pause_toggle",
 				gameId,
-				clientId: getClientId()
+				clientId: getClientId(),
+				userId: getUserId()
 			}));
 			return;
 		}
@@ -125,7 +132,7 @@ export default function onlineMatch(): HTMLDivElement {
 
 	const status = document.createElement("div");
 	status.className = "text-xl font-semibold";
-	status.textContent = "Connecting...";
+	status.textContent = t("onlineMatch.connecting");
 
 	const gameContainer = document.createElement("div");
 	gameContainer.className = "flex-1 rounded bg-black/10 dark:bg-white/10 overflow-hidden";
@@ -140,7 +147,7 @@ export default function onlineMatch(): HTMLDivElement {
 
 	const ctxMaybe = canvas.getContext("2d");
 	if (!ctxMaybe) {
-		status.textContent = "Canvas error (no 2d context)";
+		status.textContent = t("onlineMatch.canvasError");
 		return page;
 	}
 	const ctx: CanvasRenderingContext2D = ctxMaybe;
@@ -186,7 +193,7 @@ export default function onlineMatch(): HTMLDivElement {
 		try {
 			const matchId = getCurrentMatchId();
 			if (matchId && ws.readyState === WebSocket.OPEN) {
-				ws.send(JSON.stringify({ type: "leave_game", gameId: matchId, clientId: getClientId() }));
+				ws.send(JSON.stringify({ type: "leave_game", gameId: matchId, clientId: getClientId(), userId: getUserId() }));
 			}
 		}
 		catch {}
@@ -221,6 +228,13 @@ export default function onlineMatch(): HTMLDivElement {
 	window.addEventListener("beforeunload", onBeforeUnload);
 	window.addEventListener("pagehide", onPageHide);
 	window.addEventListener("navigate", onNavigate as any);
+	window.addEventListener("popstate", cleanup);
+	window.addEventListener("pageshow", (event) => {
+	if (event.persisted) {
+			console.log("Page restored from bfcache");
+			window.location.reload();
+		}
+	});
 
 	// RAF loop
 	
@@ -234,10 +248,10 @@ export default function onlineMatch(): HTMLDivElement {
 	rafId = requestAnimationFrame(loop);
 
 	ws.onopen = () => {
-		status.textContent = "Connected. Joining match...";
+		status.textContent = t("onlineMatch.joiningMatch");
 		const matchId = getCurrentMatchId();
 		if (!matchId) {
-			status.textContent = "No matchId (create match first).";
+			status.textContent = t("onlineMatch.noMatchId");
 			return;
 		}
 
@@ -246,9 +260,11 @@ export default function onlineMatch(): HTMLDivElement {
 			type: "join_game",
 			gameId: matchId,
 			clientId: getClientId(),
+			userId: getItem<string>("username"),
 			mode: getCurrentMatchMode(),
 		})
 		);
+		console.log("JOIN USERNAME =", getItem("username"));
 	};
 
 	ws.onmessage = (e) => {
@@ -261,25 +277,26 @@ export default function onlineMatch(): HTMLDivElement {
 		}
 
 		if (msg.type === "match_waiting") {
-			status.textContent = `Match #${msg.gameId}: waiting (${msg.count}/${msg.playerNeeded})...`;
+			status.textContent = `${t("common.match")} #${msg.gameId}: ${t("onlineMatch.waiting")} (${msg.count}/${msg.playerNeeded})...`;
 			return;
 		}
 
 		if (msg.type === "match_ready") {
-			status.textContent = `Match #${msg.gameId}: starting...`;
+			status.textContent = `${t("common.match")} #${msg.gameId}: ${t("onlineMatch.starting")}`;
 			return;
 		}
 
 		if (msg.type === "game_paused") {
+			
 			if (msg.reason === "Escape")
-				status.textContent = `Paused by ${msg.clientId}`;
+				status.textContent = `${t("onlineMatch.pausedBy")} ${msg.userId}`;
 			else
-				status.textContent = `Paused (player ${msg.clientId} disconnected)`;
+				status.textContent = `${t("onlineMatch.pausedPlayer")} ${msg.userId} ${t("onlineMatch.playerDisconnected")}`;
 			return;
 		}
 
 		if (msg.type === "game_resumed") {
-			status.textContent = `Game resumed`;
+			status.textContent = t("onlineMatch.resumed");
 			return;
 		}
 
@@ -294,7 +311,7 @@ export default function onlineMatch(): HTMLDivElement {
 		}
 
 		if (msg.type === "match_full") {
-			alert("Match full");
+			alert(t("onlineMatch.matchFull"));
 			cleanup();
 			getRouter().lazyLoad("/browse-games");
 			return;
@@ -302,25 +319,29 @@ export default function onlineMatch(): HTMLDivElement {
 
 		if (msg.type === "game_over") {
 			const winner = msg.winnerName ?? msg.winnerUserId ?? msg.winnerSlot;
-			status.textContent = `Winner: ${winner} aka `;
+
+			console.log(`${msg.winnerName}, ${msg.winnerUserId},  ${msg.winnerSlot}`);
+
+			status.textContent = `${t("onlineMatch.winner")}: ${winner}`;
+			
 			if (unbindInput) {
 				unbindInput();
 				unbindInput = null;
 			}
 
+			setTimeout(() => {
+			cleanup();
+			
+			console.log(`tournament id: ${msg.tournamentId}`);
+
 			if (msg.tournamentId) {
 				setCurrentTournamentId(String(msg.tournamentId));
-				setTimeout(() => {
-					getRouter().lazyLoad("/online-tournament");
-				}, 1500);
-				return;
-			}
-
-			setTimeout(() => {
-				alert(`Winner: ${winner}`);
-				cleanup();
+				getRouter().lazyLoad("/online-tournament");
+			} else {
+				alert(`${t("onlineMatch.winner")}: ${winner}`);
 				getRouter().lazyLoad("/game-online");
-			}, 1500);
+			}
+		}, 1500);
 			return;
 		}
 
@@ -332,12 +353,12 @@ export default function onlineMatch(): HTMLDivElement {
 	};
 
 	ws.onerror = () => {
-		status.textContent = "WS error";
+		status.textContent = t("onlineMatch.wsError");
 	};
 
 	ws.onclose = () => {
 		// si on est encore sur la page, affiche juste un message
-		if (running) status.textContent = "WS closed";
+		if (running) status.textContent = t("onlineMatch.wsClosed");
 	};
 
 	return page;

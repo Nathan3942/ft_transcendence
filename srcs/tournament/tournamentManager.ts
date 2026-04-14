@@ -6,65 +6,56 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/09 16:26:29 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/13 16:33:06 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/11 03:24:35 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-import { number } from "zod";
 import { addPlayerToMatch, createMatch } from "../repository/matchesRepository";
 import { getTournamentStatus, updateTournamentStatus } from "../services/tournamentService";
 
 type TournamentPlayer = {
 	clientId: string;
-	userId?: string;
-}
+	userId?: number;
+	username?: string;
+};
+
+type MatchNode = {
+	id: number;
+	matchId: number | null;
+	player1: string | null;
+	player2: string | null;
+	player1Id: number | null;
+	player2Id: number | null;
+	player1ClientId: string | null;
+	player2ClientId: string | null;
+	winner: string | null;
+	winnername: string | null;
+	status: "pending" | "finished";
+};
 
 type TournamentState = {
 	players: TournamentPlayer[];
-	bracket?: any;
-}
+	bracket?: {
+		quarterFinals: MatchNode[];
+		semiFinals: MatchNode[];
+		final: MatchNode[];
+	};
+};
 
 function shuffleArray<T>(arr: T[]): T[] {
-
 	const copy = [...arr];
-	
 	for (let i = copy.length - 1; i > 0; i--) {
 		const j = Math.floor(Math.random() * (i + 1));
 		[copy[i], copy[j]] = [copy[j], copy[i]];
 	}
-
 	return copy;
 }
-
-// function getWinnerInfo(match: any) {
-// 	if (!match?.winner)
-// 		return null;
-
-// 	if (match.winner === match.player1) {
-// 		return {
-// 			name: match.player1,
-// 			userId: match.player1Id ?? null,
-// 			clientId: match.player1ClientId ?? null,
-// 		};
-// 	}
-
-// 	if (match.winner === match.player2) {
-// 		return {
-// 			name: match.player2,
-// 			userId: match.player2Id ?? null,
-// 			clientId: match.player2ClientId ?? null,
-// 		};
-// 	}
-
-// 	return null;
-// }
 
 export class TournamentMaganer {
 
 	private tournaments = new Map<string, TournamentState>();
 
-	private getOrCreateTrounament(tournamentId: string): TournamentState {
-		
+	private getOrCreateTournament(tournamentId: string): TournamentState {
 		let t = this.tournaments.get(tournamentId);
 		if (!t) {
 			t = { players: [] };
@@ -73,287 +64,227 @@ export class TournamentMaganer {
 		return t;
 	}
 
-	
+	// =========================
+	// PLAYER MANAGEMENT
+	// =========================
 
-	registerTournamentPlayer(tournamentId: string, clientId: string, userId?: string) {
-		
-		const t = this.getOrCreateTrounament(tournamentId);
+	registerTournamentPlayer(
+		tournamentId: string,
+		clientId: string,
+		userId?: number,
+		username?: string
+	) {
+		const t = this.getOrCreateTournament(tournamentId);
 
-		const alreadyExiste = t.players.some((p) => p.clientId === clientId);
-		if (alreadyExiste)
+		const existing = t.players.find(p => p.userId === userId);
+
+		if (existing) {
+			existing.clientId = clientId; // update si reconnect
+			existing.username = username ?? existing.username;
 			return;
-		t.players.push({ clientId, userId });
-		// addPlayerToTournament(tournamentId, clientId);
+		}
+
+		t.players.push({ clientId, userId, username });
 	}
 
 	isTournamentPlayer(tournamentId: string, clientId: string): boolean {
-		
-		const t = this.tournaments.get(tournamentId);
-
-		if (!t)
-			return false;
-
-		return t.players.some((p) => p.clientId === clientId);
+		return this.tournaments.get(tournamentId)?.players.some(p => p.clientId === clientId) ?? false;
 	}
 
 	countTournamentPlayers(tournamentId: string): number {
-		const t = this.tournaments.get(tournamentId);
-		if (!t)
-			return 0;
-		return t.players.length;
+		return this.tournaments.get(tournamentId)?.players.length ?? 0;
 	}
 
-	getTournamentPlayers(tournamentId: string): TournamentPlayer[] {
-		
-		const t = this.tournaments.get(tournamentId);
-		if (!t)
-			return [];
-		return t.players;
-	}
+	// =========================
+	// TOURNAMENT START
+	// =========================
 
 	startTournament(tournamentId: string) {
-
 		const t = this.tournaments.get(tournamentId);
-		if (!t)
+		if (!t) return null;
+
+		const uniquePlayers = Array.from(
+			new Map(t.players.map(p => [p.userId, p])).values()
+		);
+
+		if (uniquePlayers.length !== 8) {
+			console.warn("Tournament needs 8 unique players, got:", uniquePlayers.length);
 			return null;
-
-		if (t.players.length !== 8)
-			return null;
-
-		const shuffled = shuffleArray(t.players);
-
-		const m1 = createMatch({
-			tournamentId: Number(tournamentId),
-			round: 1,
-			status: "pending",
-			mode: "1v1",
-		});
-
-		const m2 = createMatch({
-			tournamentId: Number(tournamentId),
-			round: 1,
-			status: "pending",
-			mode: "1v1",
-		});
-
-		const m3 = createMatch({
-			tournamentId: Number(tournamentId),
-			round: 1,
-			status: "pending",
-			mode: "1v1",
-		});
-
-		const m4 = createMatch({
-			tournamentId: Number(tournamentId),
-			round: 1,
-			status: "pending",
-			mode: "1v1",
-		});
-
-		if (shuffled[0].userId && shuffled[1].userId) {
-			addPlayerToMatch(m1.id, Number(shuffled[0].userId), 0);
-			addPlayerToMatch(m1.id, Number(shuffled[1].userId), 0);
 		}
 
-		if (shuffled[2].userId && shuffled[3].userId) {
-			addPlayerToMatch(m1.id, Number(shuffled[2].userId), 0);
-			addPlayerToMatch(m1.id, Number(shuffled[3].userId), 0);
-		}
+		const shuffled = shuffleArray(uniquePlayers);
 
-		if (shuffled[4].userId && shuffled[5].userId) {
-			addPlayerToMatch(m1.id, Number(shuffled[4].userId), 0);
-			addPlayerToMatch(m1.id, Number(shuffled[5].userId), 0);
-		}
+		const matches = [0, 1, 2, 3].map(() =>
+			createMatch({
+				tournamentId: Number(tournamentId),
+				round: 1,
+				status: "pending",
+				mode: "1v1",
+			})
+		);
 
-		if (shuffled[6].userId && shuffled[7].userId) {
-			addPlayerToMatch(m1.id, Number(shuffled[6].userId), 0);
-			addPlayerToMatch(m1.id, Number(shuffled[7].userId), 0);
+		const quarterFinals: MatchNode[] = [];
+
+		for (let i = 0; i < 4; i++) {
+			const p1 = shuffled[i * 2];
+			const p2 = shuffled[i * 2 + 1];
+			const match = matches[i];
+
+			if (p1.userId === p2.userId) {
+				console.error("Duplicate player in same match:", p1.userId);
+				continue;
+			}
+
+			if (typeof p1.userId === "number")
+				addPlayerToMatch(match.id, p1.userId, 0);
+
+			if (typeof p2.userId === "number")
+				addPlayerToMatch(match.id, p2.userId, 0);
+
+			quarterFinals.push({
+				id: i + 1,
+				matchId: match.id,
+				player1: p1.username ?? `Player ${i * 2}`,
+				player2: p2.username ?? `Player ${i * 2 + 1}`,
+				player1Id: p1.userId ?? null,
+				player2Id: p2.userId ?? null,
+				player1ClientId: p1.clientId,
+				player2ClientId: p2.clientId,
+				winner: null,
+				winnername: null,
+				status: "pending",
+			});
 		}
 
 		const bracket = {
-			quarterFinals: [
-				{
-					id: 1,
-					matchId: m1.id,
-					player1: shuffled[0].clientId,
-					player2: shuffled[1].clientId,
-					player1Id: shuffled[0].userId ?? null,
-					player2Id: shuffled[1].userId ?? null,
-					player1ClientId: shuffled[0].clientId,
-					player2ClientId: shuffled[1].clientId,
-					winner: null,
-					status: "pending",
-				},
-				{
-					id: 2,
-					matchId: m2.id,
-					player1: shuffled[2].clientId,
-					player2: shuffled[3].clientId,
-					player1Id: shuffled[2].userId ?? null,
-					player2Id: shuffled[3].userId ?? null,
-					player1ClientId: shuffled[2].clientId,
-					player2ClientId: shuffled[3].clientId,
-					winner: null,
-					status: "pending",
-				},
-				{
-					id: 3,
-					matchId: m3.id,
-					player1: shuffled[4].clientId,
-					player2: shuffled[5].clientId,
-					player1Id: shuffled[4].userId ?? null,
-					player2Id: shuffled[5].userId ?? null,
-					player1ClientId: shuffled[4].clientId,
-					player2ClientId: shuffled[5].clientId,
-					winner: null,
-					status: "pending",
-				},
-				{
-					id: 4,
-					matchId: m4.id,
-					player1: shuffled[6].clientId,
-					player2: shuffled[7].clientId,
-					player1Id: shuffled[6].userId ?? null,
-					player2Id: shuffled[7].userId ?? null,
-					player1ClientId: shuffled[6].clientId,
-					player2ClientId: shuffled[7].clientId,
-					winner: null,
-					status: "pending",
-				},
-				],
-				semiFinals: [
-					{
-						id: 5,
-						matchId: null,
-						player1: null,
-						player2: null,
-						player1Id: null,
-						player2Id: null,
-						player1ClientId: null,
-						player2ClientId: null,
-						winner: null,
-						status: "pending",
-					},
-					{
-						id: 6,
-						matchId: null,
-						player1: null,
-						player2: null,
-						player1Id: null,
-						player2Id: null,
-						player1ClientId: null,
-						player2ClientId: null,
-						winner: null,
-						status: "pending",
-					},
-				],
-		final: [
-				{
-					id: 7,
-					matchId: null,
-					player1: null,
-					player2: null,
-					player1Id: null,
-					player2Id: null,
-					player1ClientId: null,
-					player2ClientId: null,
-					winner: null,
-					status: "pending",
-				},
-			],
+			quarterFinals,
+			semiFinals: [this.emptyMatch(5), this.emptyMatch(6)],
+			final: [this.emptyMatch(7)],
 		};
 
 		t.bracket = bracket;
+
+		console.log("Tournament started with players:", uniquePlayers.map(p => p.userId));
+
 		return bracket;
 	}
 
-	private tryAdvanceToSemiFinals(tournamentId: string) {
+	private emptyMatch(id: number): MatchNode {
+		return {
+			id,
+			matchId: null,
+			player1: null,
+			player2: null,
+			player1Id: null,
+			player2Id: null,
+			player1ClientId: null,
+			player2ClientId: null,
+			winner: null,
+			winnername: null,
+			status: "pending",
+		};
+	}
 
-		const t = this.tournaments.get(tournamentId);
-		if (!t?.bracket)
-			return;
+	// =========================
+	// PROGRESSION
+	// =========================
 
-		const qf = t.bracket.quarterFinals;
-		const sf = t.bracket.semiFinals;
+	private createNextMatch(
+		tournamentId: string,
+		p1: MatchNode,
+		p2: MatchNode,
+		round: number
+	): MatchNode {
 
-		if (qf[0].winner && qf[1].winner && !sf[0].matchId) {
-			const match = createMatch({
-				tournamentId: Number(tournamentId),
-				round: 2,
-				status: "pending",
-				mode: "1v1",
-			});
+		console.log(`tournament id check: ${tournamentId}\n\n\n`);
+		const match = createMatch({
+			tournamentId: Number(tournamentId),
+			round,
+			status: "pending",
+			mode: "1v1",
+		});
 
-			sf[0].matchId = match.id;
-			sf[0].player1 = qf[0].winner;
-			sf[0].player2 = qf[1].winner;
-			sf[0].player1Id = qf[0].player1 === qf[0].winner ? qf[0].player1Id : qf[0].player2Id;
-			sf[0].player2Id = qf[1].player1 === qf[1].winner ? qf[1].player1Id : qf[1].player2Id;
-			sf[0].player1ClientId = qf[0].player1 === qf[0].winner ? qf[0].player1ClientId : qf[0].player2ClientId;
-			sf[0].player2ClientId = qf[1].player1 === qf[1].winner ? qf[1].player1ClientId : qf[1].player2ClientId;
-			sf[0].status = "pending";
-
-			if (sf[0].player1Id)
-				addPlayerToMatch(match.id, Number(sf[0].player1Id), 0);
-			if (sf[0].player2Id)
-				addPlayerToMatch(match.id, Number(sf[0].player2Id), 0);
+		if (p1.winner && p1.player1Id && p1.player2Id) {
+			const id = p1.player1 === p1.winner ? p1.player1Id : p1.player2Id;
+			addPlayerToMatch(match.id, id, 0);
 		}
 
-		if (qf[2].winner && qf[3].winner && !sf[1].matchId) {
-			const match = createMatch({
-				tournamentId: Number(tournamentId),
-				round: 2,
-				status: "pending",
-				mode: "1v1",
-			});
+		if (p2.winner && p2.player1Id && p2.player2Id) {
+			const id = p2.player1 === p2.winner ? p2.player1Id : p2.player2Id;
+			addPlayerToMatch(match.id, id, 0);
+		}
 
-			sf[1].matchId = match.id;
-			sf[1].player1 = qf[2].winner;
-			sf[1].player2 = qf[3].winner;
-			sf[1].player1Id = qf[2].player1 === qf[2].winner ? qf[2].player1Id : qf[2].player2Id;
-			sf[1].player2Id = qf[3].player1 === qf[3].winner ? qf[3].player1Id : qf[3].player2Id;
-			sf[1].player1ClientId = qf[2].player1 === qf[2].winner ? qf[2].player1ClientId : qf[2].player2ClientId;
-			sf[1].player2ClientId = qf[3].player1 === qf[3].winner ? qf[3].player1ClientId : qf[3].player2ClientId;
-			sf[1].status = "pending";
+		const p1Id = p1.player1 === p1.winner ? p1.player1Id : p1.player2Id;
+		const p2Id = p2.player1 === p2.winner ? p2.player1Id : p2.player2Id;
 
-			if (sf[1].player1Id)
-				addPlayerToMatch(match.id, Number(sf[1].player1Id), 0);
-			if (sf[1].player2Id)
-				addPlayerToMatch(match.id, Number(sf[1].player2Id), 0);
+		return {
+			id: 0,
+			matchId: match.id,
+			player1: p1.winner,
+			player2: p2.winner,
+			player1Id: p1Id,
+			player2Id: p2Id,
+			player1ClientId: p1.player1ClientId,
+			player2ClientId: p2.player1ClientId,
+			winner: null,
+			winnername: null,
+			status: "pending",
+		};
+	}
+
+	private tryAdvance(tournamentId: string) {
+		const t = this.tournaments.get(tournamentId);
+		if (!t?.bracket) return;
+
+		const { quarterFinals, semiFinals, final } = t.bracket;
+
+		// Semi finals
+		if (quarterFinals[0].winner && quarterFinals[1].winner && !semiFinals[0].matchId) {
+			semiFinals[0] = this.createNextMatch(tournamentId, quarterFinals[0], quarterFinals[1], 2);
+		}
+
+		if (quarterFinals[2].winner && quarterFinals[3].winner && !semiFinals[1].matchId) {
+			semiFinals[1] = this.createNextMatch(tournamentId, quarterFinals[2], quarterFinals[3], 2);
+		}
+
+		// Final
+		if (semiFinals[0].winner && semiFinals[1].winner && !final[0].matchId) {
+			final[0] = this.createNextMatch(tournamentId, semiFinals[0], semiFinals[1], 3);
 		}
 	}
 
-	private tryAdvanceToFinal(tournamentId: string) {
+	// =========================
+	// RESULT HANDLING
+	// =========================
 
+	handleMatchFinished(tournamentId: string, matchId: number, winnerUserId: number) {
 		const t = this.tournaments.get(tournamentId);
-		if (!t?.bracket)
-			return;
+		if (!t?.bracket) return null;
 
-		const sf = t.bracket.semiFinals;
-		const f = t.bracket.final;
+		const all = [
+			...t.bracket.quarterFinals,
+			...t.bracket.semiFinals,
+			...t.bracket.final,
+		];
 
-		if (sf[0].winner && sf[1].winner && !f[0].matchId) {
-			const match = createMatch({
-				tournamentId: Number(tournamentId),
-				round: 2,
-				status: "pending",
-				mode: "1v1",
-			});
+		const match = all.find(m => m.matchId === matchId);
+		if (!match) return t.bracket;
 
-			f[0].matchId = match.id;
-			f[0].player1 = sf[0].winner;
-			f[0].player2 = sf[1].winner;
-			f[0].player1Id = sf[0].player1 === sf[0].winner ? sf[0].player1Id : sf[0].player2Id;
-			f[0].player2Id = sf[1].player1 === sf[1].winner ? sf[1].player1Id : sf[1].player2Id;
-			f[0].player1ClientId = sf[0].player1 === sf[0].winner ? sf[0].player1ClientId : sf[0].player2ClientId;
-			f[0].player2ClientId = sf[1].player1 === sf[1].winner ? sf[1].player1ClientId : sf[1].player2ClientId;
-			f[0].status = "pending";
+		match.status = "finished";
 
-			if (f[0].player1Id)
-				addPlayerToMatch(match.id, Number(f[0].player1Id), 0);
-			if (f[0].player2Id)
-				addPlayerToMatch(match.id, Number(f[0].player2Id), 0);
-		}
+		console.log(`winner id ${winnerUserId}`);
+
+		if (match.player1Id === winnerUserId)
+			match.winner = match.player1;
+		else if (match.player2Id === winnerUserId)
+			match.winner = match.player2;
+		else
+			match.winner = `User #${winnerUserId}`;
+
+		this.tryAdvance(tournamentId);
+		this.tryFinishTournament(tournamentId);
+
+		return t.bracket;
 	}
 
 	tryFinishTournament(tournamentId: string) {
@@ -361,83 +292,20 @@ export class TournamentMaganer {
 		if (!t?.bracket)
 			return null;
 
-		const final = t.bracket.final ?? [];
+		const final = t.bracket.final[0];
 
-		if (final.length === 0)
-			return null;
-
-		const finalMatch = final[0];
-
-		if (finalMatch.winner && finalMatch.status === "finished") {
-
-			const winnerName = finalMatch.winner;
-			const winnerId = finalMatch.player1 === winnerName
-				? finalMatch.player1Id
-				: finalMatch.player2Id;
-
-			
-			if (getTournamentStatus(tournamentId) !== "finished")
+		if (final.winner && final.status === "finished") {
+			if (getTournamentStatus(tournamentId) !== "finished") {
 				updateTournamentStatus(Number(tournamentId), "finished");
-
-			// if (winnerId)
-			// 	setTournamentWinner(Number(tournamentId), Number(winnerId));
+			}
 
 			return {
-				winnerName,
-				winnerId
+				winnerName: final.winner,
+				winnerId: final.player1 === final.winner ? final.player1Id : final.player2Id
 			};
 		}
 
 		return null;
-	}
-
-	handleMatchFinished(tournamentId: string, matchId: number, winnerUserId: number) {
-		const t = this.tournaments.get(tournamentId);
-		if (!t?.bracket)
-			return null;
-
-		const bracket = t.bracket;
-
-		const allRounds = [
-			bracket.quarterFinals ?? [],
-			bracket.semiFinals ?? [],
-			bracket.final ?? [],
-		];
-
-		let finishedMatch: any = null;
-
-		for (const round of allRounds) {
-			for (const match of round) {
-				if (match.matchId === matchId) {
-					match.status = "finished";
-
-					if (match.player1ClientId === winnerUserId)
-						match.winner = match.player1;
-					else if (match.player2ClientId === winnerUserId)
-						match.winner = match.player2;
-					else
-						match.winner = `User #${winnerUserId}`;
-
-					finishedMatch = match;
-					break;
-				}
-			}
-			if (finishedMatch) break;
-		}
-
-		if (!finishedMatch)
-			return bracket;
-
-		// ---- Si quart de finale terminé -> remplir demi
-		this.tryAdvanceToSemiFinals(tournamentId);
-
-		// ---- Si demi terminée -> remplir finale
-		this.tryAdvanceToFinal(tournamentId);
-
-		// // ---- Si finale terminée -> tournoi fini
-		this.tryFinishTournament(tournamentId);
-
-		return bracket;
 	}
 
 	getBracket(tournamentId: string) {

@@ -1,6 +1,7 @@
-import { createButton } from "../components/button/button.js";
-import { loginHandler, registerHandler } from "../handler/loginHandler.js";
-import { getItem } from "../helpers/localStoragehelper.js";
+import { createButton } from "../components/button/button";
+import { loginHandler, registerHandler } from "../handler/loginHandler";
+import { getItem } from "../helpers/localStoragehelper";
+import { t } from "../i18n/i18n";
 
 let defaultClasses = "w-1/3 items-center justify-center bg-gray-200 px-4 py-2 dark:bg-gray-950";
 
@@ -18,29 +19,29 @@ function createLoginForm(): HTMLDivElement {
 	outer.className = defaultClasses;
 	
 	h1.className = "mb-6 text-center text-2xl font-bold";
-	h1.append("Login");
-	
+	h1.append(t("login.title"));
+
 	form.id = "login-form"
 
 	textInput.type = "text";
-	textInput.placeholder = "Email";
+	textInput.placeholder = t("login.emailPlaceholder");
 	textInput.className = "mb-2 w-full border p-2 boder-gray-50";
 
 	passInput.type = "password";
-	passInput.placeholder = "Password";
+	passInput.placeholder = t("login.passwordPlaceholder");
 	passInput.className = "mb-4 w-full border p-2 boder-gray-50";
 
 	errorMsg.className = "text-red-600 mb-2 hidden";
 
 	form.append(textInput, passInput, errorMsg, createButton({
 		id: "login-button",
-		buttonText: "Login",
+		buttonText: t("login.loginButton"),
 		extraClasses: "w-full bg-blue-500 p-2 hover:bg-blue-600 dark:bg-blue-900 dark:hover:bg-blue-950 transition-color duration-200",
 		type: "submit"
 	}));
 
 	p.className = "mt-4 text-center";
-	p.append("Don't have an account? ", createButton({
+	p.append(t("login.noAccount") + " ", createButton({
 		id: "register-button",
 		f: () => {
 			const regCont = document.getElementById("register-container")
@@ -49,7 +50,7 @@ function createLoginForm(): HTMLDivElement {
 				regCont.classList.remove("hidden");
 			}
 		},
-		buttonText: "Register.",
+		buttonText: t("login.registerLink"),
 		extraClasses: "text-blue-500 underline hover:text-blue-700 transition-color duration-200",
 		type: "button"
 	}));
@@ -81,31 +82,31 @@ function createLoginForm(): HTMLDivElement {
 			if (payload.email.length === 0) {
 				textInput.classList.add("border-red-500");
 				textInput.classList.remove("boder-gray-50");
-				throw new Error("Email field empty");
+				throw new Error(t("loginErrors.emailEmpty"));
 			} else if (payload.password.trim().length === 0) {
 				passInput.classList.add("border-red-500");
 				passInput.classList.remove("boder-gray-50");
-				throw new Error("Password field empty");
+				throw new Error(t("loginErrors.passwordEmpty"));
 			}
-			
+
 			const result = await loginHandler(payload);
 			if (result === 400) {
-				throw new Error("400: Login has missing field(s)");
+				throw new Error(t("loginErrors.missingFields"));
 			} else if (result === 401) {
 				textInput.classList.add("border-red-500");
 				textInput.classList.remove("boder-gray-50");
 				passInput.classList.add("border-red-500");
 				passInput.classList.remove("boder-gray-50");
-				throw new Error("401: Invalid Credentials");
+				throw new Error(t("loginErrors.invalidCredentials"));
 			} else if (result != 200) {
-				throw new Error(`Unexpected error: ${result}`);
+				throw new Error(`${t("loginErrors.unexpectedError")}: ${result}`);
 			}
 			console.log("Login succeeded:", result);
 
-			window.location.href = "/dashboard";
+			window.location.href = "/";
 		} catch (err: any) {
 			console.error(err);
-			errorMsg.textContent = err ?? "Login failed";
+			errorMsg.textContent = err ?? t("loginErrors.loginFailed");
 			errorMsg.classList.remove("hidden");
 		}
 	});
@@ -130,43 +131,43 @@ function createRegistrationForm(): HTMLDivElement {
 	outer.classList.add("hidden");
 
 	h1.className = "mb-6 text-center text-2xl font-bold";
-	h1.append("Register");
+	h1.append(t("login.registerTitle"));
 
 	form.id = "register-form";
 
 	text.id = "username"
 	text.type = "text";
-	text.placeholder = "Username";
+	text.placeholder = t("login.usernamePlaceholder");
 	text.className = "mb-4 w-full border p-2";
 
 	mail.id = "email"
 	mail.type = "email";
-	mail.placeholder = "Email";
+	mail.placeholder = t("login.emailPlaceholder");
 	mail.className = "mb-4 w-full border p-2";
 
 	pass.id = "password";
 	pass.type = "password";
 	pass.minLength = 8;
-	pass.placeholder = "Password";
+	pass.placeholder = t("login.passwordPlaceholder");
 	pass.className = "mb-2 w-full border p-2";
 
 	passConfirm.id = "password-confirm";
 	passConfirm.type = "password";
 	passConfirm.minLength = 8;
-	passConfirm.placeholder = "Confirm password";
+	passConfirm.placeholder = t("login.confirmPasswordPlaceholder");
 	passConfirm.className = "mb-4 w-full border p-2";
 
 	errorMsg.className = "text-red-600 mb-2 hidden";
 
 	form.append(text, mail, pass, passConfirm, errorMsg, createButton({
 		id: "register-button",
-		buttonText: "Register",
+		buttonText: t("login.registerButton"),
 		extraClasses: "w-full bg-blue-500 p-2 hover:bg-blue-600 dark:bg-blue-900 dark:hover:bg-blue-950 transition-color duration-200",
 		type: "submit"
 	}));
 
 	p.className = "mt-4 text-center";
-	p.append("Already have an account? ", createButton({
+	p.append(t("login.alreadyAccount") + " ", createButton({
 		id: "login-button",
 		f: () => {
 			const loginCont = document.getElementById("login-container");
@@ -175,7 +176,7 @@ function createRegistrationForm(): HTMLDivElement {
 				loginCont.classList.remove("hidden");
 			}
 		},
-		buttonText: "Login.",
+		buttonText: t("login.loginLink"),
 		extraClasses: "text-blue-500 underline hover:text-blue-700 transition-color duration-200",
 		type: "button",
 	}))
@@ -213,44 +214,44 @@ function createRegistrationForm(): HTMLDivElement {
 			if (text.value.trim().length === 0) {
 				text.classList.remove("boder-gray-50");
 				text.classList.add("border-red-500");
-				throw new Error("Username field empty");
+				throw new Error(t("loginErrors.usernameEmpty"));
 			} else if (mail.value.trim().length === 0) {
 				mail.classList.remove("boder-gray-50");
 				mail.classList.add("border-red-500");
-				throw new Error("Email field empty");
+				throw new Error(t("loginErrors.emailEmpty"));
 			} else if (pass.value.trim().length === 0) {
 				pass.classList.remove("boder-gray-50");
 				pass.classList.add("border-red-500");
-				throw new Error("A password field is empty");
+				throw new Error(t("loginErrors.passwordEmpty"));
 			} else if (passConfirm.value.trim().length === 0) {
 				passConfirm.classList.remove("boder-gray-50");
 				passConfirm.classList.add("border-red-500");
-				throw new Error("A password field is empty");
+				throw new Error(t("loginErrors.passwordEmpty"));
 			} else if (pass.value != passConfirm.value) {
 				pass.classList.remove("boder-gray-50");
 				pass.classList.add("border-red-500");
 				passConfirm.classList.remove("boder-gray-50");
 				passConfirm.classList.add("border-red-500");
-				throw new Error("Passwords do not match");
+				throw new Error(t("loginErrors.passwordsMismatch"));
 			}
 
 			const result = await registerHandler(payload);
 			if (result === 400) {
-				throw new Error("Missing field(s) ot password < 8 chars");
+				throw new Error(t("loginErrors.missingFields"));
 			} else if (result === 409 ) {
 				text.classList.remove("boder-gray-50");
 				text.classList.add("border-red-500");
 				mail.classList.remove("boder-gray-50");
 				mail.classList.add("border-red-500");
-				throw new Error("Username or email has already been used");
+				throw new Error(t("loginErrors.usernameEmailTaken"));
 			} else if (result != 200) {
-				throw new Error(`Unexpected error: ${result}`);
+				throw new Error(`${t("loginErrors.unexpectedError")}: ${result}`);
 			}
 
-			window.location.href = "/dashboard";
+			window.location.href = "/";
 		} catch(err: any) {
 			console.error(err);
-			errorMsg.innerText = err ?? "Registration failed";
+			errorMsg.innerText = err ?? t("loginErrors.registrationFailed");
 			errorMsg.classList.remove("hidden");
 		}
 	})

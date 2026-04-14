@@ -52,11 +52,12 @@ export interface APIErrMsg {
 	message: string;
 	details?: unknown;
 }
+export type RouteParams = Record<string, string>;
 
 export interface Route {
 	path: string;
-	component: () => HTMLDivElement | Promise<HTMLDivElement>;
-	init?: () => void | Promise<void>;
+	component: (params?: RouteParams) => HTMLDivElement | Promise<HTMLDivElement>;
+	init?: (params?: RouteParams) => void | Promise<void>;
 	guarded?: Guard[];
 }
 

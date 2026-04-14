@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/23 17:28:04 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/06 08:48:36 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/10 17:28:12 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -222,7 +222,7 @@ export function toRenderState(s: ServerGameState, canvasW: number, canvasH: numb
 				x: playX + playW - MARGIN - PADDLE_THICK - 0 * GAP,
 				y: toScreenPaddleY(p.pos, s.mode),
 				w: PADDLE_THICK,
-				h: PADDLE_LEN,
+				h: paddle_len,
 				activate,
 				life
 			});

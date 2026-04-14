@@ -27,15 +27,17 @@ export default async function matchesRoutes(server: FastifyInstance) {
 
     /************************* CREATE MATCH **********************************/
     server.post('/matches', async (request, _reply) => {
-        const { tournamentId, round, status } = request.body as {
+        const { tournamentId, round, status, mode } = request.body as {
             tournamentId: number | null;
             round: number | null;
             status?: 'pending' | 'in_progress' | 'finished';
+            mode?: '1v1' | '2v2' | '3p' | '4p';
         }
         const match = matchService.createMatch(
             tournamentId ?? null,
             round ?? null,
-            status ?? 'pending'
+            status ?? 'pending',
+            mode ?? '1v1'
         )
         return success(match)
     })
@@ -46,6 +48,12 @@ export default async function matchesRoutes(server: FastifyInstance) {
         const result = matchService.deleteMatch(id)
         return success(result)
     })
+
+    /************************* DELETE ALL MATCHES **********************************/
+    // server.delete('/matches', async (_request, _reply) => {
+    //     const result = matchService.deleteAllMatches();
+    //     return success(result);
+    // });
 
     /************************* GET MATCHES BY TOURNAMENT **********************************/
     server.get('/tournaments/:tournamentId/matches', async (request, _reply) => {

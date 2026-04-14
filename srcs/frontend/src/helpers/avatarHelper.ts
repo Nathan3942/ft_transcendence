@@ -1,4 +1,6 @@
-import { getItem } from "./localStoragehelper.js";
+import { getItem } from "./localStoragehelper";
+
+export const BASE_PFP = "assets/images/user-svgrepo-com.svg?raw";
 
 export function getLocalUserAvatar(): string {
 	
@@ -7,5 +9,5 @@ export function getLocalUserAvatar(): string {
 	if (url) {
 		return url;
 	}
-	return "assets/images/user-svgrepo-com.svg?raw";
+	return BASE_PFP;
 }

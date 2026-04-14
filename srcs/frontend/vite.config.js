@@ -13,4 +13,7 @@ export default defineConfig({
   plugins: [
     tailwindcss(),
   ],
+  build: {
+    target: ['firefox128', 'chrome120'],
+  },
 })

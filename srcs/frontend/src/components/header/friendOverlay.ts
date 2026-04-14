@@ -1,8 +1,8 @@
-import { API_BASE } from "../../handler/loginHandler.js";
-import { getLocalId } from "../../helpers/apiHelper.js";
-import type { AddFriendRequest, Friend, FriendRequest, FriendRequestResponse, FriendResponse, PatchFriendRequest } from "../../interfaces/properties.js";
-import { createButton } from "../button/button.js";
-import { renderMessage } from "../popup/popup.js";
+import { API_BASE } from "../../handler/loginHandler";
+import { getLocalId } from "../../helpers/apiHelper";
+import { t } from "../../i18n/i18n";
+import type { AddFriendRequest, Friend, FriendRequest, FriendRequestResponse, FriendResponse, PatchFriendRequest } from "../../interfaces/properties";
+import { createButton } from "../button/button";
 
 export function buildFriendOverlay(): HTMLDivElement {
 	const overlay = document.createElement("div");
@@ -13,16 +13,16 @@ export function buildFriendOverlay(): HTMLDivElement {
 	overlay.id = "headerFriendOverlay";
 
 	const rightElement = document.createElement("div");
-	rightElement.classList.add("w-3/5", "h-full",
+	rightElement.classList.add("hidden", "md:flex", "md:w-3/5", "h-full",
 		"bg-gray-100/20", "dark:bg-gray-900/30");
-		
+
 	rightElement.innerHTML = `
-		<button id="closeFriendOverlayButton"></button>
+		<button id="closeFriendOverlayButton" class="cursor-pointer"></button>
 	`;
 
 	const leftElement = document.createElement("div");
 	leftElement.classList.add("flex", "flex-col",
-		"overflow-y-auto", "w-2/5", "h-full",
+		"overflow-y-auto", "w-full", "md:w-2/5", "h-full",
 		"bg-gray-300", "dark:bg-gray-700");
 	
 	const inputClasses = [
@@ -46,10 +46,13 @@ export function buildFriendOverlay(): HTMLDivElement {
 
 	leftElement.innerHTML = `
 
+		<div class="flex md:hidden fixed right-0 pt-2 pr-2">
+			<button id="closeFriendOverlayMobile" class="text-gray-600 dark:text-gray-300 hover:text-red-500 dark:hover:text-red-400 text-2xl leading-none px-2 py-1 cursor-pointer">✕</button>
+		</div>
 		<section class="pt-4 m-4">
-			<h1 class="text-2xl animate-blink">▐ Add Friend</h1>
+			<h1 class="text-2xl animate-blink">▐ ${t("nav.friends.add")}</h1>
 			<form id="addFriendForm">
-				<input id="addFriendInput" required type="number" placeholder="Friend Id" class="${inputClasses}">
+				<input id="addFriendInput" required type="number" placeholder="${t("nav.friends.idPlaceholder")}" class="${inputClasses}">
 				</input>
 
 				<button id="addFriendButton"></button>
@@ -58,21 +61,21 @@ export function buildFriendOverlay(): HTMLDivElement {
 		</section>
 			<div class="${dividerClasses}"></div>
 		<section class="pt-4 m-4">
-			<h1 class="text-2xl">Online Friends</h1>
+			<h1 class="text-2xl">${t("nav.friends.online")}</h1>
 			<ul id="onlineFriendList" class="${listClasses}">
 
 			</ul>
 		</section>
 			<div class="${dividerClasses}"></div>
 		<section class="pt-4 m-4">
-			<h1 class="text-2xl">Offline Friends</h1>
+			<h1 class="text-2xl">${t("nav.friends.offline")}</h1>
 			<ul id="offlineFriendList" class="${listClasses}">
 
 			</ul>
 		</section>
 			<div class="${dividerClasses}"></div>
 		<section class="pt-4 m-4">
-			<h1 class="text-2xl">Friend Requests</h1>
+			<h1 class="text-2xl">${t("nav.friends.requests")}</h1>
 			<ul id="incomingRequestsList" class="${listClasses}">
 
 			</ul
@@ -93,9 +96,6 @@ async function getFriendList(id: number): Promise<FriendResponse> {
 	if (resp.ok) {
 		const respJson = await resp.json() as FriendResponse
 		return respJson;
-	} else if (resp.status === 404 && resp.text.length == 0) {
-		renderMessage("You appear to be offline, please try again later.");
-		throw new Error(`You appear to be offline, please try again later.`);
 	} else if (resp.status === 404) {
 		throw new Error(`404: The specified user does not seem to exist.`);
 	} else {
@@ -104,9 +104,8 @@ async function getFriendList(id: number): Promise<FriendResponse> {
 }
 
 async function removeFriend(id: number): Promise<string> {
-	// Show confirmation popup
 
-	const resp = await fetch(`${API_BASE}/${getLocalId}/friends/${id}`, {
+	const resp = await fetch(`${API_BASE}/users/${getLocalId()}/friends/${id}`, {
 		method: "DELETE",
 		credentials: "include"
 	})
@@ -115,21 +114,17 @@ async function removeFriend(id: number): Promise<string> {
 		return `200`;
 	} else if (resp.status === 403) {
 		console.error("Error 403: User does not have the rights to terminate this friendship");
-		return "Error: User does not have the rights to terminate this friendship";
-	} else if (resp.status === 404 && resp.text.length === 0) {
-		console.error("Error 404: You appear to be offline, please try again later");
-		renderMessage("You appear to be offline, please try again later.");
-		return "You appear to be offline, please try again later.";
+		return t("nav.friends.errorNoRights");
 	} else if (resp.status === 404) {
 		console.error(`Error 404: You are not friends with ${id}`);
-		return `Error, you are not friends with ${id}`;
+		return t("nav.friends.errorNotFriends") + id;
 	} else {
 		console.error(`Error: Unexpected error: ${resp.status}`);
-		return `Error: Unexpected error: ${resp.status}`;
+		return t("nav.friends.errorUnexpected") + resp.status;
 	}
 }
 
-async function getFriendRequests(id: number): Promise<FriendRequestResponse> {
+export async function getFriendRequests(id: number): Promise<FriendRequestResponse> {
 	
 	const resp = await fetch(`${API_BASE}/users/${id}/friends/requests`, {
 		method: "GET",
@@ -141,8 +136,6 @@ async function getFriendRequests(id: number): Promise<FriendRequestResponse> {
 		return jsonResp;
 	} else if (resp.status === 403) {
 		throw new Error("Error: 403: You do not have permission to view this users friend requests");
-	} else if (resp.status === 404 && resp.text.length === 0) {
-		throw new Error("You appear to be offline, please try again later.");
 	} else if (resp.status === 404) {
 		throw new Error("Error: 404: The requested user was not found");
 	} else {
@@ -165,15 +158,13 @@ async function replyToFriendRequest(state: "accept" | "reject", uid: number, fri
 	if (resp.ok)
 		return "200";
 	else if (resp.status === 400) {
-		return "Error: 400: Invalid action performed";
+		return t("nav.friends.errorInvalidAction");
 	} else if (resp.status === 403) {
-		return "Error: 403: You do not have permission to view this users friend requests";
-	} else if (resp.status === 404 && resp.text.length === 0) {
-		return "You appear to be offline, please try again later.";
+		return t("nav.friends.errorNoPermission");
 	} else if (resp.status === 404) {
-		return "Error: 404: The requested user was not found";
+		return t("nav.friends.errorUserNotFound");
 	} else {
-		return `Error: unexpected error: ${resp.status}: ${resp.text}`;
+		return t("nav.friends.errorUnexpected") + resp.status;
 	}
 }
 
@@ -184,6 +175,7 @@ export async function populateFriendOverlay(mode: number): Promise<void> {
 	const closeOverlay = document.getElementById("closeFriendOverlayButton") as HTMLButtonElement;
 	const addFriendButton = document.getElementById("addFriendButton") as HTMLButtonElement;
 	const addFriendForm = document.getElementById("addFriendForm") as HTMLFormElement;
+	const mobileClose = document.getElementById("closeFriendOverlayMobile") as HTMLButtonElement;
 
 	if (mode == 0) {
 		if (overlay!.classList.contains("hidden"))
@@ -205,7 +197,7 @@ export async function populateFriendOverlay(mode: number): Promise<void> {
 				friendId: parseInt(friendInput.value)
 			}
 
-			const resp = await fetch(`${API_BASE}/${getLocalId}/friends`, {
+			const resp = await fetch(`${API_BASE}/users/${getLocalId()}/friends`, {
 				method: "POST",
 				credentials: "include",
 				body: JSON.stringify(form)
@@ -216,20 +208,19 @@ export async function populateFriendOverlay(mode: number): Promise<void> {
 					statusMsg.classList.add("text-green-600");
 				if (statusMsg.classList.contains("text-red-500"))
 					statusMsg.classList.remove("text-red-500");
-				statusMsg.innerText = `Successfully sent a friend request to ${friendInput.value}`
+				statusMsg.innerText = t("nav.friends.requestSent") + friendInput.value
 			} else {
 				if (statusMsg.classList.contains("text-green-600"))
 					statusMsg.classList.remove("text-green-600");
 				if (!statusMsg.classList.contains("text-red-500"))
 					statusMsg.classList.add("text-red-500");
 
-				if (resp.status === 404 && resp.text.length === 0) {
-					console.error("Error 404: You appear to be offline, please try again later");
-					statusMsg.innerText = `You appear to be offline, please try again later`;
-					renderMessage("You appear to be offline, please try again later.");
+				if (resp.status === 404) {
+					console.error("Error 404: The user you are trying to friend cannot be found");
+					statusMsg.innerText = t("nav.friends.notFound");
 				} else {
-					console.error(`Error: ${resp.status}: ${resp.text}`);
-					statusMsg.innerText = `Error: ${resp.status}: ${resp.text}`;
+					console.error(`Error: ${resp.status}: ${resp.statusText}`);
+					statusMsg.innerText = `${t("nav.friends.errorUnexpected")}${resp.status}: ${resp.statusText}`;
 				}
 			}
 		})
@@ -243,6 +234,12 @@ export async function populateFriendOverlay(mode: number): Promise<void> {
 		}
 	}));
 
+	if (mobileClose) {
+		mobileClose.addEventListener("click", () => {
+			document.getElementById("headerFriendOverlay")!.classList.add("hidden");
+		});
+	}
+
 	const buttonClasses = [
 		"w-full py-2 mt-2",
 		"bg-blue-400 dark:bg-blue-800",
@@ -254,7 +251,7 @@ export async function populateFriendOverlay(mode: number): Promise<void> {
 
 	addFriendButton!.replaceWith(createButton({
 		id: "addFriendButton",
-		buttonText: "Add Friend",
+		buttonText: t("nav.friends.add"),
 		type: "submit",
 		extraClasses: buttonClasses,
 	}))
@@ -264,7 +261,7 @@ export async function populateFriendOverlay(mode: number): Promise<void> {
 	try {
 		const id = getLocalId()
 		if (!id)
-			throw new Error("Could not find local user ID, please refresh the page and try again")
+			throw new Error(t("nav.friends.errorNoLocalId"))
 
 		const response = await getFriendList(id);
 		const friendList = response.data;
@@ -280,6 +277,9 @@ export async function populateFriendOverlay(mode: number): Promise<void> {
 
 			li.innerHTML = `
 				<img src="${friend.avatar_url}" alt=${friend.display_name} class="w-10 h-10" />
+				<span id="presence-dot-${friend.id}"
+					class="absolute bottom-0 right-0 w-2 h-2 rounded-full ${friend.is_online ? 'bg-green-500' : 'bg-gray-400'}">
+				</span>
 				<div class="flex flex-col">
 					<p class="font-medium">${friend.display_name}</p>
 					<p class="font-sm>">@${friend.username}</p>
@@ -300,7 +300,7 @@ export async function populateFriendOverlay(mode: number): Promise<void> {
 					extraClasses: "ml-auto mr-2",
 					iconBClass:"h-7 w-7 brightness-130 dark:brightness-120 hover:brightness-70 dark:hover:brightness-80",
 					icon: "/assets/images/xmark-red-svgrepo-com.svg?raw",
-					iconAlt: "Remove friend"
+					iconAlt: t("nav.friends.removeFriend")
 				}));
 
 			if (friend.is_online) {
@@ -317,13 +317,21 @@ export async function populateFriendOverlay(mode: number): Promise<void> {
 	try {
 		const id = getLocalId();
 		if (!id)
-			throw new Error("Could not find local user ID, please refresh the page and try again");
+			throw new Error(t("nav.friends.errorNoLocalId"));
 
 		const response = await getFriendRequests(id);
 		const requestList = response.data;
 
 		const friendRequests = document.getElementById("incomingRequestsList") as HTMLUListElement;
 		friendRequests.innerHTML = "";
+
+		const dot = document.getElementById("friend-request-dot");
+		if (dot) {
+			if (requestList.length > 0)
+				dot.classList.remove("hidden");
+			else
+				dot.classList.add("hidden");
+		}
 
 		requestList.forEach((request: FriendRequest) => {
 			const li = document.createElement("li");
@@ -346,7 +354,7 @@ export async function populateFriendOverlay(mode: number): Promise<void> {
 					icon: "/assets/images/check-green-svgrepo-com.svg?raw",
 					iconBClass: "w-7 h-7 mr-3",
 					f: async () => {
-						const resp = await replyToFriendRequest("accept", id, request.requester_id)
+						const resp = await replyToFriendRequest("accept", id, request.requester_id);
 						if (resp === "200") {
 							populateFriendOverlay(1);
 						} else {
@@ -358,7 +366,7 @@ export async function populateFriendOverlay(mode: number): Promise<void> {
 					icon: "/assets/images/xmark-red-svgrepo-com.svg?raw",
 					iconBClass: "w-7 h-7",
 					f: async () => {
-						const resp = await replyToFriendRequest("reject", id, request.requester_id)
+						const resp = await replyToFriendRequest("reject", id, request.requester_id);
 						if (resp === "200") {
 							populateFriendOverlay(1);
 						} else {

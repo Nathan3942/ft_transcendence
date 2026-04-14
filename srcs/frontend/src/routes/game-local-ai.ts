@@ -1,5 +1,7 @@
-import { createButton } from "../components/button/button.js";
-import makeButtonBlock from "../components/button/buttonBlock.js";
+import { createButton } from "../components/button/button";
+import makeButtonBlock from "../components/button/buttonBlock";
+import createBackButton from "../components/button/backButton";
+import { t } from "../i18n/i18n";
 
 import { startPong } from "../game/pong.js";
 /* MODIF 1 : on importe PongEvents pour le callback onGameOver */
@@ -291,29 +293,31 @@ export default function createLocalAIGamePage(): HTMLDivElement {
 	const inner = document.createElement("div");
 
 	outer.className = "flex flex-col flex-1 justify-center items-end"
-	inner.className = "text-3xl w-9/12 h-2/3 flex flex-col items-end justify-evenly";
+	inner.className = "text-3xl w-full md:w-9/12 h-2/3 flex flex-col items-center md:items-end justify-evenly";
 
-	const btnClasses = "w-full h-full flex flex-row p-4"; 
+	outer.append(createBackButton("bg-blue-300 dark:bg-blue-900", "/game-local"));
+
+	const btnClasses = "flex flex-row p-4 w-full"; 
 	inner.append(
-		makeButtonBlock("bg-blue-300 dark:bg-blue-900", createButton({
+		makeButtonBlock("bg-cyan-300 dark:bg-cyan-900", createButton({
 			id: "diff-easy-btn",
 			extraClasses:btnClasses,
-			buttonText: "Easy",
+			buttonText: t("gameLocalAi.easy"),
 			f: () => InitAiGame(1, outer)
 			})
 		),
-		makeButtonBlock("bg-purple-300 dark:bg-purple-900", createButton({
+		makeButtonBlock("bg-sky-300 dark:bg-sky-900", createButton({
 			id: "diff-medium-btn",
 			extraClasses: btnClasses,
-			buttonText: "Medium",
+			buttonText: t("gameLocalAi.medium"),
 			f: () => InitAiGame(2, outer),
 			href: "/game-local-ai-medium"
 			})
 		),
-		makeButtonBlock("bg-red-300 dark:bg-red-900", createButton({
+		makeButtonBlock("bg-indigo-300 dark:bg-indigo-900", createButton({
 			id: "diff-hard-btn",
 			extraClasses: btnClasses,
-			buttonText: "Hard",
+			buttonText: t("gameLocalAi.hard"),
 			f: () => InitAiGame(3, outer)
 			})
 		)

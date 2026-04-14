@@ -1,3 +1,5 @@
+import { t } from "../i18n/i18n";
+
 export default function buildUserProfile(): HTMLDivElement {
 	const thClasses = [
 		"py-2 px-4",
@@ -23,23 +25,26 @@ export default function buildUserProfile(): HTMLDivElement {
 	].join(" ");
 
 	const outer = document.createElement("div");
-	outer.className = "flex flex-1 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-white p-4";
+	outer.className = "overflow-y-auto md:overflow-hidden flex flex-1 md:flex-row flex-col bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-white p-4";
 	outer.innerHTML = `
-		<section class="w-1/6 h-full flex flex-col items-center pt-10 border-r border-gray-200 dark:border-gray-700 pr-4">
-			<img id="profilePfp" src="assets/images/user-svgrepo-com.svg" alt="avatar" class="w-20 h-20 border-2 border-gray-300 dark:border-gray-700">
-			<h1 id="profileUsername" class="text-2xl font-bold pt-3"></h1>
-			<p id="onlineStatus" class="pt-2 text-gray-500 dark:text-gray-400"></p>
+		<section class="w-full md:w-1/6 pb-4 md:pb-0 md:pr-4 flex md:flex-col flex-row items-center pt-4 md:pt-10 border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700">
+			<img id="profilePfp" src="assets/images/user-svgrepo-com.svg" alt="avatar" class="w-24 md:w-40 aspect-square shrink-0 border-2 border-gray-300 dark:border-gray-700">
+			<div class="pl-4 md:pl-0 flex flex-col md:items-center">
+				<h1 id="profileUsername" class="text-2xl font-bold md:pt-3"></h1>
+				<p id="userIdDisplay" class="pt-1 md:pt-2 text-gray-500 dark:text-gray-400">ID: </p>
+				<p id="onlineStatus" class="pt-1 md:pt-2"></p>
+			</div>
 		</section>
-		<section class="w-5/6 h-full flex flex-col pl-4">
+		<section class="w-full md:w-5/6 flex flex-col md:pl-4 pt-4 md:pt-0 md:overflow-y-auto">
 			<div class="flex flex-col mt-4">
-				<h2 class="text-xl font-bold mb-2 text-gray-800 dark:text-white">▐ User Stats</h2>
-				<div id="userStats" class="w-full grid grid-cols-4 gap-4">
+				<h2 class="text-xl font-bold mb-2 text-gray-800 dark:text-white">▐ ${t("profile.userStats")}</h2>
+				<div id="userStats" class="w-full grid grid-cols-2 md:grid-cols-4 gap-4">
 					<div class="${statBoxClasses}">
-						<h2 class="${h2Classes}">Total Matches</h2>
+						<h2 class="${h2Classes}">${t("profile.totalMatches")}</h2>
 						<p id="totalMatches" class="text-3xl"></p>
 					</div>
 					<div class="${statBoxClasses}">
-						<h2 class="${h2Classes}">Tournaments Won</h2>
+						<h2 class="${h2Classes}">${t("profile.tournamentsWon")}</h2>
 						<p id="tournamentsWon" class="text-3xl"></p>
 					</div>
 					<div class="${statBoxClasses} relative">
@@ -73,30 +78,36 @@ export default function buildUserProfile(): HTMLDivElement {
 					</div>
 					<div class="${statBoxClasses} flex flex-col justify-evenly">
 						<div class="flex flex-row justify-center">
-							<p class="pr-1 text-gray-600 dark:text-gray-300">Wins:</p>
+							<p class="pr-1 text-gray-600 dark:text-gray-300">${t("profile.wins")}:</p>
 							<p id="wins" class="font-bold"></p>
 						</div>
 						<div class="flex flex-row justify-center">
-							<p class="pr-1 text-gray-600 dark:text-gray-300">Losses:</p>
+							<p class="pr-1 text-gray-600 dark:text-gray-300">${t("profile.losses")}:</p>
 							<p id="losses" class="font-bold"></p>
 						</div>
 					</div>
 				</div>
 			</div>
-			<div class="mt-6 flex-1 overflow-y-auto">
-				<h2 class="text-xl font-bold mb-2 text-gray-800 dark:text-white">▐ Match History</h2>
-				<table id="matchHistory" class="w-full border border-gray-200 dark:border-gray-700">
-					<thead>
-						<tr>
-							<th class="${thClasses}">Match ID</th>
-							<th class="${thClasses}">Opponent</th>
-							<th class="${thClasses}">Score</th>
-							<th class="${thClasses}">Result</th>
-							<th class="${thClasses}">Date</th>
-						</tr>
-					</thead>
-					<tbody></tbody>
-				</table>
+			<div class="mt-4">
+				<h2 class="text-xl font-bold mb-2 text-gray-800 dark:text-white">▐ ${t("profile.recentForm")}</h2>
+				<div id="recentForm" class="flex gap-2"></div>
+			</div>
+			<div class="mt-6">
+				<h2 class="text-xl font-bold mb-2 text-gray-800 dark:text-white">▐ ${t("profile.matchHistory")}</h2>
+				<div class="overflow-x-auto">
+					<table id="matchHistory" class="w-full border border-gray-200 dark:border-gray-700">
+						<thead>
+							<tr>
+								<th class="${thClasses} hidden md:table-cell">${t("profile.matchId")}</th>
+								<th class="${thClasses}">${t("profile.opponent")}</th>
+								<th class="${thClasses}">${t("profile.score")}</th>
+								<th class="${thClasses}">${t("profile.result")}</th>
+								<th class="${thClasses}">${t("profile.date")}</th>
+							</tr>
+						</thead>
+						<tbody></tbody>
+					</table>
+				</div>
 			</div>
 		</section>
 	`;

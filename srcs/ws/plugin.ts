@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/13 15:48:09 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/02 06:24:02 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/10 17:21:01 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,10 @@ import { getMatchStatus, updateMatchStatus } from "../services/matchService";
 import { getMatchById } from "../repository/matchesRepository";
 import { getTournamentStatus, updateTournamentStatus } from "../services/tournamentService";
 import { TournamentMaganer } from "../tournament/tournamentManager";
+import ms from "zod/v4/locales/ms.js";
+
+import cookie from "@fastify/cookie";
+import { queryExecute } from "../database/queryWrapper";
 
 
 export type ModeStr = "1v1" | "2v2" | "3p" | "4p";
@@ -38,6 +42,9 @@ type Slot4p = "left" | "right" | "top" | "bottom";
 
 export type GameSlot = Slot1v1 | Slot2v2 | Slot3p | Slot4p;
 
+const userConnections = new Map<number, number>();
+
+const sockets = new Set<WsSocket>();
 
 // etend le type FastifyInstance pour l'ajouter au wsHub
 declare module "fastify" {
@@ -112,6 +119,40 @@ function randomId(): string {
 	return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 }
 
+function handleUserConnect(userId: number) {
+	const count = userConnections.get(userId) ?? 0;
+
+	userConnections.set(userId, count + 1);
+
+	// 👉 première connexion uniquement
+	if (count === 0) {
+		console.log(`User ${userId} ONLINE`);
+
+		queryExecute(
+			`UPDATE users SET is_online = 1 WHERE id = ?`,
+			[userId]
+		);
+	}
+}
+
+function handleUserDisconnect(userId: number) {
+	const count = userConnections.get(userId);
+
+	if (!count) return;
+
+	if (count <= 1) {
+		userConnections.delete(userId);
+
+		console.log(`User ${userId} OFFLINE`);
+
+		queryExecute(
+			`UPDATE users SET is_online = 0 WHERE id = ?`,
+			[userId]
+		);
+	} else {
+		userConnections.set(userId, count - 1);
+	}
+}
 
 export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 
@@ -136,12 +177,36 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
     */
 	app.get("/ws", { websocket: true }, (connection, req) => {
 
+		
 		const ws = ((connection as any).socket ?? (connection as any)) as WsSocket;
 
 		if (!ws || typeof (ws as any).on !== "function") {
 			app.log.error({ connectionKeys: Object.keys(connection as any) }, "WS: invalid connection object");
 			return;
 		}
+
+		const cookies = cookie.parse(req.headers.cookie || "");
+		const token = cookies.token;
+
+		if (!token) {
+			ws.close(1008, "No token");
+			return;
+		}
+
+		let payload: any;
+
+		try {
+			payload = app.jwt.verify(token);
+		} catch (err) {
+			ws.close(1008, "Invalid token");
+			return;
+		}
+
+		const userid = payload.id;
+		ws._userId = userid;
+
+		handleUserConnect(payload.id);
+		sockets.add(ws);
 
 		ws._wsId = randomId();
 
@@ -187,15 +252,19 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 
 				if (msg.room.startsWith("user:")) {
 				
-					const target = msg.room.slice("user:".length);
+					const target = Number(msg.room.slice("user:".length));
+
 					if (target !== ws._userId) {
 						hub.send(ws, { type: "error", code: "FORBIDDEN", message: "Cannot subscribe to other user room" });
 						return;
 					}
 				}
 
+				
+
 				hub.join(ws, msg.room as WsRoom);
 				hub.send(ws, { type: "subscribed", room: msg.room });
+				
 				return;
 			}
 
@@ -203,8 +272,10 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 				
 				hub.leave(ws, msg.room as WsRoom);
 				hub.send(ws, { type: "unsubscribed", room: msg.room });
+				console.log(`user: ${ws._userId} disconnected\n\n`);
 				return;
 			}
+
 
 			if (msg.type === "join_game") {
 				
@@ -215,12 +286,15 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 					return;
 
 				const match = getMatchById(msg.gameId);
-				const mode = normalizeMode(match?.mode);
+				const mode = normalizeMode(match?.mode || msg.mode || "1v1");
+
+				console.log("DB match mode =", match?.mode);
+				console.log("Client sent mode =", msg.mode);
 
 				const game = gameManager.getAndCreatGame(msg.gameId, mode);
 
 				ws._clientId = msg.clientId;
-				
+				ws._username = msg.userId;
 
 				const slot = pickSlotForClient(game, mode, ws._clientId);
 
@@ -238,7 +312,7 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 
 				ws._slot = slot;
 
-				gameManager.registerPlayer(msg.gameId, slot, ws._clientId, ws._userId);
+				gameManager.registerPlayer(msg.gameId, slot, ws._clientId, ws._userId, ws._username);
 
 				hub.join(ws, room);
 				
@@ -249,7 +323,7 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 
 		
 				if (count < playerNeeded) {
-					hub.send(ws, { type: "match_waiting", gameId: msg.gameId, count, playerNeeded, mode });
+					hub.broadcast(room, { type: "match_waiting", gameId: msg.gameId, count, playerNeeded, mode });
 					return;
 				}
 				else {
@@ -271,6 +345,7 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 				const room = `tournament:${msg.tournamentId}` as WsRoom;
 				ws._tournamentId = msg.tournamentId;
 				ws._clientId = msg.clientId;
+				ws._username = msg.username;
 
 				const tournamentId = msg.tournamentId;
 
@@ -278,7 +353,7 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 				if (status === "finished") {
 					hub.send(ws, {
 						type: "tournament_finished",
-						tournamentId,
+						tournamentId
 						// msg.winnerName,
 						// msg.winnerId,
 					});
@@ -287,11 +362,14 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 
 				hub.join(ws, room);
 
+						
+				console.log(`username: ${msg.username}`);
 				if (!tournamentManager.isTournamentPlayer(tournamentId, ws._clientId)) {
 					tournamentManager.registerTournamentPlayer(
 						tournamentId,
 						ws._clientId,
-						ws._userId
+						ws._userId,
+						msg.username
 					);
 				}
 
@@ -351,9 +429,8 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 			if (msg.type === "leave_game") {
 				const room = `game:${msg.gameId}` as WsRoom;
 				hub.leave(ws, room);
-				console.log("leave game");
-				if (ws._slot && ws._clientId)
-					gameManager.pauseGame(msg.gameId, ws._clientId);
+				console.log(`leave game ${ws._userId}, ${msg.userId}`);
+				gameManager.pauseGame(msg.gameId, "player_disconnect", msg.clientId, msg.userId);
 				return;
 			}
 
@@ -365,7 +442,7 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 				
 				if (g.state.status === "running") {
 					g.loop.pause();
-					hub.broadcast(`game:${msg.gameId}`, { type: "game_paused", reason: "Escape", clientId: msg.clientId });
+					hub.broadcast(`game:${msg.gameId}`, { type: "game_paused", reason: "Escape", clientId: msg.clientId, userId: msg.userId });
 				}
 				else if (g.state.status === "paused") {
 					g.loop.resume();
@@ -375,6 +452,8 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 				return;
 			}
 
+			
+
 			hub.send(ws, { type: "error", code: "UNKNOWN_EVENT", message: "Unknown event type" });
 		});
 		
@@ -382,19 +461,15 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 		ws.on("close", (code, reason) => {
 			hub.leaveAll(ws);
 
+			if (ws._userId)
+				handleUserDisconnect(ws._userId);
+			sockets.delete(ws);
+
 			const gameId = ws._gameId;
 			const slot = ws._slot;
 
-			if (gameId && slot)
-				gameManager.pauseGame(gameId, `disconnect:${slot}`, ws._clientId);
-
 			app.log.info({ wsId: ws._wsId, code, reason: reason.toString() }, "WS disconnected");
 		});	
-
-		// ws.on("close", () => {
-		// 	hub.leaveAll(ws);
-		// 	app.log.info({ wsId: ws._wsId }, "WS disconected");
-		// });
 
 		ws.on("error", (err) => {
 			app.log.warn({ wsId: ws._wsId, err }, "WS error");

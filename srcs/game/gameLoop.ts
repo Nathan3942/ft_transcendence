@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 15:45:48 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/13 13:51:03 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/08 06:05:07 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,10 +32,6 @@ const WINNING_SCORE = 1;
 
 function clamp(v: number, min: number, max: number) {
 	return Math.max(min, Math.min(max, v));
-}
-
-function axisForSlot(slot: GameSlot): "y" | "x" {
-	return slot === "top" || slot === "bottom" ? "x" : "y";
 }
 
 function ballIntersectsRect(ballX: number, ballY: number, r: number, rect: { x: number; y: number; w: number; h: number }) {

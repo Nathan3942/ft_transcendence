@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/13 14:57:23 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/03/05 18:28:38 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/10 16:20:21 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,8 @@ import { StringValidation } from "zod/v3";
 export type WsSocket = WebSocket & {
     
     _wsId?: string;
-    _userId?: string;
+    _userId?: number;
+    _username?: string;
     _clientId?: string;
     _gameId?: string;
     _tournamentId?: string;
@@ -55,6 +56,7 @@ export class WsHub {
     // ajoute le socket dans une room
     join(ws: WsSocket, room: WsRoom) {
 
+        console.log(`lalaal\n\n`);
         if (!this.rooms.has(room))
             this.rooms.set(room, new Set());
 
