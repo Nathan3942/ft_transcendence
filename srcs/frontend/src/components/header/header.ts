@@ -4,7 +4,7 @@ import { BASE_PFP, getLocalUserAvatar } from "../../helpers/avatarHelper";
 import { getItem } from "../../helpers/localStoragehelper";
 import { t } from "../../i18n/i18n";
 import { createButton } from "../button/button";
-import { populateFriendOverlay } from "./friendOverlay";
+import { getFriendRequests, populateFriendOverlay } from "./friendOverlay";
 
 export default function createHeader(): HTMLHeadElement {
 
@@ -79,23 +79,32 @@ export default function createHeader(): HTMLHeadElement {
 
 		userProfileBtn.append(bridge, userDropdown);
 
-		navbar.append(
-			createButton({
-				id: "friend-menu-button",
-				f: () => populateFriendOverlay(0),
-				icon: "assets/images/users-svgrepo-com.svg?raw",
-				iconAlt: "Icon",
-				iconBClass: "h-8 w-8 dark:invert hover:opacity-80"
-			}),
-			createButton({
-				id: "notification-center-button",
-				// f: () => display notification dropdown / overlay
-				icon: "assets/images/bell-svgrepo-com.svg?raw",
-				iconAlt: "Icon",
-				iconBClass: "h-8 w-8 dark:invert"
-			}),
-			userProfileBtn
-		);
+		const friendBtnWrapper = document.createElement("div");
+		friendBtnWrapper.className = "relative";
+
+		const friendMenuBtn = createButton({
+			id: "friend-menu-button",
+			f: () => populateFriendOverlay(0),
+			icon: "assets/images/users-svgrepo-com.svg?raw",
+			iconAlt: "Icon",
+			iconBClass: "h-8 w-8 dark:invert hover:opacity-80"
+		});
+
+		const requestDot = document.createElement("span");
+		requestDot.id = "friend-request-dot";
+		requestDot.className = "hidden absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full";
+
+		friendBtnWrapper.append(friendMenuBtn, requestDot);
+
+		const localId = getLocalId();
+		if (localId) {
+			getFriendRequests(localId).then(resp => {
+				if (resp.data.length > 0)
+					requestDot.classList.remove("hidden");
+			}).catch(() => {});
+		}
+
+		navbar.append(friendBtnWrapper, userProfileBtn);
 	} else {
 		navbar.append(
 			createButton({

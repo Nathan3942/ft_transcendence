@@ -125,7 +125,7 @@ async function removeFriend(id: number): Promise<string> {
 	}
 }
 
-async function getFriendRequests(id: number): Promise<FriendRequestResponse> {
+export async function getFriendRequests(id: number): Promise<FriendRequestResponse> {
 	
 	const resp = await fetch(`${API_BASE}/users/${id}/friends/requests`, {
 		method: "GET",
@@ -325,6 +325,14 @@ export async function populateFriendOverlay(mode: number): Promise<void> {
 
 		const friendRequests = document.getElementById("incomingRequestsList") as HTMLUListElement;
 		friendRequests.innerHTML = "";
+
+		const dot = document.getElementById("friend-request-dot");
+		if (dot) {
+			if (requestList.length > 0)
+				dot.classList.remove("hidden");
+			else
+				dot.classList.add("hidden");
+		}
 
 		requestList.forEach((request: FriendRequest) => {
 			const li = document.createElement("li");
