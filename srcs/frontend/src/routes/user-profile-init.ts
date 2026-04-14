@@ -116,7 +116,7 @@ export default async function initUserProfile(params?: RouteParams): Promise<voi
 		document.getElementById("tournamentsWon")!.textContent = userStats.tournamentsWon.toString();
 		document.getElementById("wins")!.textContent = userStats.wins.toString();
 		document.getElementById("losses")!.textContent = userStats.losses.toString();
-		document.getElementById("winrate")!.textContent = `${userStats.winrate * 100}%`;
+		document.getElementById("winrate")!.textContent = `${Math.round(userStats.winrate * 100)}%`;
 
 		const winCircle = document.getElementById("winCircle");
 		if (winCircle instanceof SVGCircleElement) {

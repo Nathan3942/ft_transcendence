@@ -104,9 +104,8 @@ async function getFriendList(id: number): Promise<FriendResponse> {
 }
 
 async function removeFriend(id: number): Promise<string> {
-	// Show confirmation popup
 
-	const resp = await fetch(`${API_BASE}/${getLocalId}/friends/${id}`, {
+	const resp = await fetch(`${API_BASE}/users/${getLocalId()}/friends/${id}`, {
 		method: "DELETE",
 		credentials: "include"
 	})

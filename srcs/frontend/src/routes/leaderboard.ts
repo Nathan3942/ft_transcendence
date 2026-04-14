@@ -36,13 +36,13 @@ async function importUserData(): Promise<userInfo[]> {
 
 			throw new Error(`${t("leaderboard.errorNetwork")}: ${response.status}: ${response.statusText}`);
 		}
-		const jsonData = await response.json();
+		const jsonData = await response.json() as { data: userInfo[] };
 
-		if (!Array.isArray(jsonData)) {
+		if (!Array.isArray(jsonData.data)) {
 			throw new Error(t("leaderboard.errorUnexpectedPayload"));
 		}
-		
-		const users = jsonData as userInfo[];
+
+		const users = jsonData.data;
 		
 		return users;
 	} catch (err) {
@@ -204,7 +204,7 @@ export default async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 		for (let i = 0; i < users.length; ++i) {
 			let user = users.at(i);
 			if (user) {
-				user.winrateString = user.winrate.toPrecision(2).slice(2) + "%";
+				user.winrateString = Math.round(user.winrate * 100) + "%";
 			}
 		}
 		
