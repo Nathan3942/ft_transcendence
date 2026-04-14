@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/13 15:48:09 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/10 17:21:01 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/14 14:23:37 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,7 +115,8 @@ function countRegisteredPlayers(game: any, mode: ModeStr): number {
 
 function randomId(): string {
 	const g: any = globalThis as any;
-	if (g.crypto?.randomUUID) return g.crypto.randomUUID();
+	if (g.crypto?.randomUUID)
+		return g.crypto.randomUUID();
 	return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 }
 
@@ -124,7 +125,7 @@ function handleUserConnect(userId: number) {
 
 	userConnections.set(userId, count + 1);
 
-	// 👉 première connexion uniquement
+	// première connexion uniquement
 	if (count === 0) {
 		console.log(`User ${userId} ONLINE`);
 
@@ -138,7 +139,8 @@ function handleUserConnect(userId: number) {
 function handleUserDisconnect(userId: number) {
 	const count = userConnections.get(userId);
 
-	if (!count) return;
+	if (!count)
+		return;
 
 	if (count <= 1) {
 		userConnections.delete(userId);
@@ -209,16 +211,6 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 		sockets.add(ws);
 
 		ws._wsId = randomId();
-
-		// const auth = wsAuthenticate(req);
-		// if (!auth.ok) {
-		// 	app.log.warn({ wsId: ws._wsId, reason: auth.reason }, "WS auth failed");
-		// 	// 1008 = policy violation
-		// 	ws.close(1008, "Unauthorized");
-		// 	return;
-		// }
-
-		// ws._userId = auth.userId;
 
 		app.log.info({ wsId: ws._wsId, ip: req.ip }, "WS connected");
 
@@ -342,6 +334,7 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 
 			if (msg.type === "join_tournament") {
 
+				console.log("join tournament\n\n");
 				const room = `tournament:${msg.tournamentId}` as WsRoom;
 				ws._tournamentId = msg.tournamentId;
 				ws._clientId = msg.clientId;
@@ -350,6 +343,15 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 				const tournamentId = msg.tournamentId;
 
 				const status = getTournamentStatus(tournamentId);
+
+				if (status === "in_progress" && !tournamentManager.isTournamentPlayer(tournamentId, ws._clientId)) {
+					hub.send(ws, {
+						type: "tournament_full",
+						tournamentId,
+					});
+					return;
+				}
+
 				if (status === "finished") {
 					hub.send(ws, {
 						type: "tournament_finished",
@@ -376,6 +378,7 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 				const count = tournamentManager.countTournamentPlayers(tournamentId);
 				const needed = 8;
 
+				console.log(`tournament count ${count}, needed ${needed}\n\n`);
 				if (count < needed) {
 					hub.broadcast(room, {
 						type: "tournament_waiting",
@@ -387,13 +390,14 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 				}
 
 				// todo ca marche pas
-				if (count >= needed && !tournamentManager.isTournamentPlayer(tournamentId, ws._clientId)) {
-					hub.send(ws, {
-						type: "tournament_full",
-						tournamentId,
-					});
-					return;
-				}
+				
+				// if (count >= needed && !tournamentManager.isTournamentPlayer(tournamentId, ws._clientId)) {
+				// 	hub.send(ws, {
+				// 		type: "tournament_full",
+				// 		tournamentId,
+				// 	});
+				// 	return;
+				// }
 
 				if (status === "in_progress") {
 					hub.send(ws, {

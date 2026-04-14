@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/09 16:26:29 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/11 03:24:35 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/13 18:59:22 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -225,7 +225,7 @@ export class TournamentMaganer {
 			player1Id: p1Id,
 			player2Id: p2Id,
 			player1ClientId: p1.player1ClientId,
-			player2ClientId: p2.player1ClientId,
+			player2ClientId: p2.player2ClientId,
 			winner: null,
 			winnername: null,
 			status: "pending",
@@ -257,7 +257,7 @@ export class TournamentMaganer {
 	// RESULT HANDLING
 	// =========================
 
-	handleMatchFinished(tournamentId: string, matchId: number, winnerUserId: number) {
+	handleMatchFinished(tournamentId: string, matchId: number, winnerUserId: number, winnerName?: string) {
 		const t = this.tournaments.get(tournamentId);
 		if (!t?.bracket) return null;
 
@@ -274,12 +274,18 @@ export class TournamentMaganer {
 
 		console.log(`winner id ${winnerUserId}`);
 
-		if (match.player1Id === winnerUserId)
+		if (match.player1Id === winnerUserId) {
 			match.winner = match.player1;
-		else if (match.player2Id === winnerUserId)
+			match.winnername = match.player1;
+		}
+		else if (match.player2Id === winnerUserId) {
 			match.winner = match.player2;
-		else
-			match.winner = `User #${winnerUserId}`;
+			match.winnername = match.player2;
+		}
+		else {
+			match.winner = winnerName ?? `User #${winnerUserId}`;
+			match.winnername = match.winner;
+		}
 
 		this.tryAdvance(tournamentId);
 		this.tryFinishTournament(tournamentId);
@@ -300,7 +306,7 @@ export class TournamentMaganer {
 			}
 
 			return {
-				winnerName: final.winner,
+				winnerName: final.winnername,
 				winnerId: final.player1 === final.winner ? final.player1Id : final.player2Id
 			};
 		}

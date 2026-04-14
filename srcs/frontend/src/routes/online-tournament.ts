@@ -6,11 +6,12 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/09 15:18:28 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/08 11:34:56 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/14 15:21:47 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import { getRouter } from "../handler/routeHandler.js";
+import { getLocalId } from "../helpers/apiHelper.js";
 import { getItem } from "../helpers/localStoragehelper.js";
 import { getCurrentTournamentId, setCurrentMatchId } from "../services/onlineStore.js";
 
@@ -31,7 +32,7 @@ function getClientId(): string {
 	return v;
 }
 
-function getUserId(): string | null {
+function getUsername(): string | null {
 	return getItem<string>("username") ?? null;
 }
 
@@ -39,20 +40,35 @@ function createMatchBox(match: any): HTMLDivElement {
 	const box = document.createElement("div");
 	box.className = "min-w-[220px] rounded bg-white dark:bg-gray-800 p-3 shadow flex flex-col gap-2";
 
+	const myClientId = getClientId();
+
+	// PLAYER 1
 	const p1 = document.createElement("div");
-	p1.className = "px-2 py-1 rounded bg-gray-200 dark:bg-gray-700";
+	const isMe1 = myClientId === match.player1ClientId;
+
+	p1.className = isMe1
+		? "px-2 py-1 rounded bg-green-200 text-green-900 font-bold"
+		: "px-2 py-1 rounded bg-gray-200 dark:bg-gray-700";
+
 	p1.textContent = match.player1 ?? "TBD";
 
+	// PLAYER 2
 	const p2 = document.createElement("div");
-	p2.className = "px-2 py-1 rounded bg-gray-200 dark:bg-gray-700";
+	const isMe2 = myClientId === match.player2ClientId;
+
+	p2.className = isMe2
+		? "px-2 py-1 rounded bg-green-200 text-green-900 font-bold"
+		: "px-2 py-1 rounded bg-gray-200 dark:bg-gray-700";
+
 	p2.textContent = match.player2 ?? "TBD";
+
 
 	box.append(p1, p2);
 
 	if (match.winner) {
 		const winner = document.createElement("div");
 		winner.className = "text-sm text-green-600 font-bold";
-		winner.textContent = `Winner: ${match.winner}`;
+		winner.textContent = `Winner: ${match.winnername ?? match.winner ?? "??"}`;
 		box.appendChild(winner);
 	}
 
@@ -193,12 +209,13 @@ export default function onlineTournament(): HTMLDivElement {
 			return;
 		}
 		
+		console.log("befor join tournament\n");
 		ws.send(JSON.stringify({
 			type: "join_tournament",
 			tournamentId,
 			clientId: getClientId(),
 			userId: getItem<number>("userId"),
-			username: getUserId()
+			username: getUsername()
 		}));
 	};
 
