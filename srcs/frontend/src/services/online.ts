@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-import { boolean, success } from "zod";
+// import { boolean, success } from "zod";
 import { api } from "./api.js";
 // import { getTournamentById } from "../../../repository/tournamentsRepository";
 
@@ -24,7 +24,7 @@ export interface Tournament {
   createdAt: string;
 }
 
-const API_BASE = `http://${window.location.hostname}:3000/api/v1`;  //a changer selon setup
+//const API_BASE = `/api/v1`;
 
 // export type MatchListItem = {
 //     id: string;

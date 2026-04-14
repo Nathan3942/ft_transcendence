@@ -1,9 +1,10 @@
-import { createButton } from "../components/button/button.js";
-import { renderError, renderMessage } from "../components/popup/popup.js";
-import { API_BASE, authenticate, clearLoginInfo, redirectToLogin } from "../handler/loginHandler.js";
-import { getLocalId } from "../helpers/apiHelper.js";
-import { getLocalUserAvatar } from "../helpers/avatarHelper.js";
-import { getItem, setItem } from "../helpers/localStoragehelper.js";
+import { createButton } from "../components/button/button";
+import { renderError, renderMessage } from "../components/popup/popup";
+import { API_BASE, authenticate, clearLoginInfo, redirectToLogin } from "../handler/loginHandler";
+import { getLocalId } from "../helpers/apiHelper";
+import { getLocalUserAvatar } from "../helpers/avatarHelper";
+import { getItem, setItem } from "../helpers/localStoragehelper";
+import { setLocale, t } from "../i18n/i18n";
 
 export default function initUSerSettings(): void {
 
@@ -25,6 +26,10 @@ export default function initUSerSettings(): void {
 	const confirmationButton = document.getElementById("confirmationButton") as HTMLButtonElement;
 	const deleteStatus = document.getElementById("deleteStatus") as HTMLParagraphElement;
 
+	const headerAvatar = document.getElementById("header-user-pfp") as HTMLImageElement;
+
+	const languageDropdownButton = document.getElementById("language-settings-button") as HTMLButtonElement;
+
 	// Declaration of Functions
 	async function uploadAvatar(file: File): Promise<string> {
 		const form = new FormData();
@@ -39,10 +44,10 @@ export default function initUSerSettings(): void {
 		if (resp.status === 400) {
 			throw `Failed to upload avatar: ${await resp.text()}`;
 		} else if (resp.status === 403) {
-			renderError("You are not allowed to perform this action, if you think this is a mistake, clear your cache with 'ctrl + shift + r' and log back in");
+			renderError(t("settings.notAllowed"));
 			throw "403: Not allowed";
 		} else if (resp.status === 404) {
-			renderMessage("The requested user was not found");
+			renderMessage(t("settings.userNotFound"));
 			throw "404: Not Found";
 		}
 
@@ -68,7 +73,7 @@ export default function initUSerSettings(): void {
 			payload["email"] = email;
 
 		if (!payload["email"] && !payload["username"])
-			throw "You have not entered any new values";
+			throw t("settings.noNewValues");
 
 		const resp = await fetch(`${API_BASE}/users/${getLocalId()}`, {
 			method: "PATCH",
@@ -80,17 +85,23 @@ export default function initUSerSettings(): void {
 		if (resp.ok) {
 			setItem("username", username);
 			setItem("email", email);
-			return "Information updated sucessfully";
+			return t("settings.infoUpdated");
 		}
 		else if (resp.status === 400) {
-			throw new Error("400: Invalid fields");
+			throw new Error(`400: ${t("settings.errorInvalidFields")}`);
 		} else if (resp.status === 403) {
-			throw new Error("403: You dont have the permissions to modify this data");
+			throw new Error(`403: ${t("settings.errorForbidden")}`);
 		} else if (resp.status === 404) {
-			throw new Error("404: the specified user you tried to modify does not exist");
+			throw new Error(`404: ${t("settings.errorTargetNotFound")}`);
 		} else {
-			throw new Error(`${resp.status}: Unexpected error`);
+			throw new Error(`${resp.status}: ${t("settings.errorUnexpected")}`);
 		}
+	}
+
+	async function updateLocale(locale: string): Promise<boolean> {
+		// PATCH API call here
+
+		return false;
 	}
 
 	async function deleteUser(): Promise<string> {
@@ -102,9 +113,9 @@ export default function initUSerSettings(): void {
 		if (resp.ok) {
 			return "200";
 		} else if (resp.status === 403 || resp.status  === 404) {
-			return `Error: ${resp.status}: ${resp.statusText}`;
+			return `${t("settings.errorDeleteFailed")}: ${resp.status}`;
 		} else {
-			return `Error: Unexpected Error: ${resp.status}: ${resp.text}`;
+			return `${t("settings.errorDeleteFailed")}: ${resp.status} (${t("settings.errorUnexpected")})`;
 		}
 		
 	}
@@ -124,7 +135,7 @@ export default function initUSerSettings(): void {
 			id: "submitPass",
 			type: "submit",
 			extraClasses: buttonClasses,
-			buttonText: "▶ Update Password"
+			buttonText: `▶ ${t("settings.updatePassword")}`
 		}));
 	}
 
@@ -139,15 +150,17 @@ export default function initUSerSettings(): void {
 				const savedUrl = await uploadAvatar(file);
 				profileImg.src = url;
 				URL.revokeObjectURL(url);
-				setItem<string>("avatar_url", savedUrl);
+				setItem<string>("avatar_url", url);
 				profileImg.classList.remove("dark:invert");
 				if (avatarMsg) {
 					if (!avatarMsg.classList.contains("text-green-600"))
 						avatarMsg.classList.add("text-green-600")
 					if (avatarMsg.classList.contains("text-red-600"))
 						avatarMsg.classList.remove ("text-red-600");
-					avatarMsg.innerText = "Avatar Updated sucessfully";
+					avatarMsg.innerText = t("settings.avatarUpdated");
 				}
+				if (headerAvatar)
+					headerAvatar.src = url;
 			} catch (e) {
 				profileImg.src = getLocalUserAvatar();
 				console.error(e);
@@ -167,7 +180,7 @@ export default function initUSerSettings(): void {
 			id: "submitInfoChange",
 			type: "submit",
 			extraClasses: buttonClasses,
-			buttonText: "▶ Save Changes"
+			buttonText: `▶ ${t("settings.saveChanges")}`
 		}));
 	}
 	
@@ -193,27 +206,90 @@ export default function initUSerSettings(): void {
 		})
 	}
 
+	const languageButtonClasses = [
+		"w-full px-4 py-1 text-left cursor-pointer",
+		"text-gray-800 dark:text-gray-100",
+		"hover:bg-gray-300 dark:hover:bg-gray-600"
+	].join(" ")
+	
+	if (languageDropdownButton) {
+		const newLanguageButton = createButton({
+			id: "language-settings-button",
+			extraClasses: [
+				"px-3 py-1.5 text-left cursor-pointer relative group",
+				"bg-gray-100 dark:bg-gray-800",
+				"hover:bg-gray-300 dark:hover:bg-gray-600",
+				"text-gray-800 dark:text-gray-100",
+				"border border-gray-400 dark:border-gray-500",
+				"transition-colors duration-100"
+			].join(" "),
+			buttonText: `${getItem("locale") ?? "en"} ▾`
+		});
+
+		const languageDropDown = document.createElement("div");
+		languageDropDown.className = [
+			"flex flex-col w-full absolute left-0 top-full z-10",
+			"invisible group-hover:visible",
+			"bg-gray-100 dark:bg-gray-800",
+			"border border-gray-400 dark:border-gray-500",
+			"shadow-md"
+		].join(" ");
+
+		languageDropDown.append(
+			createButton({
+				id: "language-en-button",
+				extraClasses: languageButtonClasses,
+				buttonText: "en",
+				f: () => {
+					updateLocale("en");
+					setLocale("en");
+				}
+			}),
+			createButton({
+				id: "language-fr-button",
+				extraClasses: languageButtonClasses,
+				buttonText: "fr",
+				f: () =>  {
+					updateLocale("fr");
+					setLocale("fr");
+				}
+			}),
+			createButton({
+				id: "language-de-button",
+				extraClasses: languageButtonClasses,
+				buttonText: "de",
+				f: () => {
+					updateLocale("de");
+					setLocale("de");
+				}
+			})
+		);
+
+		newLanguageButton.append(languageDropDown);
+		languageDropdownButton.replaceWith(newLanguageButton);
+	}
+
 	const redButtonClasses = [
-		"w-1/3 py-2 mt-2",
+		"w-full mb:w-2/3 py-2 mt-2",
 		"bg-red-400 dark:bg-red-800",
 		"hover:bg-red-500 hover:dark:bg-red-700",
 		"active:brightness-95 dark:active:brightness-110",
 		"transition-colors duration-100"
-	].join(" ")
-
+	].join(" ");
+	
 	if (deleteButton) {
 
 		deleteButton.replaceWith(createButton({
 			id: "deleteButton",
 			extraClasses: redButtonClasses,
-			buttonText: "Delete Account?",
+			buttonText: t("settings.deleteAccountButton"),
 			f: () => {confirmationDiv.classList.remove("hidden")}
 		}));
 
 		confirmationButton.replaceWith(createButton({
 			id: "confirmationButton",
 			extraClasses: redButtonClasses,
-			buttonText: "Im sure, Delete my account",
+			buttonText: t("settings.deleteAccountConfirmed"),
 			f: async () => {
 				const resp = await deleteUser();
 				if (resp === "200") {
@@ -227,5 +303,6 @@ export default function initUSerSettings(): void {
 			}
 		}))
 	}
+
 
 }

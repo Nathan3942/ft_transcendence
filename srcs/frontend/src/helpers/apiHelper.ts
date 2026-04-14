@@ -1,8 +1,6 @@
-import { authenticate } from "../handler/loginHandler.js";
+import { API_BASE, authenticate } from "../handler/loginHandler.js";
 import type { user } from "../interfaces/properties.js";
 import { getItem } from "./localStoragehelper.js";
-
-const API_BASE = `http://${window.location.hostname}:3000/api/v1`;
 
 export async function fetchUser(userId: number): Promise<user> {
     const resp = await fetch(`${API_BASE}/users/${userId}`, {

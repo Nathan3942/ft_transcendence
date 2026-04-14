@@ -14,6 +14,7 @@ import { getCurrentMatchId, getCurrentMatchMode, setCurrentTournamentId } from "
 import { drawPong } from "../game/pong_render.js";
 import { toRenderState, type RenderState, type ServerGameState, type GameSlot } from "../game/server_state_adapter.js";
 import { getRouter } from "../handler/routeHandler.js";
+import { t } from "../i18n/i18n.js";
 import { getItem } from "../helpers/localStoragehelper.js";
 
 
@@ -131,7 +132,7 @@ export default function onlineMatch(): HTMLDivElement {
 
 	const status = document.createElement("div");
 	status.className = "text-xl font-semibold";
-	status.textContent = "Connecting...";
+	status.textContent = t("onlineMatch.connecting");
 
 	const gameContainer = document.createElement("div");
 	gameContainer.className = "flex-1 rounded bg-black/10 dark:bg-white/10 overflow-hidden";
@@ -146,7 +147,7 @@ export default function onlineMatch(): HTMLDivElement {
 
 	const ctxMaybe = canvas.getContext("2d");
 	if (!ctxMaybe) {
-		status.textContent = "Canvas error (no 2d context)";
+		status.textContent = t("onlineMatch.canvasError");
 		return page;
 	}
 	const ctx: CanvasRenderingContext2D = ctxMaybe;
@@ -247,10 +248,10 @@ export default function onlineMatch(): HTMLDivElement {
 	rafId = requestAnimationFrame(loop);
 
 	ws.onopen = () => {
-		status.textContent = "Connected. Joining match...";
+		status.textContent = t("onlineMatch.joiningMatch");
 		const matchId = getCurrentMatchId();
 		if (!matchId) {
-			status.textContent = "No matchId (create match first).";
+			status.textContent = t("onlineMatch.noMatchId");
 			return;
 		}
 
@@ -276,26 +277,26 @@ export default function onlineMatch(): HTMLDivElement {
 		}
 
 		if (msg.type === "match_waiting") {
-			status.textContent = `Match #${msg.gameId}: waiting (${msg.count}/${msg.playerNeeded})...`;
+			status.textContent = `${t("common.match")} #${msg.gameId}: ${t("onlineMatch.waiting")} (${msg.count}/${msg.playerNeeded})...`;
 			return;
 		}
 
 		if (msg.type === "match_ready") {
-			status.textContent = `Match #${msg.gameId}: starting...`;
+			status.textContent = `${t("common.match")} #${msg.gameId}: ${t("onlineMatch.starting")}`;
 			return;
 		}
 
 		if (msg.type === "game_paused") {
 			
 			if (msg.reason === "Escape")
-				status.textContent = `Paused by ${msg.userId}`;
+				status.textContent = `${t("onlineMatch.pausedBy")} ${msg.userId}`;
 			else
-				status.textContent = `Paused (player ${msg.userId} disconnected)`;
+				status.textContent = `${t("onlineMatch.pausedPlayer")} ${msg.userId} ${t("onlineMatch.playerDisconnected")}`;
 			return;
 		}
 
 		if (msg.type === "game_resumed") {
-			status.textContent = `Game resumed`;
+			status.textContent = t("onlineMatch.resumed");
 			return;
 		}
 
@@ -310,7 +311,7 @@ export default function onlineMatch(): HTMLDivElement {
 		}
 
 		if (msg.type === "match_full") {
-			alert("Match full");
+			alert(t("onlineMatch.matchFull"));
 			cleanup();
 			getRouter().lazyLoad("/browse-games");
 			return;
@@ -321,7 +322,7 @@ export default function onlineMatch(): HTMLDivElement {
 
 			console.log(`${msg.winnerName}, ${msg.winnerUserId},  ${msg.winnerSlot}`);
 
-			status.textContent = `Winner: ${winner}`;
+			status.textContent = `${t("onlineMatch.winner")}: ${winner}`;
 			
 			if (unbindInput) {
 				unbindInput();
@@ -337,7 +338,7 @@ export default function onlineMatch(): HTMLDivElement {
 				setCurrentTournamentId(String(msg.tournamentId));
 				getRouter().lazyLoad("/online-tournament");
 			} else {
-				alert(`Winner: ${winner}`);
+				alert(`${t("onlineMatch.winner")}: ${winner}`);
 				getRouter().lazyLoad("/game-online");
 			}
 		}, 1500);
@@ -352,12 +353,12 @@ export default function onlineMatch(): HTMLDivElement {
 	};
 
 	ws.onerror = () => {
-		status.textContent = "WS error";
+		status.textContent = t("onlineMatch.wsError");
 	};
 
 	ws.onclose = () => {
 		// si on est encore sur la page, affiche juste un message
-		if (running) status.textContent = "WS closed";
+		if (running) status.textContent = t("onlineMatch.wsClosed");
 	};
 
 	return page;

@@ -1,7 +1,8 @@
-import createBackButton from "../components/button/backButton.js";
-import { createButton } from "../components/button/button.js";
-import { API_BASE } from "../handler/loginHandler.js";
-import { getItem } from "../helpers/localStoragehelper.js";
+import createBackButton from "../components/button/backButton";
+import { createButton } from "../components/button/button";
+import { API_BASE } from "../handler/loginHandler";
+import { getItem } from "../helpers/localStoragehelper";
+import { t } from "../i18n/i18n";
 
 // Variable names subject to change with proper backend integration
 type userInfo = {
@@ -31,17 +32,17 @@ async function importUserData(): Promise<userInfo[]> {
 		});
 		if (!response.ok) {
 			if (response.status === 400)
-				throw new Error(`Request error: ${response.status}: ${response.text()}`);
-			
-			throw new Error(`Network error: ${response.status}: ${response.statusText}`);
-		}
-		const jsonData = await response.json();
+				throw new Error(`${t("leaderboard.errorRequest")}: ${response.status}: ${response.text()}`);
 
-		if (!Array.isArray(jsonData)) {
-			throw new Error(`Unexpected payload, expected an array`)
+			throw new Error(`${t("leaderboard.errorNetwork")}: ${response.status}: ${response.statusText}`);
 		}
-		
-		const users = jsonData as userInfo[];
+		const jsonData = await response.json() as { data: userInfo[] };
+
+		if (!Array.isArray(jsonData.data)) {
+			throw new Error(t("leaderboard.errorUnexpectedPayload"));
+		}
+
+		const users = jsonData.data;
 		
 		return users;
 	} catch (err) {
@@ -173,19 +174,19 @@ export default async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 	const tr = document.createElement("tr");
 	const userNames = document.createElement("th");
 	userNames.className = "text-left py-3 px-4";
-	userNames.append("User Name");
+	userNames.append(t("leaderboard.userName"));
 	const pos = document.createElement("th");
 	pos.className = "text-left py-3 px-4 w-15";
-	pos.append("#")
+	pos.append(t("leaderboard.rank"))
 
 
 	tr.append(
 		pos,
 		userNames,
-		createThElement("Wins", "winsButton", "wins"),
-		createThElement("Losses", "lossButton", "losses"),
-		createThElement("Total Matches", "totalMatchButton", "totalMatches"),
-		createThElement("Winrate", "winrateButton", "winrate"),
+		createThElement(t("leaderboard.wins"), "winsButton", "wins"),
+		createThElement(t("leaderboard.losses"), "lossButton", "losses"),
+		createThElement(t("leaderboard.totalMatches"), "totalMatchButton", "totalMatches"),
+		createThElement(t("leaderboard.winrate"), "winrateButton", "winrate"),
 	)
 	
 	tHead.append(tr);
@@ -203,14 +204,14 @@ export default async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 		for (let i = 0; i < users.length; ++i) {
 			let user = users.at(i);
 			if (user) {
-				user.winrateString = user.winrate.toPrecision(2).slice(2) + "%";
+				user.winrateString = Math.round(user.winrate * 100) + "%";
 			}
 		}
 		
 		tbody.replaceWith(buildLeaderboard("wins"), );
 	} catch (e) {
 		console.error("Could not load users:", e);
-		tHead.replaceWith(`Error loading leaderboard: Could not load users: ${e}`);
+		tHead.replaceWith(`${t("leaderboard.errorLoading")}: ${e}`);
 	}
 
 	return outer;

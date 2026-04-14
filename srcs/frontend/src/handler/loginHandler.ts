@@ -114,6 +114,7 @@ export async function logoutHandler() {
 			renderError(`Logout failed: ${resp.status}: ${err}`);
 			throw new Error(`Logout failed: ${resp.status}: ${err}`);
 		}
+		// stopPresence();
 		clearLoginInfo();
 
 		redirectToLogin();

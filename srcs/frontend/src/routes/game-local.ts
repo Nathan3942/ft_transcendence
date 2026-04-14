@@ -1,5 +1,7 @@
-import { createButton } from "../components/button/button.js";
-import makeButtonBlock from "../components/button/buttonBlock.js";
+import createBackButton from "../components/button/backButton";
+import { createButton } from "../components/button/button";
+import makeButtonBlock from "../components/button/buttonBlock";
+import { t } from "../i18n/i18n";
 
 import { startPong } from "../game/pong.js";
 /* MODIF 1 : on importe PongEvents pour typer le callback onGameOver */
@@ -95,14 +97,16 @@ export default function createGameLocalPage(): HTMLDivElement {
 	const inner = document.createElement("div");
 
 	outer.className = "flex flex-col flex-1 justify-center items-end"
-	inner.className = "text-3xl w-9/12 h-2/3 flex flex-col items-end justify-evenly";
+	inner.className = "text-3xl w-full md:w-9/12 h-2/3 flex flex-col items-center md:items-end justify-evenly";
 
-	const btnClasses = "w-full h-full flex flex-row p-4"; 
+	outer.append(createBackButton("bg-blue-300 dark:bg-blue-900", "/"));
+
+	const btnClasses = "flex flex-row p-4 w-full"; 
 	inner.append(
 		makeButtonBlock("bg-blue-300 dark:bg-blue-900", createButton({
 			id: "vs-ai-button",
 			extraClasses:btnClasses,
-			buttonText: "Player vs AI",
+			buttonText: t("gameLocal.playerVsAi"),
 			href: "/game-local-ai",
 			icon: "assets/images/robot-svgrepo-com.svg",
 			iconAlt: "Icon",
@@ -112,7 +116,7 @@ export default function createGameLocalPage(): HTMLDivElement {
 		makeButtonBlock("bg-purple-300 dark:bg-purple-900", createButton({
 			id: "vs-player-button",
 			extraClasses: btnClasses,
-			buttonText: "Player vs Player",
+			buttonText: t("gameLocal.playerVsPlayer"),
 			/* MODIF 3 : on passe des noms par défaut pour le match PvP local */
 			f: () => createLocalMatch(outer, "Player 1", "Player 2"),
 			icon: "assets/images/keyboard-svgrepo-com.svg",
@@ -123,7 +127,7 @@ export default function createGameLocalPage(): HTMLDivElement {
 		makeButtonBlock("bg-cyan-300 dark:bg-cyan-900", createButton({
 			id: "create-local-tournament",
 			extraClasses: btnClasses,
-			buttonText: "Local Tournament",
+			buttonText: t("gameLocal.localTournament"),
 			href: "/local-tournament",
 			f: () => {
 				getRouter().lazyLoad("/tournament-local");

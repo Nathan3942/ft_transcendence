@@ -10,9 +10,10 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-import { getRouter } from "../handler/routeHandler.js";
-import { listOnlineMatches, deleteMatch, type Match } from "../services/online.js";
-import { setCurrentMatchId } from "../services/onlineStore.js";
+import { getRouter } from "../handler/routeHandler";
+import { listOnlineMatches, deleteMatch, type Match } from "../services/online";
+import { setCurrentMatchId } from "../services/onlineStore";
+import { t } from "../i18n/i18n";
 
 function matchRow(m: Match, onDeleted: () => void): HTMLDivElement {
 	const row = document.createElement("div");
@@ -24,11 +25,11 @@ function matchRow(m: Match, onDeleted: () => void): HTMLDivElement {
 
 	const title = document.createElement("div");
 	title.className = "text-lg font-semibold";
-	title.textContent = `Match #${m.id}`;
+	title.textContent = `${t("common.match")} #${m.id}`;
 
 	const meta = document.createElement("div");
 	meta.className = "text-sm opacity-70";
-	meta.textContent = `Status: ${m.status}, Mode: ${m.mode}`;
+	meta.textContent = `${t("browseGames.status")}: ${m.status}, ${t("browseGames.mode")}: ${m.mode}`;
 
 	left.append(title, meta);
 
@@ -38,10 +39,10 @@ function matchRow(m: Match, onDeleted: () => void): HTMLDivElement {
 
 	const joinBtn = document.createElement("button");
 	joinBtn.className = "px-4 py-2 rounded bg-blue-600 text-white";
-	joinBtn.textContent = "Join";
+	joinBtn.textContent = t("browseGames.join");
 	joinBtn.onclick = () => {
 		if (m.status === "finished")
-			confirm(`Match ${m.id} finished`);
+			confirm(`${t("common.match")} ${m.id} ${t("browseGames.matchFinished")}`);
 		else {
 			setCurrentMatchId(String(m.id));
 			getRouter().lazyLoad("/online-match");
@@ -50,16 +51,16 @@ function matchRow(m: Match, onDeleted: () => void): HTMLDivElement {
 
 	const delBtn = document.createElement("button");
 	delBtn.className = "px-4 py-2 rounded bg-red-600 text-white";
-	delBtn.textContent = "Delete";
+	delBtn.textContent = t("common.delete");
 	delBtn.onclick = async () => {
-		const ok = confirm(`Delete match #${m.id} ?`);
-		if (!ok) 
+		const ok = confirm(`${t("browseGames.deleteConfirm")} #${m.id} ?`);
+		if (!ok)
 			return;
 		try {
 			await deleteMatch(m.id);
 			onDeleted(); // refresh list
 		} catch (e) {
-			alert(`Delete failed: ${(e as Error).message}`);
+			alert(`${t("browseGames.deleteFailed")}: ${(e as Error).message}`);
 		}
 	};
 
@@ -80,11 +81,11 @@ export default function createBrowseGamesPage(): HTMLDivElement {
 
 	const h1 = document.createElement("div");
 	h1.className = "text-2xl font-bold";
-	h1.textContent = "Browse Games";
+	h1.textContent = t("browseGames.title");
 
 	const back = document.createElement("button");
 	back.className = "px-4 py-2 rounded bg-gray-300 dark:bg-gray-700";
-	back.textContent = "Back";
+	back.textContent = t("common.back");
 	back.onclick = () => getRouter().lazyLoad("/game-online");
 
 	header.append(h1, back);
@@ -92,7 +93,7 @@ export default function createBrowseGamesPage(): HTMLDivElement {
 	// ---- status + list container ----
 	const status = document.createElement("div");
 	status.className = "text-sm opacity-70 shrink-0";
-	status.textContent = "Loading matches...";
+	status.textContent = t("browseGames.loading");
 
 	const panel = document.createElement("div");
 	panel.className = "flex-1 min-h-0 overflow-y-auto rounded bg-black/5 dark:bg-white/5 p-3";
@@ -108,25 +109,25 @@ export default function createBrowseGamesPage(): HTMLDivElement {
 		On l'appelle au chargement + après chaque delete.
 	*/
 	async function load() {
-		status.textContent = "Loading matches...";
+		status.textContent = t("browseGames.loading");
 		list.innerHTML = "";
 
 		try {
 			const matches = (await listOnlineMatches()).filter(m => !m.tournamentId);
 
 			if (!Array.isArray(matches) || matches.length === 0) {
-				status.textContent = "No matches yet. Create one!";
+				status.textContent = t("browseGames.empty");
 				return;
 			}
 
-			status.textContent = `${matches.length} match(es)`;
+			status.textContent = `${matches.length} ${t("browseGames.matchCount")}`;
 
 			matches.forEach((m) => {
 				list.appendChild(matchRow(m, load));
 			});
 		}
 		catch (e) {
-			status.textContent = `Error: ${(e as Error).message}`;
+			status.textContent = `${t("browseGames.error")}: ${(e as Error).message}`;
 		}
 	}
 

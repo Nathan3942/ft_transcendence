@@ -12,43 +12,48 @@ When built, the frontend consists of:
 
 ---
 
-# Project Structue
+# Project Structure
 The frontend is structured as follows:
 
 - `/public`: Contains assets such as Images, fonts, and such.
-- `/src/app.ts`: Is the primary entrypoint for the program.
+- `index.html`: The HTML entry point for the application.
+- `/src/main.ts`: Is the primary entrypoint for the program.
 - `/src/components`: Contains reusable UI components.
+- `/src/game`: Contains game logic and rendering.
 - `/src/handler`: Contains logic for non tasks with no UI interaction.
+- `/src/helpers`: Contains utility and helper functions.
 - `/src/interfaces`: Contains TypeScript interfaces.
 - `/src/routes`: Contains the logic for constructing individual pages.
+- `/src/services`: Contains service logic for interacting with external APIs or backend.
 
 ---
 
-# Dependancies
-To build / work on the project, you will need the following dependancies.
+# Dependencies
+To build / work on the project, you will need the following dependencies.
 
 ## Package managers
 
-| Manager  | Reccomendation |
-| -------- | --------- |
-| **pnpm** | Preferred |
-| **npm**  | Fallback  |
+| Manager  | Recommendation |
+| -------- | -------------- |
+| **pnpm** | Preferred      |
+| **npm**  | Fallback       |
 
 
 ## Dev Dependencies
 
-Use `[manager] install` in the `/srcs/frontend` directory to automatically install the dev dependancies.
+Use `[manager] install` in the `/srcs/frontend` directory to automatically install the dev dependencies.
 
-| Dependency     | Version |
-| -------------- | ------- |
-| **TypeScript** | 5.7.3   |
-| **Vite**       | 7.3.1   |
+| Dependency      | Version |
+| --------------- | ------- |
+| **TypeScript**  | 5.7.3   |
+| **Vite**        | 7.3.1   |
+| **TailwindCSS** | —       |
 
 
 ---
 
 # Debugging
-To run the SPA in dev mode, to avoid having to set up a webserver each time, the repo comes with `vite` which has a built in dev server. To launch the dev server, make sure you are in the `srcs/fontend` directory, and run the command:
+To run the SPA in dev mode, to avoid having to set up a webserver each time, the repo comes with `vite` which has a built in dev server. To launch the dev server, make sure you are in the `srcs/frontend` directory, and run the command:
 ```bash
 pnpm run dev
 ```
