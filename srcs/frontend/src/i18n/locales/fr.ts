@@ -169,7 +169,9 @@ const fr: TranslationDict = {
 		errorFetchHistory: "Erreur : Impossible de charger l'historique des matchs : ",
 		errorInvalidId: "Identifiant invalide",
 		errorNotAuthenticated: "Non authentifié",
-		errorUnexpected: "Erreur inattendue"
+		errorUnexpected: "Erreur inattendue",
+		recentForm: "Forme Récente",
+		noRecentMatches: "Aucun match joué pour l'instant"
 	},
 
 	gameLocal: {

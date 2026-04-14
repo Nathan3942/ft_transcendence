@@ -177,6 +177,23 @@ export default async function initUserProfile(params?: RouteParams): Promise<voi
 			cell5.textContent = `${date.at(0)} - ${date.at(1)?.replace("Z", "")}`;
 
 		}
+		const recentForm = document.getElementById("recentForm")!;
+		const recent = matchHistoryArray.slice(-5).reverse();
+
+		if (recent.length === 0) {
+			recentForm.textContent = t("profile.noRecentMatches");
+		} else {
+			recent.forEach(match => {
+				const badge = document.createElement("span");
+				badge.className = match.won
+					? "w-9 h-9 flex items-center justify-center rounded-full bg-green-500 text-white font-bold text-sm"
+					: "w-9 h-9 flex items-center justify-center rounded-full bg-red-500 text-white font-bold text-sm";
+				badge.textContent = match.won ? t("profile.win") : t("profile.loss");
+				badge.title = `${match.userScore} - ${match.opponentScore} vs ${match.opponentName ?? "AI"}`;
+				recentForm.appendChild(badge);
+			});
+		}
+
 	} catch (e) {
 		console.error(`Error: Unable to fetch match history: ${e}`);
 		matchHistoryTable.classList.remove("border");

@@ -169,7 +169,9 @@ const en: TranslationDict = {
 		errorFetchHistory: "Error: Unable to fetch match history: ",
 		errorInvalidId: "Invalid user ID",
 		errorNotAuthenticated: "Not authenticated",
-		errorUnexpected: "Unexpected error"
+		errorUnexpected: "Unexpected error",
+		recentForm: "Recent Form",
+		noRecentMatches: "No matches played yet"
 	},
 
 	gameLocal: {

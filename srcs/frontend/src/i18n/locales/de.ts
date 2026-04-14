@@ -169,7 +169,9 @@ const de: TranslationDict = {
 		errorFetchHistory: "Fehler: Spielverlauf konnte nicht geladen werden: ",
 		errorInvalidId: "Ungültige Benutzer-ID",
 		errorNotAuthenticated: "Nicht authentifiziert",
-		errorUnexpected: "Unerwarteter Fehler"
+		errorUnexpected: "Unerwarteter Fehler",
+		recentForm: "Aktuelle Form",
+		noRecentMatches: "Noch keine Spiele gespielt"
 	},
 
 	gameLocal: {
