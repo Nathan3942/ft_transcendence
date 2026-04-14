@@ -54,6 +54,7 @@ async function createLocalMatch(outer: HTMLDivElement, p1Name: string, p2Name: s
 				await fetch(`${API_URL}/matches/result`, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
+					credentials: "include",
 					body: JSON.stringify({
 						player1Id: p1Id,
 						player2Id: p2Id,

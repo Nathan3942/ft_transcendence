@@ -163,13 +163,17 @@ export default async function initUserProfile(params?: RouteParams): Promise<voi
 			const cell5 = newRow.insertCell(4); // Date
 
 			cell1.textContent = match.matchId.toString();
-			cell2.append(createButton({
-				buttonText: match.opponentName,
-				href: `/user-profile/${match.opponentId}`,
-				id: `profile-button-${match.opponentId}`,
-				extraClasses: "hover:opacity-80"
-			}));
-			cell3.textContent = `${match.userScore} - ${match.opponentScore}`;
+			if (match.opponentId) {
+				cell2.append(createButton({
+					buttonText: match.opponentName,
+					href: `/user-profile/${match.opponentId}`,
+					id: `profile-button-${match.opponentId}`,
+					extraClasses: "hover:opacity-80"
+				}));
+			} else {
+				cell2.textContent = "AI";
+			}
+			cell3.textContent = `${match.userScore} - ${match.opponentScore ?? "AI"}`;
 			if (match.won)
 				cell4.classList.add("text-green-600", "dark:text-green-400");
 			else

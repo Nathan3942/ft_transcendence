@@ -194,6 +194,7 @@ async function InitAiGame(diffNum: number, pageRoot: HTMLDivElement) {
 				await fetch(`${API_URL}/matches/result`, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
+					credentials: "include",
 					body: JSON.stringify({
 						player1Id: p1Id,
 						player2Id: null,
