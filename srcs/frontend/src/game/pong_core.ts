@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/19 10:11:49 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/02/27 10:54:06 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/16 07:29:02 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,8 +101,10 @@ export const DEFAULT_CONFIG: PongConfig = {
 // ================= Helpers ===================
 
 export function computePlayfield(mod: ModeId, canvasW: number, canvasH: number) {
-	if (mod == "3p" || mod === "4p") {
-		const size = Math.min(canvasW, canvasH);
+	const isSmallScreen = canvasW < 700 || canvasH < 500;
+
+	if (mod === "3p" || mod === "4p") {
+		const size = Math.min(canvasW, canvasH) * (isSmallScreen ? 0.92 : 0.78);
 		return {
 			x: (canvasW - size) / 2,
 			y: (canvasH - size) / 2,
@@ -112,8 +114,10 @@ export function computePlayfield(mod: ModeId, canvasW: number, canvasH: number) 
 	}
 
 	const targetAspect = 4 / 3;
-	const maxW = canvasW * 0.78;
-	const maxH = canvasH * 0.78;
+	const scale = isSmallScreen ? 0.92 : 0.78;
+
+	const maxW = canvasW * scale;
+	const maxH = canvasH * scale;
 
 	let w = maxW;
 	let h = w / targetAspect;
@@ -123,7 +127,12 @@ export function computePlayfield(mod: ModeId, canvasW: number, canvasH: number) 
 		w = h * targetAspect;
 	}
 
-	return { x: (canvasW - w) / 2, y: (canvasH - h) / 2, w, h };
+	return {
+		x: (canvasW - w) / 2,
+		y: (canvasH - h) / 2,
+		w,
+		h
+	};
 }
 
 export function clamp(v: number, min: number, max: number) {

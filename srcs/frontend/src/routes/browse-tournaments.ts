@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 16:33:40 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/13 14:32:40 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/16 07:16:00 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,7 +121,7 @@ export default function createBrowseTournamentsPage(): HTMLDivElement {
         // const tournaments = await listOnlineTournaments();
 
         // ⚠️ ton code actuel
-        const tournaments = await listOnlineTournament();
+        const tournaments = (await listOnlineTournament()).filter(t => t.status !== "finished");
 
         if (!Array.isArray(tournaments) || tournaments.length === 0) {
             status.textContent = "No tournament yet. Create one!";

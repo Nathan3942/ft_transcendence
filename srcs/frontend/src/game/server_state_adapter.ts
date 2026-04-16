@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/23 17:28:04 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/10 17:28:12 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/16 07:00:45 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,11 +73,7 @@ export type RenderState = {
 	paddles: RenderPaddleRect[];
 }
 
-const PADDLE_THICK = 10;
 const PADDLE_LEN = 120;
-const MARGIN = 10;
-
-const GAP = PADDLE_THICK + 8;
 
 function slotsForMode(mode: ModeId): GameSlot[] {
 	switch (mode) {
@@ -94,7 +90,6 @@ function slotsForMode(mode: ModeId): GameSlot[] {
 
 
 export function toRenderState(s: ServerGameState, canvasW: number, canvasH: number): RenderState {
-	
 	const H = 750;
 	const W = 1000;
 	const H_CARRE = 800;
@@ -102,9 +97,12 @@ export function toRenderState(s: ServerGameState, canvasW: number, canvasH: numb
 	const X = 100;
 	const Y = 100;
 
+	const isSmallScreen = canvasW < 700 || canvasH < 500;
+	const fieldScale = isSmallScreen ? 0.92 : 0.78;
+
 	const targetAspect = 4 / 3;
-	const maxW = canvasW * 0.78;
-	const maxH = canvasH * 0.78;
+	const maxW = canvasW * fieldScale;
+	const maxH = canvasH * fieldScale;
 
 	let w = maxW;
 	let h = w / targetAspect;
@@ -119,15 +117,20 @@ export function toRenderState(s: ServerGameState, canvasW: number, canvasH: numb
 	let playW = w;
 	let playH = h;
 
-	const paddle_len = (PADDLE_LEN / H) * playH;
-
 	if (s.mode === "3p" || s.mode === "4p") {
-		const size = Math.min(canvasW, canvasH) * 0.78;
+		const squareScale = isSmallScreen ? 0.9 : 0.78;
+		const size = Math.min(canvasW, canvasH) * squareScale;
 		playX = (canvasW - size) / 2;
 		playY = (canvasH - size) / 2;
 		playW = size;
 		playH = size;
 	}
+
+	const minDim = Math.min(playW, playH);
+	const paddleThick = Math.max(6, Math.floor(minDim * 0.012));
+	const paddleLen = Math.max(50, (PADDLE_LEN / H) * playH);
+	const margin = Math.max(4, Math.floor(minDim * 0.01));
+	const gap = paddleThick + Math.max(4, Math.floor(minDim * 0.01));
 
 	function toScreenX(x: number, mode: ModeId): number {
 		if (mode === "3p" || mode === "4p")
@@ -153,18 +156,6 @@ export function toRenderState(s: ServerGameState, canvasW: number, canvasH: numb
 		return playY + (y / H) * playH;
 	}
 
-	// function axisLocalToAbs(axis: "x" | "y", pos: number, mode: ModeId): number {
-	// 	return axis === "y" ? toScreenY(pos, mode) : toScreenX(pos, mode);
-	// }
-
-	// function paddleScreenY(pos: number, mode: ModeId): number {
-	// 	return axisLocalToAbs("y", pos, mode) + PADDLE_LEN;
-	// }
-
-	// function paddleScreenX(pos: number, mode: ModeId): number {
-	// 	return axisLocalToAbs("x", pos, mode) + PADDLE_LEN;
-	// }
-
 	const paddles: RenderPaddleRect[] = [];
 	const wantedSlot = slotsForMode(s.mode);
 
@@ -179,60 +170,60 @@ export function toRenderState(s: ServerGameState, canvasW: number, canvasH: numb
 		if (slot === "left")
 			paddles.push({
 				slot,
-				x: playX + MARGIN,
+				x: playX + margin,
 				y: toScreenPaddleY(p.pos, s.mode),
-				w: PADDLE_THICK,
-				h: paddle_len,
+				w: paddleThick,
+				h: paddleLen,
 				activate,
 				life
 			});
 		else if (slot === "right")
 			paddles.push({
 				slot,
-				x: playX + playW - MARGIN - PADDLE_THICK,
+				x: playX + playW - margin - paddleThick,
 				y: toScreenPaddleY(p.pos, s.mode),
-				w: PADDLE_THICK,
-				h: paddle_len,
+				w: paddleThick,
+				h: paddleLen,
 				activate,
 				life
 			});
 		else if (slot === "left1")
 			paddles.push({
 				slot,
-				x: playX + MARGIN + 0 * GAP,
+				x: playX + margin,
 				y: toScreenPaddleY(p.pos, s.mode),
-				w: PADDLE_THICK,
-				h: paddle_len,
+				w: paddleThick,
+				h: paddleLen,
 				activate,
 				life
 			});
 		else if (slot === "left2")
 			paddles.push({
 				slot,
-				x: playX + MARGIN + 1 * GAP,
+				x: playX + margin + gap,
 				y: toScreenPaddleY(p.pos, s.mode),
-				w: PADDLE_THICK,
-				h: paddle_len,
+				w: paddleThick,
+				h: paddleLen,
 				activate,
 				life
 			});
 		else if (slot === "right1")
 			paddles.push({
 				slot,
-				x: playX + playW - MARGIN - PADDLE_THICK - 0 * GAP,
+				x: playX + playW - margin - paddleThick,
 				y: toScreenPaddleY(p.pos, s.mode),
-				w: PADDLE_THICK,
-				h: paddle_len,
+				w: paddleThick,
+				h: paddleLen,
 				activate,
 				life
 			});
 		else if (slot === "right2")
 			paddles.push({
 				slot,
-				x: playX + playW - MARGIN - PADDLE_THICK - 1 * GAP,
+				x: playX + playW - margin - paddleThick - gap,
 				y: toScreenPaddleY(p.pos, s.mode),
-				w: PADDLE_THICK,
-				h: paddle_len,
+				w: paddleThick,
+				h: paddleLen,
 				activate,
 				life
 			});
@@ -240,9 +231,9 @@ export function toRenderState(s: ServerGameState, canvasW: number, canvasH: numb
 			paddles.push({
 				slot,
 				x: toScreenPaddleX(p.pos, s.mode),
-				y: playY + MARGIN,
-				w: paddle_len,
-				h: PADDLE_THICK,
+				y: playY + margin,
+				w: paddleLen,
+				h: paddleThick,
 				activate,
 				life
 			});
@@ -250,9 +241,9 @@ export function toRenderState(s: ServerGameState, canvasW: number, canvasH: numb
 			paddles.push({
 				slot,
 				x: toScreenPaddleX(p.pos, s.mode),
-				y: playY + playH - MARGIN - PADDLE_THICK,
-				w: paddle_len,
-				h: PADDLE_THICK,
+				y: playY + playH - margin - paddleThick,
+				w: paddleLen,
+				h: paddleThick,
 				activate,
 				life
 			});

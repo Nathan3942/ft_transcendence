@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 17:15:35 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/08 11:03:37 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/16 08:56:06 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,8 @@ import { drawPong } from "../game/pong_render.js";
 import { toRenderState, type RenderState, type ServerGameState, type GameSlot } from "../game/server_state_adapter.js";
 import { getRouter } from "../handler/routeHandler.js";
 import { getItem } from "../helpers/localStoragehelper.js";
+
+// import { getTournamentStatus } from "../../../services/tournamentService";
 
 
 type Dir = -1 | 0 | 1;
@@ -44,7 +46,7 @@ function isHorizontal(slot: GameSlot) {
 	return slot === "top" || slot === "bottom";
 }
 
-function bindInput(ws: WebSocket, gameId: string, slot: GameSlot) {
+function bindInput(ws: WebSocket, gameId: string, slot: GameSlot, canvas: HTMLCanvasElement) {
 	let negPressed = false; // up / left
 	let posPressed = false; // down / right
 	let currentDir: Dir = 0;
@@ -61,6 +63,13 @@ function bindInput(ws: WebSocket, gameId: string, slot: GameSlot) {
 		if (ws.readyState !== WebSocket.OPEN)
 			return;
 		ws.send(JSON.stringify({ type: "input", gameId, slot, input: { dir, ts: Date.now() } }));
+	}
+
+	function updateDir(next: Dir) {
+		if (next !== currentDir) {
+			currentDir = next;
+			sendDir(currentDir);
+		}
 	}
 
 	function onKeyDown(e: KeyboardEvent) {
@@ -88,11 +97,7 @@ function bindInput(ws: WebSocket, gameId: string, slot: GameSlot) {
 		else
 			return;
 
-		const next = computeDir();
-		if (next !== currentDir) {
-			currentDir = next;
-			sendDir(currentDir);
-		}
+		updateDir(computeDir());
 	}
 
 	function onKeyUp(e: KeyboardEvent) {
@@ -114,12 +119,72 @@ function bindInput(ws: WebSocket, gameId: string, slot: GameSlot) {
 		}
 	}
 
+	function touchDirFromEvent(e: TouchEvent): Dir {
+
+		if (e.touches.length === 0)
+			return 0;
+
+		const t = e.touches[0];
+		const rect = canvas.getBoundingClientRect();
+
+		const localX = t.clientX - rect.left;
+		const localY = t.clientY - rect.top;
+
+		const horiz = isHorizontal(slot);
+
+		if (horiz) {
+			const centerX = rect.width / 2;
+			const deadZone = Math.max(20, rect.width * 0.08);
+
+			if (localX < centerX - deadZone)
+				return -1;
+			if (localX > centerX + deadZone)
+				return 1;
+			return 0;
+		}
+		else {
+			const centerY = rect.height / 2;
+			const deadZone = Math.max(20, rect.height * 0.08);
+
+			if (localY < centerY - deadZone)
+				return -1;
+			if (localY > centerY + deadZone)
+				return 1;
+			return 0;
+		}
+	}
+
+	function onTouchStart(e: TouchEvent) {
+		e.preventDefault();
+		updateDir(touchDirFromEvent(e));
+	}
+
+	function onTouchMove(e: TouchEvent) {
+		e.preventDefault();
+		updateDir(touchDirFromEvent(e));
+	}
+
+	function onTouchEnd(e: TouchEvent) {
+		e.preventDefault();
+		updateDir(0);
+	}
+
 	window.addEventListener("keydown", onKeyDown);
 	window.addEventListener("keyup", onKeyUp);
+
+	canvas.addEventListener("touchstart", onTouchStart, { passive: false });
+	canvas.addEventListener("touchmove", onTouchMove, { passive: false });
+	canvas.addEventListener("touchend", onTouchEnd, { passive: false });
+	canvas.addEventListener("touchcancel", onTouchEnd, { passive: false });
 
 	return () => {
 		window.removeEventListener("keydown", onKeyDown);
 		window.removeEventListener("keyup", onKeyUp);
+
+		canvas.removeEventListener("touchstart", onTouchStart);
+		canvas.removeEventListener("touchmove", onTouchMove);
+		canvas.removeEventListener("touchend", onTouchEnd);
+		canvas.removeEventListener("touchcancel", onTouchEnd);
 	};
 }
 
@@ -142,6 +207,7 @@ export default function onlineMatch(): HTMLDivElement {
 	canvas.className = "w-full h-full block";
 	canvas.style.width = "100%";
 	canvas.style.height = "100%";
+	canvas.style.touchAction = "none";
 	gameContainer.appendChild(canvas);
 
 	const ctxMaybe = canvas.getContext("2d");
@@ -173,8 +239,7 @@ export default function onlineMatch(): HTMLDivElement {
 	});
 	ro.observe(gameContainer);
 	
-
-	// CLEANUP unique (évite TDZ + double-calls)
+	
 	const cleanup = () => {
 		if (!running)
 			return;
@@ -207,10 +272,8 @@ export default function onlineMatch(): HTMLDivElement {
 		window.removeEventListener("navigate", onNavigate as any);
 	};
 
-	// important : “back” / bfcache
 	const onPageHide = () => cleanup();
 
-	// refresh / close tab
 	const onBeforeUnload = () => cleanup();
 
 	// SPA navigation : cleanup quand on quitte /online-match
@@ -259,7 +322,8 @@ export default function onlineMatch(): HTMLDivElement {
 			type: "join_game",
 			gameId: matchId,
 			clientId: getClientId(),
-			userId: getItem<string>("username"),
+			userId: getItem<number>("userId"),
+			username: getItem<string>("username"),
 			mode: getCurrentMatchMode(),
 		})
 		);
@@ -304,7 +368,7 @@ export default function onlineMatch(): HTMLDivElement {
 			const matchId = getCurrentMatchId();
 			if (matchId) {
 				if (unbindInput) unbindInput();
-				unbindInput = bindInput(ws, String(matchId), mySlot);
+				unbindInput = bindInput(ws, String(matchId), mySlot, canvas);
 			}
 			return;
 		}
@@ -329,18 +393,19 @@ export default function onlineMatch(): HTMLDivElement {
 			}
 
 			setTimeout(() => {
-			cleanup();
-			
-			console.log(`tournament id: ${msg.tournamentId}`);
-
-			if (msg.tournamentId) {
-				setCurrentTournamentId(String(msg.tournamentId));
-				getRouter().lazyLoad("/online-tournament");
-			} else {
-				alert(`Winner: ${winner}`);
-				getRouter().lazyLoad("/game-online");
-			}
-		}, 1500);
+				cleanup();
+				
+				console.log(`tournament id: ${msg.tournamentId}`);
+				
+				if (msg.tournamentId && !msg.tournamentFinished) {
+					setCurrentTournamentId(String(msg.tournamentId));
+					getRouter().lazyLoad("/online-tournament");
+				} else {
+					if (!msg.tournamentId)
+						alert(`Winner: ${winner}`);
+					getRouter().lazyLoad("/game-online");
+				}
+			}, 1500);
 			return;
 		}
 

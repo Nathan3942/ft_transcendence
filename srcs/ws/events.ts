@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/13 14:47:51 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/13 18:30:41 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/16 05:54:57 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ export type WsClientEvent =
 	| { type: "subscribe"; room: WsRoom }
 	| { type: "unsubscribe"; room: WsRoom }
 	// Remote player
-	| { type: "join_game"; gameId: string; clientId: string, userId: string, mode: ModeId }
+	| { type: "join_game"; gameId: string; clientId: string, userId: number, username: string, mode: ModeId }
 	| { type: "leave_game"; gameId: string, clientId: string, userId: string }
 	| { type: "join_tournament", tournamentId: string, clientId: string, userId: number, username: string }
 	| { type: "pause_toggle", gameId: string, clientId: string, userId: string }

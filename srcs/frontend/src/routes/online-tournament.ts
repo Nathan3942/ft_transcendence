@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/09 15:18:28 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/14 15:21:47 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/15 18:07:24 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,7 @@ function createMatchBox(match: any): HTMLDivElement {
 	// PLAYER 1
 	const p1 = document.createElement("div");
 	const isMe1 = myClientId === match.player1ClientId;
+	console.log(`for see my user client id ${myClientId}, playerclient1 ${match.player1ClientId}, playerclient2 ${match.player2ClientId}\n\n`);
 
 	p1.className = isMe1
 		? "px-2 py-1 rounded bg-green-200 text-green-900 font-bold"
@@ -175,7 +176,12 @@ function updateMyMatchButton(button: HTMLButtonElement, bracket: any) {
 	};
 }
 
+
+let tournamentFinished = false;
+
 export default function onlineTournament(): HTMLDivElement {
+	
+	tournamentFinished = false;
 
 	const page = document.createElement("div");
 	page.className = "flex flex-col flex-1 p-6 gap-4";
@@ -201,6 +207,46 @@ export default function onlineTournament(): HTMLDivElement {
 
 	const ws = new WebSocket(`ws://${window.location.hostname}:3000/ws`);
 
+	let closed = false;
+
+	function cleanup() {
+		if (closed)
+			return;
+		closed = true;
+
+		try {
+			ws.close(1000, "leave tournament");
+		} catch {}
+
+		window.removeEventListener("beforeunload", onBeforeUnload);
+		window.removeEventListener("pagehide", onPageHide);
+		window.removeEventListener("navigate", onNavigate as any);
+		window.removeEventListener("popstate", onPopState);
+	}
+
+	function onBeforeUnload() {
+		cleanup();
+	}
+
+	function onPageHide() {
+		cleanup();
+	}
+
+	function onPopState() {
+		cleanup();
+	}
+
+	function onNavigate(ev: any) {
+		const nextPath = ev?.detail?.path as string | undefined;
+		if (!nextPath || nextPath !== "/online-tournament")
+			cleanup();
+	}
+
+	window.addEventListener("beforeunload", onBeforeUnload);
+	window.addEventListener("pagehide", onPageHide);
+	window.addEventListener("navigate", onNavigate as any);
+	window.addEventListener("popstate", onPopState);
+
 	ws.onopen = () => {
 		status.textContent = "Connected. Joining tournament...";
 		const tournamentId = getCurrentTournamentId();
@@ -208,8 +254,7 @@ export default function onlineTournament(): HTMLDivElement {
 			status.textContent = "No tournamentId (create tournament first).";
 			return;
 		}
-		
-		console.log("befor join tournament\n");
+
 		ws.send(JSON.stringify({
 			type: "join_tournament",
 			tournamentId,
@@ -239,30 +284,27 @@ export default function onlineTournament(): HTMLDivElement {
 			return;
 		}
 
-		if (msg.type === "rejoin_tournament") {
-			status.textContent = `Tournament #${msg.tournamentId}: Client: ${getClientId()} rejoin`;
-			// renderBracket(bracketContainer, )
-		}
-
 		if (msg.type === "tournament_bracket_update") {
 			renderBracket(bracketContainer, msg.bracket);
 			updateMyMatchButton(myMatchBtn, msg.bracket);
 			return;
 		}
 
-		if (msg.type === "tournament_finished") {
-
-			status.textContent = `Winner: ${msg.winnerName}`;
-
-			alert(`Tournament finished!\nWinner: ${msg.winnerName}`);
+		if (msg.type === "tournament_full") {
+			alert("Tournament full");
 			getRouter().lazyLoad("/game-online");
-
-			return;
 		}
 
-		if (msg.type === "tournament_full") {
-			alert(`Tournament ${msg.tournamentId} full`);
-			getRouter().lazyLoad("/browse-tournaments");
+		if (msg.type === "tournament_finished") {
+			if (tournamentFinished)
+				return;
+
+			tournamentFinished = true;
+			status.textContent = `Winner: ${msg.winnerName}`;
+			console.log("alerte\n\n");
+			alert(`🏆 Tournament finished!\nWinner: ${msg.winnerName}`);
+			cleanup();
+			getRouter().lazyLoad("/game-online");
 			return;
 		}
 	};

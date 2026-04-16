@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 15:45:48 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/08 06:05:07 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/16 07:21:27 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ const MARGIN = 10;
 const GAP = PADDLE_THICK + 8
 const TICK_MS = 10;
 
-const WINNING_SCORE = 1;
+const WINNING_SCORE = 5;
 
 
 function clamp(v: number, min: number, max: number) {
@@ -191,7 +191,6 @@ export class GameLoop {
 		else if (scored)
 			this.applyScore4P();
 
-		// TODO: ball phisic score
 		this.onTick(this.state);
 	}
 
