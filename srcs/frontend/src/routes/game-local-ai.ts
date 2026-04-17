@@ -4,10 +4,8 @@ import createBackButton from "../components/button/backButton";
 import { t } from "../i18n/i18n";
 
 import { startPong } from "../game/pong.js";
-/* MODIF 1 : on importe PongEvents pour le callback onGameOver */
 import type { PongInput, PongState, PongEvents } from "../game/pong_core.js";
 
-/* URL de base de l'API backend */
 const API_URL = `http://${window.location.hostname}:3000/api/v1`;
 
 import { makeAIPolicyP2 } from "../game/ai/policy.js";
@@ -66,6 +64,12 @@ export function genomeForDifficulty(diff: AIDifficulty, hard: Genome): Genome {
 
 type KeyMap = Record<string, boolean>;
 
+type TouchState = {
+	active: boolean;
+	y: number | null;
+	startPressed: boolean;
+};
+
 export function createKeyMap(): KeyMap {
   	return Object.create(null);
 }
@@ -85,6 +89,59 @@ export function bindKeyboard(keysDown: KeyMap, keysPressed: KeyMap) {
 	return () => {
 		window.removeEventListener("keydown", down);
 		window.removeEventListener("keyup", up);
+	};
+}
+
+function createTouchState(): TouchState {
+	return {
+		active: false,
+		y: null,
+		startPressed: false,
+	};
+}
+
+function bindTouch(canvas: HTMLCanvasElement, touchState: TouchState) {
+	const updateFromTouch = (e: TouchEvent) => {
+		if (e.touches.length === 0)
+			return;
+		const t = e.touches[0];
+		touchState.active = true;
+		touchState.y = t.clientY;
+	};
+
+	const onTouchStart = (e: TouchEvent) => {
+		e.preventDefault();
+		touchState.startPressed = true;
+		updateFromTouch(e);
+	};
+
+	const onTouchMove = (e: TouchEvent) => {
+		e.preventDefault();
+		updateFromTouch(e);
+	};
+
+	const onTouchEnd = (e: TouchEvent) => {
+		e.preventDefault();
+		if (e.touches.length > 0) {
+			const t = e.touches[0];
+			touchState.active = true;
+			touchState.y = t.clientY;
+			return;
+		}
+		touchState.active = false;
+		touchState.y = null;
+	};
+
+	canvas.addEventListener("touchstart", onTouchStart, { passive: false });
+	canvas.addEventListener("touchmove", onTouchMove, { passive: false });
+	canvas.addEventListener("touchend", onTouchEnd, { passive: false });
+	canvas.addEventListener("touchcancel", onTouchEnd, { passive: false });
+
+	return () => {
+		canvas.removeEventListener("touchstart", onTouchStart);
+		canvas.removeEventListener("touchmove", onTouchMove);
+		canvas.removeEventListener("touchend", onTouchEnd);
+		canvas.removeEventListener("touchcancel", onTouchEnd);
 	};
 }
 
@@ -111,6 +168,40 @@ export function keyboardToInput(keysDown: KeyMap, keysPressed: KeyMap): PongInpu
 	return input;
 }
 
+function touchToInput(state: PongState, touchState: TouchState): PongInput {
+	const input: PongInput = {
+		p1: {
+			up: false,
+			down: false,
+			start: touchState.startPressed,
+			togglePause: false,
+		},
+		p2: {
+			up: false,
+			down: false,
+			start: false,
+			togglePause: false,
+		},
+		p3: { up: false, down: false },
+		p4: { up: false, down: false },
+	};
+
+	touchState.startPressed = false;
+
+	if (!touchState.active || touchState.y === null)
+		return input;
+
+	const centerY = state.playY + state.playH / 2;
+	const deadZone = Math.max(20, state.playH * 0.08);
+
+	if (touchState.y < centerY - deadZone)
+		input.p1.up = true;
+	else if (touchState.y > centerY + deadZone)
+		input.p1.down = true;
+
+	return input;
+}
+
 export function mergeKeyboardWithAIP2(kb: PongInput, ai: PongInput): PongInput {
 	return {
 		...kb,
@@ -118,6 +209,18 @@ export function mergeKeyboardWithAIP2(kb: PongInput, ai: PongInput): PongInput {
 		...kb.p2,
 		up: ai.p2.up,
 		down: ai.p2.down,
+		},
+	};
+}
+
+function mergePlayer1Inputs(a: PongInput, b: PongInput): PongInput {
+	return {
+		...a,
+		p1: {
+			up: a.p1.up || b.p1.up,
+			down: a.p1.down || b.p1.down,
+			start: !!a.p1.start || !!b.p1.start,
+			togglePause: !!a.p1.togglePause || !!b.p1.togglePause,
 		},
 	};
 }
@@ -165,6 +268,7 @@ async function InitAiGame(diffNum: number, pageRoot: HTMLDivElement) {
 	const canvas = document.createElement("canvas");
 	canvas.style.width = "100%";
 	canvas.style.height = "100%";
+	canvas.style.touchAction = "none";
 	pageRoot.appendChild(canvas);
 
 	const ctx = canvas.getContext("2d");
@@ -216,16 +320,20 @@ async function InitAiGame(diffNum: number, pageRoot: HTMLDivElement) {
 	const keysDown = createKeyMap();
 	const keysPressed = createKeyMap();
 	const unbindKeys = bindKeyboard(keysDown, keysPressed);
+	const touchState = createTouchState();
+	const unbindTouch = bindTouch(canvas, touchState);
 
 	controller.setInputSource((state: PongState, dt: number) => {
 		const kb = keyboardToInput(keysDown, keysPressed);
+		const touch = touchToInput(state, touchState);
+		const playerInput = mergePlayer1Inputs(kb, touch);
 		const ai = aiPolicy(state, dt);
-		return mergeKeyboardWithAIP2(kb, ai);
+		return mergeKeyboardWithAIP2(playerInput, ai);
 	});
 
 	const onResize = () => {
 		const r = pageRoot.getBoundingClientRect();
-		controller.reseize(r.width || window.innerWidth, r.height || window.innerHeight);
+		controller.resize(r.width || window.innerWidth, r.height || window.innerHeight);
 	};
 	window.addEventListener("resize", onResize);
 
@@ -238,20 +346,20 @@ async function InitAiGame(diffNum: number, pageRoot: HTMLDivElement) {
 		const msg = e.data;
 
 		if (msg.type === "progress") {
-		lastTrainedGenome = msg.bestGenome as Genome;
-		console.log(`[GA] gen=${msg.gen} bestFit=${Math.round(msg.bestFitness)}`, msg.bestGenome);
+			lastTrainedGenome = msg.bestGenome as Genome;
+			console.log(`[GA] gen=${msg.gen} bestFit=${Math.round(msg.bestFitness)}`, msg.bestGenome);
 		}
 		if (msg.type === "done") {
-		training = false;
-		lastTrainedGenome = msg.bestGenome as Genome;
-		console.log(`[GA] DONE bestFit=${Math.round(msg.bestFitness)}`, msg.bestGenome);
+			training = false;
+			lastTrainedGenome = msg.bestGenome as Genome;
+			console.log(`[GA] DONE bestFit=${Math.round(msg.bestFitness)}`, msg.bestGenome);
 		}
 		if (msg.type === "error") {
-		training = false;
-		console.error("[GA] ERROR:", msg.msg);
+			training = false;
+			console.error("[GA] ERROR:", msg.msg);
 		}
 		if (msg.type === "debug") {
-		console.log("[GA]", msg.msg);
+			console.log("[GA]", msg.msg);
 		}
 	};
 
@@ -283,6 +391,7 @@ async function InitAiGame(diffNum: number, pageRoot: HTMLDivElement) {
 	window.addEventListener("beforeunload", () => {
 		window.removeEventListener("resize", onResize);
 		unbindKeys();
+		unbindTouch();
 		controller.stop();
 		worker.terminate();
 	});

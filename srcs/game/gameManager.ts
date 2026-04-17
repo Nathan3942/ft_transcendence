@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 15:45:30 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/10 17:14:56 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/16 07:10:51 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -159,7 +159,7 @@ function initBall(mode: ModeId) {
 
 export class GameManager {
 	
-	private games = new Map<GameId, { state: GameState; loop: GameLoop; players: Players }>();
+	private games = new Map<GameId, { state: GameState; loop: GameLoop; players: Players; finished?: boolean; }>();
 
 	constructor(
 		private log: FastifyBaseLogger, 
@@ -191,38 +191,43 @@ export class GameManager {
 			(s) => this.broadcastToRoom(`game:${id}`, { type: "game_tick", state: s }),
 			(evt) => {
 				if (evt.type === "game_over") {
+
+					const g = this.games.get(id);
+					if (!g || g.finished)
+						return;
+
+					g.finished = true;
+
 					const winnerSlot = evt.winnerSlot as GameSlot;
-					const winnerUserId = this.games.get(id)?.players[winnerSlot]?.username ?? null;
-					
-					updateMatchStatus(id, "finished");
-					deleteMatch(id);
+					const winnerUserId = this.games.get(id)?.players[winnerSlot]?.userId ?? null;
+					const winnerUsername = this.games.get(id)?.players[winnerSlot]?.username ?? null;
+
+					const m = getMatchById(id);
+					if (!m)
+						return;
+
+					if (m.status !== "finished")
+						updateMatchStatus(id, "finished");
 
 					const match = getMatchById(id);
-					
-					this.broadcastToRoom(`game:${id}`, {
-						type: "game_over",
-						gameId: id,
-						winnerSlot,
-						winnerUserId,
-						tournamentId: match?.tournamentId ?? null,
-					});
 
+					let tournamentFinished = false;
+					let tournamentWinnerName: string | null = null;
+					let tournamentWinnerId: number | null = null;
+					
 					if (match?.tournamentId && winnerUserId) {
-						const updatedBracket = this.tournamentManager.handleMatchFinished(
+						const result = this.tournamentManager.handleMatchFinished(
 							String(match.tournamentId),
 							Number(id),
-							Number(winnerUserId)
+							Number(winnerUserId),
+							winnerUsername
 						);
 
-						this.broadcastToRoom(`tournament:${match.tournamentId}`, {
-							type: "tournament_bracket_update",
-							tournamentId: String(match.tournamentId),
-							bracket: updatedBracket,
-						});
+						if (result?.type === "tournament_finished") {
+							tournamentFinished = true;
+							tournamentWinnerName = result.winnerName;
+							tournamentWinnerId = result.winnerId;
 
-						const result = this.tournamentManager.tryFinishTournament(String(match.tournamentId));
-
-						if (result) {
 							this.broadcastToRoom(`tournament:${match.tournamentId}`, {
 								type: "tournament_finished",
 								tournamentId: match.tournamentId,
@@ -230,8 +235,29 @@ export class GameManager {
 								winnerId: result.winnerId
 							});
 						}
+						else if (result?.type === "bracket_update") {
+							this.broadcastToRoom(`tournament:${match.tournamentId}`, {
+								type: "tournament_bracket_update",
+								tournamentId: String(match.tournamentId),
+								bracket: result.bracket,
+							});
+						}
 					}
 
+					// envoyer game_over APRES avoir déterminé si le tournoi est fini
+					this.broadcastToRoom(`game:${id}`, {
+						type: "game_over",
+						gameId: id,
+						winnerSlot,
+						winnerUserId,
+						winnerName: winnerUsername,
+						tournamentId: match?.tournamentId ?? null,
+						tournamentFinished,
+						tournamentWinnerName,
+						tournamentWinnerId,
+					});
+
+					// deleteMatch(id);
 					return;
 				}
 				
@@ -314,19 +340,36 @@ export class GameManager {
 		console.log(`\n\nUserid : ${userId}\n\n`);
 	}
 
-	isCurentPlayer(gameId: GameId, slot: "left" | "right", clientId: string): boolean {
+	isCurentPlayer(gameId: GameId, slot: "left" | "right", userId: number): boolean {
 
 		const game = this.games.get(gameId);
-		return (game?.players[slot]?.clientId === clientId);
+		return (game?.players[slot]?.userId === userId);
 	}
 
-	isRegistered(gameId: GameId, clientId: string): boolean {
+	isRegistered(gameId: GameId, userId: number): boolean {
+
 		const g = this.games.get(gameId);
+		
 		if (!g)
 			return false;
 
 		for (const s of slotsForMode(g.state.mode)) {
-		if (g.players[s]?.clientId === clientId) return true;
+			if (g.players[s]?.userId === userId)
+				return true;
+		}
+		return false;
+	}
+
+	isDuplicatePlayer(gameId: GameId, userId: number, slot: GameSlot): boolean {
+		
+		const g = this.games.get(gameId);
+
+		if (!g)
+			return false;
+
+		for (const s of slotsForMode(g.state.mode)) {
+			if (s !== slot && g.players[s]?.userId === userId)
+				return true;
 		}
 		return false;
 	}

@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 16:56:00 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/01 18:43:11 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/16 08:22:29 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,44 +18,50 @@ import { DEFAULT_CONFIG, clamp, creatInitialState, updateCore, paddleReact } fro
 
 // ================= Rendering ===================
 
-function drawScore(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, state: PongState) {
+function drawScore(ctx: CanvasRenderingContext2D, state: PongState) {
+
+	const minDim = Math.min(state.playW, state.playH);
+	const scoreFont = Math.max(24, Math.floor(minDim * 0.16));
+	const scoreOffset = Math.max(30, Math.floor(state.playW * 0.12));
+	const yScore = state.playY + Math.max(30, Math.floor(state.playH * 0.12));
+
 	if (state.mod === "1v1" || state.mod === "2v2") {
-		ctx.font = "150px 'vt323'";
+		ctx.font = `${scoreFont}px 'VT323'`;
 		ctx.textAlign = "center";
-		
+
 		const cx = state.playX + state.playW / 2;
-		const y = state.playY + 120;
 
-		ctx.fillText(String(state.scoreP1), cx - 120, y);
-		ctx.fillText(String(state.scoreP2), cx + 120, y);
+		ctx.fillText(String(state.scoreP1), cx - scoreOffset, yScore);
+		ctx.fillText(String(state.scoreP2), cx + scoreOffset, yScore);
 	} else {
+		const lifeSize = Math.max(6, Math.floor(minDim * 0.012));
+		const lifeGap = Math.max(10, Math.floor(minDim * 0.025));
+		const pad = Math.max(8, Math.floor(minDim * 0.03));
 
-		//p1
+		// p1
 		ctx.beginPath();
 		for (let i = 0; i < state.paddles[0].life; i++)
-			ctx.rect(state.playX + 50 , state.playH - 50 - (20 * i), 10, 10);
+			ctx.rect(state.playX + pad, state.playY + state.playH - pad - lifeSize - (lifeGap * i), lifeSize, lifeSize);
 		ctx.fill();
 
-		//p2
+		// p2
 		ctx.beginPath();
 		for (let i = 0; i < state.paddles[1].life; i++)
-			ctx.rect(state.playX + state.playW - 40, 30 + (20 * i), 10, 10);
+			ctx.rect(state.playX + state.playW - pad - lifeSize, state.playY + pad + (lifeGap * i), lifeSize, lifeSize);
 		ctx.fill();
 
-		//p3
+		// p3
 		ctx.beginPath();
 		for (let i = 0; i < state.paddles[2].life; i++)
-			ctx.rect(state.playX + 50 + (20 * i), 30, 10, 10);
+			ctx.rect(state.playX + pad + (lifeGap * i), state.playY + pad, lifeSize, lifeSize);
 		ctx.fill();
 
-		//p4
+		// p4
 		ctx.beginPath();
 		for (let i = 0; i < state.paddles[3].life; i++)
-			ctx.rect(state.playX + state.playW - 50 - (20 * i), state.height - 50, 10, 10);
+			ctx.rect(state.playX + state.playW - pad - lifeSize - (lifeGap * i), state.playY + state.playH - pad - lifeSize, lifeSize, lifeSize);
 		ctx.fill();
-		
 	}
-
 }
 
 function render(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, state: PongState, cfg: PongConfig, opts: StartOpts) {
@@ -75,10 +81,10 @@ function render(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, state:
 	ctx.lineWidth = 2;
 	ctx.strokeRect(state.playX, state.playY, state.playW, state.playH);
 
-	ctx.fillStyle = "white";
-	ctx.font = "120px 'VT323'";
-	ctx.textAlign = "center";
-	ctx.fillText("COCO_PONG", canvas.width / 2, state.playY - 20);
+	// ctx.fillStyle = "white";
+	// ctx.font = "120px 'VT323'";
+	// ctx.textAlign = "center";
+	// ctx.fillText("COCO_PONG", canvas.width / 2, state.playY - 20);
 
 	if (state.mod === "3p" || state.mod === "4p") {
 		ctx.beginPath();
@@ -88,14 +94,21 @@ function render(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, state:
 
 	ctx.fillStyle = "grey";
 	ctx.beginPath();
-	const midX = state.playX + state.playW / 2;
-	for (let y = state.playY + 10; y < state.playY + state.playH - 10; y += 20) {
-		ctx.rect(midX - 2.5, y, 10, 10);
+	const minDim = Math.min(state.playW, state.playH);
+	const dashSize = Math.max(4, Math.floor(minDim * 0.012));
+	const dashGap = Math.max(8, Math.floor(minDim * 0.02));
+	const bigFont = Math.max(28, Math.floor(minDim * 0.18));
+	const mediumFont = Math.max(22, Math.floor(minDim * 0.1));
+	const smallFont = Math.max(16, Math.floor(minDim * 0.06));
+
+	const midX = state.playX + state.playW / 2 - dashSize / 2;
+	for (let y = state.playY + dashGap; y < state.playY + state.playH - dashGap; y += dashSize + dashGap) {
+		ctx.rect(midX, y, dashSize, dashSize);
 	}
 	ctx.fill();
 
 	ctx.fillStyle = "white";
-	drawScore(ctx, canvas, state);
+	drawScore(ctx, state);
 
 	ctx.beginPath();
 	for (const p of state.paddles) {
@@ -114,29 +127,29 @@ function render(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, state:
 	// overlays
 	if (state.phase === "LOBBY")
 	{
-		ctx.font = "90px 'VT323'";
+		ctx.font = `${mediumFont}px 'VT323'`;
 		ctx.textAlign = "center";
 		ctx.fillText("Press START", state.playX + state.playW / 2, state.playY + state.playH / 2);
 	}
 	else if (state.phase === "PAUSED")
 	{
-		ctx.font = "120px 'VT323'";
+		ctx.font = `${bigFont}px 'VT323'`;
 		ctx.textAlign = "center";
 		ctx.fillText("PAUSED", canvas.width / 2, canvas.height / 2);
 	}
 	else if (state.phase === "COUNTDOWN")
 	{
-		ctx.font = "150px 'VT323'";
+		ctx.font = `${bigFont}px 'VT323'`;
 		ctx.textAlign = "center";
 		ctx.fillText(String(state.countdown), canvas.width / 2, canvas.height / 2);
 	}
 	else if (state.phase === "GAMEOVER")
 	{
-		ctx.font = "120px 'VT323'";
+		ctx.font = `${mediumFont}px 'VT323'`;
 		ctx.textAlign = "center";
 		ctx.fillText(String("PLAYER " + state.winner + " WINS!"), canvas.width / 2, canvas.height / 2);
 		if (opts.tournament === false) {
-			ctx.font = "60px 'VT323'";
+			ctx.font = `${smallFont}px 'VT323'`;
 			ctx.fillText("Press START to restart", canvas.width / 2, canvas.height / 2 + 80);
 		}
 	}
@@ -169,6 +182,58 @@ function bindKeyboard(keysDown: KeyMap, keyPressed: KeyMap) {
 	return () => {
 		window.removeEventListener("keydown", down);
 		window.removeEventListener("keyup", up);
+	};
+}
+
+function bindTouch(canvas: HTMLCanvasElement) {
+
+	let touchY: number | null = null;
+	let touchX: number | null = null;
+	let startPressed = false;
+
+	const onTouchStart = (e: TouchEvent) => {
+		e.preventDefault();
+		const t = e.touches[0];
+		touchY = t.clientY;
+		touchX = t.clientX;
+		startPressed = true;
+	};
+
+	const onTouchMove = (e: TouchEvent) => {
+		e.preventDefault();
+		const t = e.touches[0];
+		touchY = t.clientY;
+		touchX = t.clientX;
+	};
+
+	const onTouchEnd = (e: TouchEvent) => {
+		e.preventDefault();
+		if (e.touches.length > 0) {
+			touchY = e.touches[0].clientY;
+			touchX = e.touches[0].clientX;
+		} else {
+			touchY = null;
+			touchX = null;
+		}
+	};
+
+	canvas.addEventListener("touchstart", onTouchStart, { passive: false });
+	canvas.addEventListener("touchmove", onTouchMove, { passive: false });
+	canvas.addEventListener("touchend", onTouchEnd, { passive: false });
+
+	return {
+		getTouchY: () => touchY,
+		getTouchX: () => touchX,
+		consumeStart: () => {
+			const v = startPressed;
+			startPressed = false;
+			return v;
+		},
+		unbind: () => {
+			canvas.removeEventListener("touchstart", onTouchStart);
+			canvas.removeEventListener("touchmove", onTouchMove);
+			canvas.removeEventListener("touchend", onTouchEnd);
+		}
 	};
 }
 
@@ -207,6 +272,36 @@ function keyboardToInput(keysDown: KeyMap, keysPressed: KeyMap): PongInput {
 	return (input);
 }
 
+function touchToInput(state: PongState, touchY: number | null, touchX: number | null, startPressed: boolean): PongInput {
+	const input: PongInput = {
+		p1: { up: false, down: false, start: startPressed, togglePause: false },
+		p2: { up: false, down: false, start: false, togglePause: false },
+		p3: { up: false, down: false, start: false, togglePause: false },
+		p4: { up: false, down: false, start: false, togglePause: false },
+	};
+
+	if (touchY === null || touchX === null)
+		return input;
+
+	const centerY = state.playY + state.playH / 2;
+
+	const centerX = state.playX + state.playW / 2;
+
+	if (touchY < centerY) {
+		if (touchX < centerX)
+			input.p1.up = true;
+		else
+			input.p2.up = true;
+	}
+	else {
+		if (touchX < centerX)
+			input.p1.down = true;
+		else
+			input.p2.down = true;
+	}
+	return input;
+}
+
 
 
 // ================= Public API ===================
@@ -219,7 +314,7 @@ export type StartOpts = {
 
 export type PongController = {
 	stop: () => void;
-	reseize: (w: number, h: number) => void;
+	resize: (w: number, h: number) => void;
 	getState: () => PongState;
 	setInputSource: (fn: (s: PongState, dt: number) => PongInput) => void; //pour ia ou reseau
 };
@@ -234,7 +329,24 @@ export function startPong(
 
 	console.log("START PONG LOOP");
 
-	const cfg: PongConfig = { ...DEFAULT_CONFIG, ...config};
+	
+	const minCanvas = Math.min(canvas.width, canvas.height);
+	const isSmallScreen = canvas.width < 700 || canvas.height < 500;
+
+	const responsiveConfig: PongConfig = {
+		...DEFAULT_CONFIG,
+		...config,
+		ballRadius: isSmallScreen ? Math.max(5, Math.floor(minCanvas * 0.012)) : (config.ballRadius ?? DEFAULT_CONFIG.ballRadius),
+		paddleWidth: isSmallScreen ? Math.max(6, Math.floor(minCanvas * 0.012)) : (config.paddleWidth ?? DEFAULT_CONFIG.paddleWidth),
+		paddleHeight: isSmallScreen ? Math.max(60, Math.floor(minCanvas * 0.18)) : (config.paddleHeight ?? DEFAULT_CONFIG.paddleHeight),
+		paddleMargin: isSmallScreen ? Math.max(4, Math.floor(minCanvas * 0.01)) : (config.paddleMargin ?? DEFAULT_CONFIG.paddleMargin),
+		paddleSpeed: isSmallScreen ? Math.max(280 , Math.floor(minCanvas * 0.9)) : (config.paddleSpeed ?? DEFAULT_CONFIG.paddleSpeed),
+
+		ballSpeed: isSmallScreen ? Math.max(200, Math.floor(minCanvas * 0.6)) : (config.ballSpeed ?? DEFAULT_CONFIG.ballSpeed), 
+	};
+
+	const cfg: PongConfig = responsiveConfig;
+	
 	const state = creatInitialState(opts.mode, canvas.width, canvas.height, cfg);
 
 	//default input
@@ -242,7 +354,26 @@ export function startPong(
 	const keysPressed = creatKeyMap();
 	const unbind = bindKeyboard(keysDown, keysPressed);
 
-	let inputSource: (s: PongState, dt: number) => PongInput = () => keyboardToInput(keysDown, keysPressed);
+
+	const touch = bindTouch(canvas);
+
+
+	// let inputSource: (s: PongState, dt: number) => PongInput = () => keyboardToInput(keysDown, keysPressed);
+
+	let inputSource: (s: PongState, dt: number) => PongInput = (s, dt) => {
+		const touchY = touch.getTouchY();
+		const touchX = touch.getTouchX();
+		const touchStart = touch.consumeStart();
+
+		if (touchY !== null || touchStart)
+			return touchToInput(s, touchY, touchX, touchStart);
+
+		return keyboardToInput(keysDown, keysPressed);
+	};
+
+	canvas.addEventListener("touchmove", (e) => {
+		e.preventDefault();
+	}, { passive: false });
 
 	//boucle controllable
 	let rafId = 0;
@@ -268,21 +399,65 @@ export function startPong(
 		stop() {
 			running = false;
 			cancelAnimationFrame(rafId);
+			
 			unbind(); // !!SPA
+			touch.unbind();
 		},
-		reseize(w: number, h: number) {
+		resize(w: number, h: number) {
 			canvas.width = w;
 			canvas.height = h;
 
 			state.width = w;
 			state.height = h;
 
-			// recalcul du playfield centré
+			const minCanvas = Math.min(w, h);
+			const isSmallScreen = w < 700 || h < 500;
+
+			// config
+			cfg.ballRadius = isSmallScreen
+				? Math.max(5, Math.floor(minCanvas * 0.012))
+				: (config.ballRadius ?? DEFAULT_CONFIG.ballRadius);
+
+			cfg.paddleWidth = isSmallScreen
+				? Math.max(6, Math.floor(minCanvas * 0.012))
+				: (config.paddleWidth ?? DEFAULT_CONFIG.paddleWidth);
+
+			cfg.paddleHeight = isSmallScreen
+				? Math.max(60, Math.floor(minCanvas * 0.18))
+				: (config.paddleHeight ?? DEFAULT_CONFIG.paddleHeight);
+
+			cfg.paddleMargin = isSmallScreen
+				? Math.max(4, Math.floor(minCanvas * 0.01))
+				: (config.paddleMargin ?? DEFAULT_CONFIG.paddleMargin);
+
+			cfg.paddleSpeed = isSmallScreen
+				? Math.max(280, Math.floor(minCanvas * 0.9))
+				: (config.paddleSpeed ?? DEFAULT_CONFIG.paddleSpeed);
+
+			cfg.ballSpeed = isSmallScreen
+				? Math.max(200, Math.floor(minCanvas * 0.6))
+				: (config.ballSpeed ?? DEFAULT_CONFIG.ballSpeed);
+
+			// playfield
 			const pf = computePlayfield(state.mod, w, h);
 			state.playX = pf.x;
 			state.playY = pf.y;
 			state.playW = pf.w;
 			state.playH = pf.h;
+
+			// taille des paddles
+			for (const p of state.paddles) {
+				p.thick = cfg.paddleWidth;
+				p.len = cfg.paddleHeight;
+			}
+
+			// vitesse de la balle
+			const speed = Math.hypot(state.ballVX, state.ballVY);
+			if (speed > 0.0001) {
+				const ratio = cfg.ballSpeed / speed;
+				state.ballVX *= ratio;
+				state.ballVY *= ratio;
+			}
 
 			// clamp balle dans le terrain
 			state.ballX = clamp(

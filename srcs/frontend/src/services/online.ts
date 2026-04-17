@@ -6,15 +6,15 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 16:53:19 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/13 14:26:55 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/17 12:05:45 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 // import { boolean, success } from "zod";
 import { api } from "./api.js";
-// import { getTournamentById } from "../../../repository/tournamentsRepository";
 
 export type TournamentStatus = 'open' | 'in_progress' | 'finished';
+export type MatchStatus = "pending" | "in_progress" | "finished";
 
 export interface Tournament {
   id: number;
@@ -24,14 +24,6 @@ export interface Tournament {
   createdAt: string;
 }
 
-//const API_BASE = `/api/v1`;
-
-// export type MatchListItem = {
-//     id: string;
-//     status: "waiting" | "running" | "ended";
-//     createdAt?: number;
-// }
-
 export type Match = {
     id: string;
     tournamentId: number | null;
@@ -40,29 +32,6 @@ export type Match = {
     mode: "1v1" | "2v2" | "3P" | "4P";
     createdAt?: number;
 }
-
-// async function api<T>(path: string, opts?: RequestInit): Promise<T> {
-
-//     const res = await fetch(`${API_BASE}${path}`, {
-//         headers: { "Content-Type": "application/json" },
-//         ...opts, 
-//     });
-//     if (!res.ok) {
-//         const text = await res.text().catch(() => "");
-//         throw new Error(`API error ${res.status}: ${text || res.statusText}`);
-//     }
-//     return (res.json() as Promise<T>);
-// }
-
-
-// CREATE TABLE tournaments (
-//       id INTEGER PRIMARY KEY AUTOINCREMENT,
-//       name TEXT NOT NULL UNIQUE,
-//       status TEXT DEFAULT 'open' CHECK(status IN ('open', 'in_progress', 'finished')),
-//       winner_id INTEGER,
-//       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-//       FOREIGN KEY (winner_id) REFERENCES users(id)
-//     );
 
 export async function createOnlineMatch(mode: 1 | 2 | 3 | 4): Promise<Match> {
     
@@ -107,6 +76,26 @@ export async function createOnlineTournament(): Promise<Tournament> {
 	});
 
 	return res.data;
+}
+
+export async function updateMatchStatus(matchId: string, status: MatchStatus): Promise<Match> {
+    
+    const res = await api<{ success: boolean; data: Match }>(`/matches/${matchId}/status`, { method: "PATCH", body: JSON.stringify({ status }), });
+    
+    return res.data;
+}
+
+export type UpdateTournamentStatusResponse = {
+	message: string;
+	tournamentId: number;
+	status: TournamentStatus;
+};
+
+export async function updateTournamentStatus(tournamentId: number, status: TournamentStatus): Promise<UpdateTournamentStatusResponse> {
+	return api<UpdateTournamentStatusResponse>(`/tournaments/${tournamentId}/status`, {
+		method: "PATCH",
+		body: JSON.stringify({ status }),
+	});
 }
 
 export async function deleteMatch(id: string | number): Promise<unknown> {

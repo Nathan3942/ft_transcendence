@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/13 15:48:09 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/10 17:21:01 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/16 06:31:24 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,17 +87,19 @@ function slotsForMode(mode: ModeStr): GameSlot[] {
  * Sinon retourne le premier slot libre.
  * Sinon null si match plein.
  */
-function pickSlotForClient(game: any, mode: ModeStr, clientId: string): GameSlot | null {
+function pickSlotForUser(game: any, mode: ModeStr, userId: number): GameSlot | null {
 	const slots = slotsForMode(mode);
 
-	// 1) Reconnect : le clientId existe déjà -> on lui redonne son slot
+	// 1) Reconnect
 	for (const s of slots) {
-		if (game.players?.[s]?.clientId === clientId) return s;
+		if (game.players?.[s]?.userId === userId)
+			return s;
 	}
 
-	// 2) Nouveau joueur : premier slot vide
+	// 2) Nouveau joueur
 	for (const s of slots) {
-		if (!game.players?.[s]?.clientId) return s;
+		if (!game.players?.[s]?.userId)
+			return s;
 	}
 
 	return null;
@@ -107,7 +109,7 @@ function countRegisteredPlayers(game: any, mode: ModeStr): number {
 	const slots = slotsForMode(mode);
 	let c = 0;
 	for (const s of slots) {
-		if (game.players?.[s]?.clientId)
+		if (game.players?.[s]?.userId)
 			c++;
 	}
 	return c;
@@ -115,7 +117,8 @@ function countRegisteredPlayers(game: any, mode: ModeStr): number {
 
 function randomId(): string {
 	const g: any = globalThis as any;
-	if (g.crypto?.randomUUID) return g.crypto.randomUUID();
+	if (g.crypto?.randomUUID)
+		return g.crypto.randomUUID();
 	return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 }
 
@@ -124,7 +127,7 @@ function handleUserConnect(userId: number) {
 
 	userConnections.set(userId, count + 1);
 
-	// 👉 première connexion uniquement
+	// première connexion uniquement
 	if (count === 0) {
 		console.log(`User ${userId} ONLINE`);
 
@@ -138,7 +141,8 @@ function handleUserConnect(userId: number) {
 function handleUserDisconnect(userId: number) {
 	const count = userConnections.get(userId);
 
-	if (!count) return;
+	if (!count)
+		return;
 
 	if (count <= 1) {
 		userConnections.delete(userId);
@@ -210,16 +214,6 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 
 		ws._wsId = randomId();
 
-		// const auth = wsAuthenticate(req);
-		// if (!auth.ok) {
-		// 	app.log.warn({ wsId: ws._wsId, reason: auth.reason }, "WS auth failed");
-		// 	// 1008 = policy violation
-		// 	ws.close(1008, "Unauthorized");
-		// 	return;
-		// }
-
-		// ws._userId = auth.userId;
-
 		app.log.info({ wsId: ws._wsId, ip: req.ip }, "WS connected");
 
 		hub.join(ws, "global");
@@ -279,6 +273,10 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 
 			if (msg.type === "join_game") {
 				
+				console.log(`user id 1: ${ws._userId}`);
+				if (!ws._userId)
+					return;
+				
 				const room = `game:${msg.gameId}` as WsRoom;
 				ws._gameId = msg.gameId;
 
@@ -288,15 +286,14 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 				const match = getMatchById(msg.gameId);
 				const mode = normalizeMode(match?.mode || msg.mode || "1v1");
 
-				console.log("DB match mode =", match?.mode);
-				console.log("Client sent mode =", msg.mode);
-
 				const game = gameManager.getAndCreatGame(msg.gameId, mode);
 
 				ws._clientId = msg.clientId;
-				ws._username = msg.userId;
-
-				const slot = pickSlotForClient(game, mode, ws._clientId);
+				ws._username = msg.username;
+				// tester sans
+				console.log(`user id 2 ${ws._userId} : ${msg.userId}`);
+				
+				const slot = pickSlotForUser(game, mode, ws._userId);
 
 				if (!slot) {
 
@@ -307,6 +304,15 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 						}
 						catch {}
 					}, 30);
+					return;
+				}
+
+				if (gameManager.isDuplicatePlayer(msg.gameId, ws._userId, slot)) {
+					hub.send(ws, {
+						type: "error",
+						code: "DUPLICATE_PLAYER",
+						message: "This user is already registered in this game"
+					});
 					return;
 				}
 
@@ -326,10 +332,9 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 					hub.broadcast(room, { type: "match_waiting", gameId: msg.gameId, count, playerNeeded, mode });
 					return;
 				}
-				else {
-					if (game.state.status === "paused")
-						gameManager.resumeGame(msg.gameId);
-				}
+				
+				if (game.state.status === "paused")
+					gameManager.resumeGame(msg.gameId);
 				
 				updateMatchStatus(msg.gameId, "in_progress");
 				hub.broadcast(room, { type: "match_ready", gameId: msg.gameId, count, mode });
@@ -341,29 +346,30 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 
 
 			if (msg.type === "join_tournament") {
-
 				const room = `tournament:${msg.tournamentId}` as WsRoom;
 				ws._tournamentId = msg.tournamentId;
 				ws._clientId = msg.clientId;
 				ws._username = msg.username;
 
 				const tournamentId = msg.tournamentId;
-
 				const status = getTournamentStatus(tournamentId);
+
+				hub.join(ws, room);
+
 				if (status === "finished") {
+					return;
+				}
+
+				// Si tournoi en cours, seuls les joueurs déjà enregistrés peuvent rejoin
+				if (status === "in_progress" && !tournamentManager.isTournamentPlayer(tournamentId, ws._clientId)) {
 					hub.send(ws, {
-						type: "tournament_finished",
-						tournamentId
-						// msg.winnerName,
-						// msg.winnerId,
+						type: "tournament_full",
+						tournamentId,
 					});
 					return;
 				}
 
-				hub.join(ws, room);
-
-						
-				console.log(`username: ${msg.username}`);
+				// Enregistrer le joueur si pas encore connu
 				if (!tournamentManager.isTournamentPlayer(tournamentId, ws._clientId)) {
 					tournamentManager.registerTournamentPlayer(
 						tournamentId,
@@ -386,15 +392,7 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 					return;
 				}
 
-				// todo ca marche pas
-				if (count >= needed && !tournamentManager.isTournamentPlayer(tournamentId, ws._clientId)) {
-					hub.send(ws, {
-						type: "tournament_full",
-						tournamentId,
-					});
-					return;
-				}
-
+				// Si tournoi déjà lancé, on renvoie juste le bracket courant
 				if (status === "in_progress") {
 					hub.send(ws, {
 						type: "tournament_bracket_update",
@@ -404,9 +402,19 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 					return;
 				}
 
+				// Lancement initial
 				updateTournamentStatus(tournamentId, "in_progress");
-				
+
 				const bracket = tournamentManager.startTournament(tournamentId);
+
+				if (!bracket) {
+					hub.send(ws, {
+						type: "error",
+						code: "TOURNAMENT_START_FAILED",
+						message: "Unable to start tournament",
+					});
+					return;
+				}
 
 				hub.broadcast(room, {
 					type: "tournament_started",
@@ -416,7 +424,6 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 				});
 
 				return;
-				
 			}
 
 

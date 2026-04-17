@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/09 16:26:29 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/11 03:24:35 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/16 05:49:48 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,6 @@ function shuffleArray<T>(arr: T[]): T[] {
 }
 
 export class TournamentMaganer {
-
 	private tournaments = new Map<string, TournamentState>();
 
 	private getOrCreateTournament(tournamentId: string): TournamentState {
@@ -64,10 +63,6 @@ export class TournamentMaganer {
 		return t;
 	}
 
-	// =========================
-	// PLAYER MANAGEMENT
-	// =========================
-
 	registerTournamentPlayer(
 		tournamentId: string,
 		clientId: string,
@@ -76,10 +71,11 @@ export class TournamentMaganer {
 	) {
 		const t = this.getOrCreateTournament(tournamentId);
 
-		const existing = t.players.find(p => p.userId === userId);
+		// un joueur = un userId
+		const existing = t.players.find((p) => p.userId === userId);
 
 		if (existing) {
-			existing.clientId = clientId; // update si reconnect
+			existing.clientId = clientId;
 			existing.username = username ?? existing.username;
 			return;
 		}
@@ -88,23 +84,19 @@ export class TournamentMaganer {
 	}
 
 	isTournamentPlayer(tournamentId: string, clientId: string): boolean {
-		return this.tournaments.get(tournamentId)?.players.some(p => p.clientId === clientId) ?? false;
+		return this.tournaments.get(tournamentId)?.players.some((p) => p.clientId === clientId) ?? false;
 	}
 
 	countTournamentPlayers(tournamentId: string): number {
 		return this.tournaments.get(tournamentId)?.players.length ?? 0;
 	}
 
-	// =========================
-	// TOURNAMENT START
-	// =========================
-
 	startTournament(tournamentId: string) {
 		const t = this.tournaments.get(tournamentId);
 		if (!t) return null;
 
 		const uniquePlayers = Array.from(
-			new Map(t.players.map(p => [p.userId, p])).values()
+			new Map(t.players.map((p) => [p.userId, p])).values()
 		);
 
 		if (uniquePlayers.length !== 8) {
@@ -130,11 +122,6 @@ export class TournamentMaganer {
 			const p2 = shuffled[i * 2 + 1];
 			const match = matches[i];
 
-			if (p1.userId === p2.userId) {
-				console.error("Duplicate player in same match:", p1.userId);
-				continue;
-			}
-
 			if (typeof p1.userId === "number")
 				addPlayerToMatch(match.id, p1.userId, 0);
 
@@ -144,8 +131,8 @@ export class TournamentMaganer {
 			quarterFinals.push({
 				id: i + 1,
 				matchId: match.id,
-				player1: p1.username ?? `Player ${i * 2}`,
-				player2: p2.username ?? `Player ${i * 2 + 1}`,
+				player1: p1.username ?? `Player ${i * 2 + 1}`,
+				player2: p2.username ?? `Player ${i * 2 + 2}`,
 				player1Id: p1.userId ?? null,
 				player2Id: p2.userId ?? null,
 				player1ClientId: p1.clientId,
@@ -163,9 +150,6 @@ export class TournamentMaganer {
 		};
 
 		t.bracket = bracket;
-
-		console.log("Tournament started with players:", uniquePlayers.map(p => p.userId));
-
 		return bracket;
 	}
 
@@ -185,18 +169,12 @@ export class TournamentMaganer {
 		};
 	}
 
-	// =========================
-	// PROGRESSION
-	// =========================
-
 	private createNextMatch(
 		tournamentId: string,
 		p1: MatchNode,
 		p2: MatchNode,
 		round: number
 	): MatchNode {
-
-		console.log(`tournament id check: ${tournamentId}\n\n\n`);
 		const match = createMatch({
 			tournamentId: Number(tournamentId),
 			round,
@@ -204,28 +182,26 @@ export class TournamentMaganer {
 			mode: "1v1",
 		});
 
-		if (p1.winner && p1.player1Id && p1.player2Id) {
-			const id = p1.player1 === p1.winner ? p1.player1Id : p1.player2Id;
-			addPlayerToMatch(match.id, id, 0);
-		}
+		const p1IsPlayer1 = p1.winner === p1.player1;
+		const p1ClientId = p1IsPlayer1 ? p1.player1ClientId : p1.player2ClientId;
+		const p1Id = p1IsPlayer1 ? p1.player1Id : p1.player2Id;
 
-		if (p2.winner && p2.player1Id && p2.player2Id) {
-			const id = p2.player1 === p2.winner ? p2.player1Id : p2.player2Id;
-			addPlayerToMatch(match.id, id, 0);
-		}
+		const p2IsPlayer1 = p2.winner === p2.player1;
+		const p2ClientId = p2IsPlayer1 ? p2.player1ClientId : p2.player2ClientId;
+		const p2Id = p2IsPlayer1 ? p2.player1Id : p2.player2Id;
 
-		const p1Id = p1.player1 === p1.winner ? p1.player1Id : p1.player2Id;
-		const p2Id = p2.player1 === p2.winner ? p2.player1Id : p2.player2Id;
+		if (p1Id) addPlayerToMatch(match.id, p1Id, 0);
+		if (p2Id) addPlayerToMatch(match.id, p2Id, 0);
 
 		return {
-			id: 0,
+			id: round === 2 ? (p1.id === 1 || p1.id === 2 ? 5 : 6) : 7,
 			matchId: match.id,
 			player1: p1.winner,
 			player2: p2.winner,
 			player1Id: p1Id,
 			player2Id: p2Id,
-			player1ClientId: p1.player1ClientId,
-			player2ClientId: p2.player1ClientId,
+			player1ClientId: p1ClientId,
+			player2ClientId: p2ClientId,
 			winner: null,
 			winnername: null,
 			status: "pending",
@@ -238,7 +214,6 @@ export class TournamentMaganer {
 
 		const { quarterFinals, semiFinals, final } = t.bracket;
 
-		// Semi finals
 		if (quarterFinals[0].winner && quarterFinals[1].winner && !semiFinals[0].matchId) {
 			semiFinals[0] = this.createNextMatch(tournamentId, quarterFinals[0], quarterFinals[1], 2);
 		}
@@ -247,17 +222,17 @@ export class TournamentMaganer {
 			semiFinals[1] = this.createNextMatch(tournamentId, quarterFinals[2], quarterFinals[3], 2);
 		}
 
-		// Final
 		if (semiFinals[0].winner && semiFinals[1].winner && !final[0].matchId) {
 			final[0] = this.createNextMatch(tournamentId, semiFinals[0], semiFinals[1], 3);
 		}
 	}
 
-	// =========================
-	// RESULT HANDLING
-	// =========================
-
-	handleMatchFinished(tournamentId: string, matchId: number, winnerUserId: number) {
+	handleMatchFinished(
+		tournamentId: string,
+		matchId: number,
+		winnerUserId: number,
+		winnerName?: string | null
+	) {
 		const t = this.tournaments.get(tournamentId);
 		if (!t?.bracket) return null;
 
@@ -267,48 +242,56 @@ export class TournamentMaganer {
 			...t.bracket.final,
 		];
 
-		const match = all.find(m => m.matchId === matchId);
-		if (!match) return t.bracket;
+		const match = all.find((m) => m.matchId === matchId);
+		if (!match) return null;
 
 		match.status = "finished";
 
-		console.log(`winner id ${winnerUserId}`);
-
-		if (match.player1Id === winnerUserId)
+		if (match.player1Id === winnerUserId) {
 			match.winner = match.player1;
-		else if (match.player2Id === winnerUserId)
+			match.winnername = match.player1;
+		} else if (match.player2Id === winnerUserId) {
 			match.winner = match.player2;
-		else
-			match.winner = `User #${winnerUserId}`;
+			match.winnername = match.player2;
+		} else {
+			match.winner = winnerName ?? `User #${winnerUserId}`;
+			match.winnername = match.winner;
+		}
 
 		this.tryAdvance(tournamentId);
-		this.tryFinishTournament(tournamentId);
-
-		return t.bracket;
-	}
-
-	tryFinishTournament(tournamentId: string) {
-		const t = this.tournaments.get(tournamentId);
-		if (!t?.bracket)
-			return null;
 
 		const final = t.bracket.final[0];
 
-		if (final.winner && final.status === "finished") {
-			if (getTournamentStatus(tournamentId) !== "finished") {
-				updateTournamentStatus(Number(tournamentId), "finished");
-			}
+		// fin de tournoi centralisée ici, une seule fois
+		if (
+			final.matchId &&
+			final.status === "finished" &&
+			final.winner &&
+			getTournamentStatus(tournamentId) !== "finished"
+		) {
+			updateTournamentStatus(Number(tournamentId), "finished");
 
 			return {
-				winnerName: final.winner,
-				winnerId: final.player1 === final.winner ? final.player1Id : final.player2Id
+				type: "tournament_finished" as const,
+				bracket: t.bracket,
+				winnerName: final.winnername,
+				winnerId: final.player1 === final.winner ? final.player1Id : final.player2Id,
 			};
 		}
 
-		return null;
+		return {
+			type: "bracket_update" as const,
+			bracket: t.bracket,
+		};
 	}
 
 	getBracket(tournamentId: string) {
 		return this.tournaments.get(tournamentId)?.bracket ?? null;
+	}
+
+	getWinner(tournamentId: string) {
+		const t = this.tournaments.get(tournamentId);
+		if (!t?.bracket) return null;
+		return t.bracket.final[0]?.winnername ?? null;
 	}
 }

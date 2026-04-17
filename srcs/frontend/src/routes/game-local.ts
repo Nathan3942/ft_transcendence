@@ -76,7 +76,7 @@ async function createLocalMatch(outer: HTMLDivElement, p1Name: string, p2Name: s
 
 	const onResize = () => {
 		const r = outer.getBoundingClientRect();
-		controller.reseize(r.width || window.innerWidth, r.height || window.innerHeight);
+		controller.resize(r.width || window.innerWidth, r.height || window.innerHeight);
 	};
 	window.addEventListener("resize", onResize);
 

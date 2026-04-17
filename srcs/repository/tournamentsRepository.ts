@@ -39,6 +39,7 @@ export function createTournament({ name, status = 'open' }: { name: string; stat
 export function deleteTournament(id: string | number) {
     
     // queryExecute(`DELETE FROM match_players WHERE match_id IN (SELECT id FROM matches WHERE tournament_id = ?)`, [id]);
+    queryExecute(`DELETE FROM tournament_players WHERE id = ?`, [id]);
 
     queryExecute(`DELETE FROM matches WHERE tournament_id = ?`, [id]);
 

@@ -6,11 +6,12 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/09 15:18:28 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/08 11:34:56 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/17 12:01:09 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import { getRouter } from "../handler/routeHandler.js";
+import { getLocalId } from "../helpers/apiHelper.js";
 import { getItem } from "../helpers/localStoragehelper.js";
 import { getCurrentTournamentId, setCurrentMatchId } from "../services/onlineStore.js";
 import { t } from "../i18n/i18n.js";
@@ -32,7 +33,7 @@ function getClientId(): string {
 	return v;
 }
 
-function getUserId(): string | null {
+function getUsername(): string | null {
 	return getItem<string>("username") ?? null;
 }
 
@@ -40,20 +41,36 @@ function createMatchBox(match: any): HTMLDivElement {
 	const box = document.createElement("div");
 	box.className = "min-w-[220px] rounded bg-white dark:bg-gray-800 p-3 shadow flex flex-col gap-2";
 
-	const p1 = document.createElement("div");
-	p1.className = "px-2 py-1 rounded bg-gray-200 dark:bg-gray-700";
-	p1.textContent = match.player1 ?? t("onlineTournament.tbd");
+	const myClientId = getClientId();
 
+	// PLAYER 1
+	const p1 = document.createElement("div");
+	const isMe1 = myClientId === match.player1ClientId;
+	console.log(`for see my user client id ${myClientId}, playerclient1 ${match.player1ClientId}, playerclient2 ${match.player2ClientId}\n\n`);
+
+	p1.className = isMe1
+		? "px-2 py-1 rounded bg-green-200 text-green-900 font-bold"
+		: "px-2 py-1 rounded bg-gray-200 dark:bg-gray-700";
+
+	p1.textContent = match.player1 ?? "TBD";
+
+	// PLAYER 2
 	const p2 = document.createElement("div");
-	p2.className = "px-2 py-1 rounded bg-gray-200 dark:bg-gray-700";
-	p2.textContent = match.player2 ?? t("onlineTournament.tbd");
+	const isMe2 = myClientId === match.player2ClientId;
+
+	p2.className = isMe2
+		? "px-2 py-1 rounded bg-green-200 text-green-900 font-bold"
+		: "px-2 py-1 rounded bg-gray-200 dark:bg-gray-700";
+
+	p2.textContent = match.player2 ?? "TBD";
 
 	box.append(p1, p2);
 
 	if (match.winner) {
 		const winner = document.createElement("div");
 		winner.className = "text-sm text-green-600 font-bold";
-		winner.textContent = `${t("onlineTournament.winner")}: ${match.winner}`;
+
+		winner.textContent = `Winner: ${match.winnername ?? match.winner ?? "??"}`;
 		box.appendChild(winner);
 	}
 
@@ -160,7 +177,12 @@ function updateMyMatchButton(button: HTMLButtonElement, bracket: any) {
 	};
 }
 
+
+let tournamentFinished = false;
+
 export default function onlineTournament(): HTMLDivElement {
+	
+	tournamentFinished = false;
 
 	const page = document.createElement("div");
 	page.className = "flex flex-col flex-1 p-6 gap-4";
@@ -186,6 +208,46 @@ export default function onlineTournament(): HTMLDivElement {
 
 	const ws = new WebSocket(`ws://${window.location.hostname}:3000/ws`);
 
+	let closed = false;
+
+	function cleanup() {
+		if (closed)
+			return;
+		closed = true;
+
+		try {
+			ws.close(1000, "leave tournament");
+		} catch {}
+
+		window.removeEventListener("beforeunload", onBeforeUnload);
+		window.removeEventListener("pagehide", onPageHide);
+		window.removeEventListener("navigate", onNavigate as any);
+		window.removeEventListener("popstate", onPopState);
+	}
+
+	function onBeforeUnload() {
+		cleanup();
+	}
+
+	function onPageHide() {
+		cleanup();
+	}
+
+	function onPopState() {
+		cleanup();
+	}
+
+	function onNavigate(ev: any) {
+		const nextPath = ev?.detail?.path as string | undefined;
+		if (!nextPath || nextPath !== "/online-tournament")
+			cleanup();
+	}
+
+	window.addEventListener("beforeunload", onBeforeUnload);
+	window.addEventListener("pagehide", onPageHide);
+	window.addEventListener("navigate", onNavigate as any);
+	window.addEventListener("popstate", onPopState);
+
 	ws.onopen = () => {
 		status.textContent = t("onlineTournament.joiningTournament");
 		const tournamentId = getCurrentTournamentId();
@@ -193,13 +255,13 @@ export default function onlineTournament(): HTMLDivElement {
 			status.textContent = t("onlineTournament.noTournamentId");
 			return;
 		}
-		
+
 		ws.send(JSON.stringify({
 			type: "join_tournament",
 			tournamentId,
 			clientId: getClientId(),
 			userId: getItem<number>("userId"),
-			username: getUserId()
+			username: getUsername()
 		}));
 	};
 
@@ -223,30 +285,27 @@ export default function onlineTournament(): HTMLDivElement {
 			return;
 		}
 
-		if (msg.type === "rejoin_tournament") {
-			status.textContent = `Tournament #${msg.tournamentId}: Client: ${getClientId()} ${t("onlineTournament.rejoin")}`;
-			// renderBracket(bracketContainer, )
-		}
-
 		if (msg.type === "tournament_bracket_update") {
 			renderBracket(bracketContainer, msg.bracket);
 			updateMyMatchButton(myMatchBtn, msg.bracket);
 			return;
 		}
 
-		if (msg.type === "tournament_finished") {
-
-			status.textContent = `${t("onlineTournament.winner")}: ${msg.winnerName}`;
-
-			alert(`${t("onlineTournament.tournamentFinished")}\n${t("onlineTournament.winner")}: ${msg.winnerName}`);
+		if (msg.type === "tournament_full") {
+			alert("Tournament full");
 			getRouter().lazyLoad("/game-online");
-
-			return;
 		}
 
-		if (msg.type === "tournament_full") {
-			alert(`Tournament ${msg.tournamentId} ${t("onlineTournament.tournamentFull")}`);
-			getRouter().lazyLoad("/browse-tournaments");
+		if (msg.type === "tournament_finished") {
+			if (tournamentFinished)
+				return;
+
+			tournamentFinished = true;
+			status.textContent = `Winner: ${msg.winnerName}`;
+			console.log("alerte\n\n");
+			alert(`🏆 Tournament finished!\nWinner: ${msg.winnerName}`);
+			cleanup();
+			getRouter().lazyLoad("/game-online");
 			return;
 		}
 	};

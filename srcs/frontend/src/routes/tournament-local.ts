@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 16:32:13 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/13 14:07:25 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/17 12:00:00 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ import { makeAIPolicyP2 } from "../game/ai/policy";
 
 import { loadHardGenome, genomeForDifficulty, createKeyMap, keyboardToInput, bindKeyboard, mergeKeyboardWithAIP2 } from "./game-local-ai";
 import hardGenome from "../game/ai/genomes/hard.json";
-// import { creatTextInput } from "../components/TextInput/TextInput";
+
 
 type Player = {
     id: number;
@@ -83,7 +83,7 @@ function createTextInput(id: string, placeholder: string): HTMLInputElement {
 
 function chooseAiLvl(inner: HTMLDivElement, onPick: (lvl: AiLvl) => void) {
 	inner.innerHTML = "";
-	inner.className = "w-full flex flex-col items-center gap-6";
+	inner.className = "w-full flex flex-col items-center gap-4 sm:gap-6 px-4";
 
 	const title = document.createElement("h2");
 	title.textContent = t("tournamentLocal.chooseAiDifficulty");
@@ -104,10 +104,10 @@ function chooseAiLvl(inner: HTMLDivElement, onPick: (lvl: AiLvl) => void) {
 		);
 
 	const wrap = document.createElement("div");
-	wrap.className = "w-72 flex flex-col gap-3";
-	wrap.appendChild(makePickBtn("diff-easy-btn", t("gameLocalAi.easy"), "bg-blue-300 dark:bg-blue-900", "easy"));
-	wrap.appendChild(makePickBtn("diff-medium-btn", t("gameLocalAi.medium"), "bg-purple-300 dark:bg-purple-900", "medium"));
-	wrap.appendChild(makePickBtn("diff-hard-btn", t("gameLocalAi.hard"), "bg-red-300 dark:bg-red-900", "hard"));
+	wrap.className = "w-full max-w-xs sm:max-w-sm flex flex-col gap-3";
+	wrap.appendChild(makePickBtn("diff-easy-btn", "Easy", "bg-blue-300 dark:bg-blue-900", "easy"));
+	wrap.appendChild(makePickBtn("diff-medium-btn", "Medium", "bg-purple-300 dark:bg-purple-900", "medium"));
+	wrap.appendChild(makePickBtn("diff-hard-btn", "Hard", "bg-red-300 dark:bg-red-900", "hard"));
 
 	inner.appendChild(wrap);
 }
@@ -143,16 +143,13 @@ function renderChampion(champ: Player): HTMLDivElement {
 	const d = document.createElement("div");
 	d.className = "mt-6 text-white text-3xl font-semibold";
 	d.textContent = `🏆 ${t("tournamentLocal.champion")}: ${champ.name}`;
+
 	return (d);
 }
 
 function renderMatch(match: Match, title: string): HTMLDivElement {
 	const card = document.createElement("div");
-	card.className = `
-		w-72 p-3 rounded-xl
-		bg-slate-900/40 border border-white/10
-		text-white
-	`;
+	card.className = `w-full max-w-xs sm:max-w-sm p-3 rounded-xl bg-slate-900/40 border border-white/10 text-white`;
 
 	const h = document.createElement("div");
 	h.className = "text-sm opacity-70 mb-3";
@@ -161,12 +158,10 @@ function renderMatch(match: Match, title: string): HTMLDivElement {
 	const row1 = document.createElement("div");
 	row1.className = "flex items-center justify-between p-2 rounded-lg bg-white/5";
 	row1.textContent = match.score ? `${match.p1.name} (${match.score.s1})` : match.p1.name;
-	row1.className = "p-1 rounded bg-white/5";
 
 	const row2 = document.createElement("div");
 	row2.className = "flex items-center justify-between p-2 rounded-lg bg-white/5 mt-2";
 	row2.textContent = match.score ? `${match.p2.name} (${match.score.s2})` : match.p2.name;
-	row2.className = "p-1 rounded bg-white/5 mt-1";
 
 	card.appendChild(h);
 	card.appendChild(row1);
@@ -178,16 +173,53 @@ function renderMatch(match: Match, title: string): HTMLDivElement {
 function renderBracket(bracket: Bracket): HTMLDivElement {
 
 	const root = document.createElement("div");
-	root.className = "w-full max-w-6xl mx-auto mt-10";
+	root.className = "w-full max-w-6xl mx-auto mt-6 sm:mt-10 px-2 sm:px-4";
+
+	const isMobile = window.innerWidth < 768;
+
+	if (isMobile) {
+		root.className += " flex flex-col gap-6";
+
+		const makeSection = (title: string, matches: Match[], labelPrefix: string) => {
+			const section = document.createElement("div");
+			section.className = "flex flex-col gap-3";
+
+			const h = document.createElement("h3");
+			h.textContent = title;
+			h.className = "text-white/80 text-lg font-semibold";
+			section.appendChild(h);
+
+			matches.forEach((m, i) => {
+				section.appendChild(renderMatch(m, `${labelPrefix} ${i + 1}`));
+			});
+
+			return section;
+		};
+
+		root.appendChild(makeSection("Quarterfinals", bracket.quarterfinal, "Match"));
+		root.appendChild(makeSection("Semifinals", bracket.semifinal, "Semi"));
+
+		const finalSection = document.createElement("div");
+		finalSection.className = "flex flex-col gap-3";
+
+		const finalTitle = document.createElement("h3");
+		finalTitle.textContent = "Final";
+		finalTitle.className = "text-white/80 text-lg font-semibold";
+		finalSection.appendChild(finalTitle);
+		finalSection.appendChild(renderMatch(bracket.final, "Final"));
+
+		root.appendChild(finalSection);
+		return root;
+	}
 
 	const header = document.createElement("div");
-	header.className = "grid gap-x-12 mb-6";
+	header.className = "grid gap-x-6 lg:gap-x-12 mb-6";
 	header.style.gridTemplateColumns = "repeat(3, 1fr)";
 
 	const mkTitle = (txt: string) => {
 		const t = document.createElement("div");
 		t.textContent = txt;
-		t.className = "text-white/80 text-base text-center";
+		t.className = "text-white/80 text-sm sm:text-base text-center";
 		return t;
 	};
 
@@ -195,14 +227,11 @@ function renderBracket(bracket: Bracket): HTMLDivElement {
 	header.appendChild(mkTitle(t("tournamentLocal.semiFinals")));
 	header.appendChild(mkTitle(t("tournamentLocal.final")));
 
-
 	const body = document.createElement("div");
-	body.className = "grid gap-x-12 items-center justify-items-center";
+	body.className = "grid gap-x-6 lg:gap-x-12 items-center justify-items-center";
 	body.style.gridTemplateColumns = "repeat(3, 1fr)";
 	body.style.gridTemplateRows = "repeat(7, auto)";
-
-
-	body.style.rowGap = "2px";
+	body.style.rowGap = "8px";
 
 	const place = (el: HTMLElement, col: number, row: number) => {
 		el.style.gridColumnStart = String(col);
@@ -333,7 +362,7 @@ function buildBracket(inner: HTMLDivElement) {
 		inner.appendChild(renderChampion(gTournament.champion));
 	}
 
-	const btnClasses = "w-full flex flex-row p-3 justify-center items-center rounded-xl";
+	const btnClasses = "w-full flex flex-row p-3 sm:p-4 justify-center items-center rounded-xl";
 
 	const label = gTournament.stage === "DONE" ? t("tournamentLocal.restartTournament") : t("tournamentLocal.playNextMatch");
 
@@ -361,7 +390,8 @@ function buildBracket(inner: HTMLDivElement) {
 		})
 	);
 
-	(button as HTMLElement).style.width = "18rem";
+	(button as HTMLElement).style.width = "100%";
+	(button as HTMLElement).style.maxWidth = "18rem";
 	(button as HTMLElement).style.margin = "0 auto";
 	inner.appendChild(button);
 }
@@ -416,7 +446,7 @@ async function CreateMatch(inner: HTMLDivElement, match: Match, onDone: (res: Ga
     inner.innerHTML = "";
 
     const gameWrap = document.createElement("div");
-	gameWrap.className = "w-screen h-[92vh]";
+	gameWrap.className = "w-full h-[70vh] sm:h-[85vh] max-h-screen";
 	inner.appendChild(gameWrap);
 
 	const canvas = document.createElement("canvas");
@@ -428,15 +458,15 @@ async function CreateMatch(inner: HTMLDivElement, match: Match, onDone: (res: Ga
         throw new Error("2D context not supported");
 
     const rect = gameWrap.getBoundingClientRect();
-    canvas.width = rect.width || window.innerWidth;
-    canvas.height = rect.height || window.innerHeight;
+    canvas.width = Math.max(320, rect.width || window.innerWidth);
+	canvas.height = Math.max(400, rect.height || window.innerHeight);
 
 	let controller: ReturnType<typeof   startPong> | null = null;
 	let unbindKeys: null | (() => void) = null;
 
 	const onResize = () => {
 		const r = gameWrap.getBoundingClientRect();
-		controller?.reseize(r.width || window.innerWidth, r.height || window.innerHeight);
+		controller?.resize(r.width || window.innerWidth, r.height || window.innerHeight);
 	};
 
 	const events = {
@@ -517,26 +547,24 @@ export default function createLocalTournament(): HTMLDivElement {
     const outer = document.createElement("div");
 	const inner = document.createElement("div");
 
-	outer.className = "overflow-y-auto flex flex-1 flex-col justify-center items-center";
-	inner.className = "text-3xl w-9/12 h-2/3 flex flex-col items-center gap-8";
+	outer.className = "flex flex-1 flex-col items-center px-4 py-4 sm:px-6";
+	inner.className = "w-full max-w-6xl flex flex-col items-center gap-6 sm:gap-8";
 
 	outer.append(createSoftBackLoad("bg-cyan-300 dark:bg-cyan-900", "/game-local"))
 
     const fromBlock = document.createElement("div");
-    fromBlock.className = "w-full flex flex-col gap-3 p-6 bg-blue-300 dark:bg-blue-900 rounded-xl";
+    fromBlock.className = `w-full max-w-2xl flex flex-col gap-3 p-4 sm:p-6 bg-blue-300 dark:bg-blue-900 rounded-xl`;
 
     const title = document.createElement("h2");
-    title.textContent = t("tournamentLocal.enterPlayerNames");
-    title.className = `
-        text-white text-2xl font-semibold
-        self-start mb-2`;
+    title.textContent = "Enter players names";
+    title.className = "text-white text-xl sm:text-2xl font-semibold self-start mb-2";
     fromBlock.appendChild(title);
 
     for (let i = 1; i <= 8; i++) {
         fromBlock.appendChild(createTextInput(`player-${i}`, `${t("tournamentLocal.playerNamePlaceholder")} ${i}`));
     }
 
-    const btnClasses = "w-1/2 flex flex-row p-4 justify-center";
+    const btnClasses = "w-full sm:w-1/2 flex flex-row p-4 justify-center items-center rounded-xl";
 
     const button = makeButtonBlock(
         "bg-blue-300 dark:bg-blue-900",
@@ -550,11 +578,6 @@ export default function createLocalTournament(): HTMLDivElement {
             iconBClass: "h-10 pr-3 dark:invert"
         })
     );
-
-	const bracketContainer = document.createElement("div");
-	bracketContainer.id = "bracket-container";
-	bracketContainer.className = "w-9/12";
-	inner.appendChild(bracketContainer);
 
     inner.appendChild(fromBlock);
     inner.appendChild(button);

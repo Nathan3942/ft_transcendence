@@ -6,14 +6,15 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 14:42:50 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/01 19:05:33 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/17 12:03:36 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import { getRouter } from "../handler/routeHandler";
-import { listOnlineMatches, deleteMatch, type Match } from "../services/online";
+import { listOnlineMatches, type Match, updateMatchStatus } from "../services/online";
 import { setCurrentMatchId } from "../services/onlineStore";
 import { t } from "../i18n/i18n";
+
 
 function matchRow(m: Match, onDeleted: () => void): HTMLDivElement {
 	const row = document.createElement("div");
@@ -57,7 +58,7 @@ function matchRow(m: Match, onDeleted: () => void): HTMLDivElement {
 		if (!ok)
 			return;
 		try {
-			await deleteMatch(m.id);
+			await updateMatchStatus(m.id, "finished");
 			onDeleted(); // refresh list
 		} catch (e) {
 			alert(`${t("browseGames.deleteFailed")}: ${(e as Error).message}`);
@@ -113,7 +114,7 @@ export default function createBrowseGamesPage(): HTMLDivElement {
 		list.innerHTML = "";
 
 		try {
-			const matches = (await listOnlineMatches()).filter(m => !m.tournamentId);
+			const matches = (await listOnlineMatches()).filter(m => !m.tournamentId && m.status !== "finished");
 
 			if (!Array.isArray(matches) || matches.length === 0) {
 				status.textContent = t("browseGames.empty");

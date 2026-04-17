@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 15:45:48 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/08 06:05:07 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/17 09:22:13 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -191,7 +191,6 @@ export class GameLoop {
 		else if (scored)
 			this.applyScore4P();
 
-		// TODO: ball phisic score
 		this.onTick(this.state);
 	}
 
