@@ -51,9 +51,9 @@ async function importUserData(): Promise<userInfo[]> {
 	}
 };
 
-function createTdElement(body: string | number, ): HTMLDivElement {
+function createTdElement(body: string | number): HTMLElement {
 	const td = document.createElement("td");
-	td.className = "py-1.5 px-4"
+	td.className = "py-2 px-4 border-b border-gray-200 dark:border-gray-700";
 	if (typeof body === "string")
 		td.append(body);
 	if (typeof body === "number")
@@ -65,9 +65,8 @@ function createTdElement(body: string | number, ): HTMLDivElement {
 function createLeaderboardCells(users: userInfo[]): HTMLTableSectionElement {
 
 	const tBody = document.createElement("tbody");
-	tBody.className = "w-full"
+	tBody.className = "w-full";
 	tBody.id = "tableBody";
-	const classBase = "border border-gray-200 dark:border-gray-700 border border-b "
 
 	for (let i = 0; i < users.length; ++i) {
 		const cell = document.createElement("tr");
@@ -75,21 +74,20 @@ function createLeaderboardCells(users: userInfo[]): HTMLTableSectionElement {
 
 		switch (i) {
 			case 0:
-				cell.className = classBase + "bg-yellow-300 hover:bg-yellow-400 dark:bg-yellow-600 dark:hover:bg-yellow-500 text-yellow-900 hover:text-yellow-950 dark:text-yellow-400 dark:hover:text-yellow-300";
+				cell.className = "bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-950 dark:hover:bg-yellow-900 text-yellow-800 dark:text-yellow-300";
 				break;
 			case 1:
-				cell.className = classBase + "bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-600 hover:text-gray:700 dark:text-gray-400 dark:hover:text-gray-300"
+				cell.className = "bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300";
 				break;
 			case 2:
-				cell.className = classBase + "bg-amber-500 hover:bg-amber-600 dark:bg-amber-900 dark:hover:bg-amber-800 text-amber-900 hover:text-amber-950 dark:text-amber-600 dark:hover:text-amber-500"
-				break
+				cell.className = "bg-amber-50 hover:bg-amber-100 dark:bg-amber-950 dark:hover:bg-amber-900 text-amber-800 dark:text-amber-400";
+				break;
 			default:
-				cell.className = classBase + "bg-gray-100 hover:bg-gray-200 dark:bg-gray-900 dark:hover:bg-gray-800";
-		
+				cell.className = "bg-white hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800 text-gray-800 dark:text-white";
 		}
 
 		cell.append(
-			createTdElement(i),
+			createTdElement(i + 1),
 			createTdElement(user?.username || "Undefined"),
 			createTdElement(user?.wins || NaN),
 			createTdElement(user?.losses || NaN),
@@ -138,16 +136,16 @@ export default async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 		currentTbody?.replaceWith(buildLeaderboard(score));
 	}
 
-	function createThElement(text: string, id: string, key: scoreKey): HTMLDivElement {
-	const th = document.createElement("th");
-	th.className = "text-left py-3 px-2"
-	th.append(createButton({
-				buttonText: text,
-				id: id,
-				extraClasses: "",
-				f: () => replaceTableBody(key),
-			}))
-	return th;
+	function createThElement(text: string, id: string, key: scoreKey): HTMLElement {
+		const th = document.createElement("th");
+		th.className = "text-left py-2 px-4 border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800";
+		th.append(createButton({
+			buttonText: text,
+			id: id,
+			extraClasses: "font-semibold text-gray-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-150",
+			f: () => replaceTableBody(key),
+		}));
+		return th;
 	}
 
 	// Function Proper
@@ -164,20 +162,26 @@ export default async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 	leaderboard.id = "tableDiv";
 	
 	// Setting styling
-	outer.className = "flex flex-1 flex-col h-[calc(100vh-64px)] w-full overflow-hidden";
-	leaderboard.className = "flex flex-col flex-1 items-center justify-start pt-5 w-full overflow-hidden";
-	tableContainer.className = "w-full max-w-4xl mx-auto h-full overflow-auto";
-	table.className = "w-full max-w-4xl h-5/6 mx-auto border border-gray-200";
-	tHead.className = "w-full dark:bg-gray-800 bg-gray-100 border border-gray-200 dark:border-gray-700 sticky top-0";
+	outer.className = "flex flex-1 flex-col bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-white p-4 overflow-hidden";
+	leaderboard.className = "flex flex-col flex-1 w-full max-w-4xl mx-auto overflow-hidden";
+	tableContainer.className = "flex-1 overflow-auto border border-gray-200 dark:border-gray-700";
+	table.className = "w-full";
+	tHead.className = "sticky top-0";
+
+	// Page title
+	const pageTitle = document.createElement("h2");
+	pageTitle.className = "text-xl font-bold mb-4 text-gray-800 dark:text-white";
+	pageTitle.textContent = `▐ ${t("home.leaderboard")}`;
+	leaderboard.append(pageTitle);
 
 	// creating Table Head
 	const tr = document.createElement("tr");
 	const userNames = document.createElement("th");
-	userNames.className = "text-left py-3 px-4";
+	userNames.className = "text-left py-2 px-4 border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white";
 	userNames.append(t("leaderboard.userName"));
 	const pos = document.createElement("th");
-	pos.className = "text-left py-3 px-4 w-15";
-	pos.append(t("leaderboard.rank"))
+	pos.className = "text-left py-2 px-4 w-14 border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white";
+	pos.append(t("leaderboard.rank"));
 
 
 	tr.append(
@@ -191,7 +195,7 @@ export default async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 	
 	tHead.append(tr);
 	table.append(tHead, tbody);
-	tableContainer.append(table)
+	tableContainer.append(table);
 	leaderboard.append(tableContainer);
 	outer.append(leaderboard);
 
