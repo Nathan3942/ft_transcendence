@@ -7,7 +7,8 @@ import bcrypt from 'bcryptjs'
 import { createUser } from '../repository/usersRepository'
 import { getUserWithPasswordByEmail } from '../repository/authRepository'
 import { setOnlineStatus } from '../repository/usersRepository'
-import { BadRequestError, UnauthorizedError } from '../utils/appErrors'
+import { UnauthorizedError } from '../utils/appErrors'
+import { validateBody, registerSchema, loginSchema } from '../utils/validation'
 import { PublicUser } from '../models/userModel'
 
 const SALT_ROUNDS = 12
@@ -17,12 +18,7 @@ export async function register(
     email: string,
     password: string
 ): Promise<{ user: PublicUser; payload: { id: number; username: string } }> {
-    if (!username || !email || !password) {
-        throw new BadRequestError('Missing username, email or password')
-    }
-    if (password.length < 8) {
-        throw new BadRequestError('Password must be at least 8 characters')
-    }
+    validateBody(registerSchema, { username, email, password })
 
     const password_hash = await bcrypt.hash(password, SALT_ROUNDS)
     const user = await createUser({ username, email, password_hash })
@@ -37,9 +33,7 @@ export async function login(
     email: string,
     password: string
 ): Promise<{ user: PublicUser; payload: { id: number; username: string } }> {
-    if (!email || !password) {
-        throw new BadRequestError('Missing email or password')
-    }
+    validateBody(loginSchema, { email, password })
 
     const userWithHash = getUserWithPasswordByEmail(email)
     // Message volontairement vague pour ne pas révéler si l'email existe
