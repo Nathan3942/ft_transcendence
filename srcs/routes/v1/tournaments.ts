@@ -37,6 +37,14 @@ export default async function tournamentsRoutes(server: FastifyInstance) {
         return success(result)
     })
 
+    /************************* UPDATE MATCH STATUS **********************************/
+    server.patch('/tournaments/:id/status', async (request, reply) => {
+        const { id } = request.params as { id: string }
+        const { status } = request.body as { status: 'open' | 'in_progress' | 'finished' }
+        const result = tournamentService.updateTournamentStatus(id, status)
+        return success(result)
+    })
+
     /************************* ADD PLAYER TO TOURNAMENT **********************************/
     server.post('/tournaments/:id/players', async (request, reply) => {
         const { id } = request.params as { id: string }

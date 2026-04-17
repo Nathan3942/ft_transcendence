@@ -168,7 +168,7 @@ interface TournamentResultInput {
 export function updateTournamentStatus(
     tournamentId: string | number,
     status: TournamentStatus
-): { message: string; matchId: number; status: TournamentStatus } {
+): { message: string; tournamentId: number; status: TournamentStatus } {
     const validStatuses: TournamentStatus[] = ['open', 'in_progress', 'finished']
     if (!validStatuses.includes(status)) {
         throw new BadRequestError('status must be one of: pending, in_progress, finished')
@@ -181,19 +181,19 @@ export function updateTournamentStatus(
 
     // Validate status transitions
     if (tournament.status === 'finished') {
-        throw new BadRequestError('Cannot change status of a finished match')
+        throw new BadRequestError('Cannot change status of a finished tournament')
     }
 
     const numericTournamentId = typeof tournamentId === 'string' ? parseInt(tournamentId) : tournamentId
     const updateResult = updateTournamentStatusRepo(numericTournamentId, status)
 
     if (updateResult.changes === 0) {
-        throw new NotFoundError('Match not found')
+        throw new NotFoundError('Tournament not found')
     }
 
     return {
         message: 'Tournament status updated',
-        matchId: numericTournamentId,
+        tournamentId: numericTournamentId,
         status
     }
 }

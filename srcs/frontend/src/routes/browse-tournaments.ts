@@ -6,12 +6,12 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 16:33:40 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/16 07:16:00 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/17 06:00:51 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import { getRouter } from "../handler/routeHandler.js";
-import { deleteTournament, listOnlineTournament, type Tournament } from "../services/online.js";
+import { deleteTournament, listOnlineTournament, updateTournamentStatus, type Tournament } from "../services/online.js";
 import { setCurrentTournamentId } from "../services/onlineStore.js";
 
 function formatWinner(winnerId: number | null) {
@@ -47,13 +47,8 @@ function tournamentRow(t: Tournament, onDeleted: () => void): HTMLDivElement {
 	openBtn.className = "px-4 py-2 rounded bg-blue-600 text-white";
 	openBtn.textContent = "Open";
 	openBtn.onclick = () => {
-		// ✅ adapte à ton routing
-		// Si tu as une page tournament dédiée :
 		setCurrentTournamentId(String(t.id));
 		getRouter().lazyLoad(`/online-tournament`);
-
-		// Sinon si tu utilises /game-online/:id :
-		// navigate(`/game-online/${t.id}`);
 	};
 
 	const delBtn = document.createElement("button");
@@ -65,7 +60,7 @@ function tournamentRow(t: Tournament, onDeleted: () => void): HTMLDivElement {
 			return;
 
 		try {
-			await deleteTournament(t.id);
+			await updateTournamentStatus(t.id, "finished");
 			onDeleted();
 		}
 		catch (e) {
@@ -117,10 +112,6 @@ export default function createBrowseTournamentsPage(): HTMLDivElement {
         list.innerHTML = "";
 
         try {
-        // ✅ idéalement:
-        // const tournaments = await listOnlineTournaments();
-
-        // ⚠️ ton code actuel
         const tournaments = (await listOnlineTournament()).filter(t => t.status !== "finished");
 
         if (!Array.isArray(tournaments) || tournaments.length === 0) {

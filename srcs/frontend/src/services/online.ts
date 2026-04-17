@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 16:53:19 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/13 18:59:31 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/17 06:28:12 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@ import { boolean, success } from "zod";
 import { api } from "./api.js";
 
 export type TournamentStatus = 'open' | 'in_progress' | 'finished';
+export type MatchStatus = "pending" | "in_progress" | "finished";
 
 export interface Tournament {
   id: number;
@@ -22,8 +23,6 @@ export interface Tournament {
   winnerId: number | null;
   createdAt: string;
 }
-
-const API_BASE = `http://${window.location.hostname}:3000/api/v1`;  //a changer selon setup
 
 export type Match = {
     id: string;
@@ -77,6 +76,26 @@ export async function createOnlineTournament(): Promise<Tournament> {
 	});
 
 	return res.data;
+}
+
+export async function updateMatchStatus(matchId: string, status: MatchStatus): Promise<Match> {
+    
+    const res = await api<{ success: boolean; data: Match }>(`/matches/${matchId}/status`, { method: "PATCH", body: JSON.stringify({ status }), });
+    
+    return res.data;
+}
+
+export type UpdateTournamentStatusResponse = {
+	message: string;
+	tournamentId: number;
+	status: TournamentStatus;
+};
+
+export async function updateTournamentStatus(tournamentId: number, status: TournamentStatus): Promise<UpdateTournamentStatusResponse> {
+	return api<UpdateTournamentStatusResponse>(`/tournaments/${tournamentId}/status`, {
+		method: "PATCH",
+		body: JSON.stringify({ status }),
+	});
 }
 
 export async function deleteMatch(id: string | number): Promise<unknown> {

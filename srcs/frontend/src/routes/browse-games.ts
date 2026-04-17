@@ -6,12 +6,12 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 14:42:50 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/16 07:13:57 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/17 05:56:16 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import { getRouter } from "../handler/routeHandler.js";
-import { listOnlineMatches, deleteMatch, type Match } from "../services/online.js";
+import { listOnlineMatches, deleteMatch, type Match, updateMatchStatus } from "../services/online.js";
 import { setCurrentMatchId } from "../services/onlineStore.js";
 
 function matchRow(m: Match, onDeleted: () => void): HTMLDivElement {
@@ -56,7 +56,7 @@ function matchRow(m: Match, onDeleted: () => void): HTMLDivElement {
 		if (!ok) 
 			return;
 		try {
-			await deleteMatch(m.id);
+			await updateMatchStatus(m.id, "finished");
 			onDeleted(); // refresh list
 		} catch (e) {
 			alert(`Delete failed: ${(e as Error).message}`);
