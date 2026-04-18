@@ -72,6 +72,7 @@ export const initTables = (): void => {
       status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'in_progress', 'finished')),
       mode TEXT DEFAUT '1v1' CHECK(mode IN ('1v1', '2v2', '3p', '4p')),
       winner_id INTEGER,
+      ai_score INTEGER,
       started_at DATETIME,
       finished_at DATETIME,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,

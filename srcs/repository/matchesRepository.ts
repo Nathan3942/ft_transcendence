@@ -209,9 +209,10 @@ export function createFinishedMatchWithPlayers(
     const now = new Date().toISOString()
 
     // Create match with status finished and finished_at set
+    const aiScore = player2Id === null ? scorePlayer2 : null
     const matchResult = queryExecute(
-        'INSERT INTO matches (tournament_id, round, status, winner_id, finished_at) VALUES (?, ?, ?, ?, ?)',
-        [null, null, 'finished', winnerId, now]
+        'INSERT INTO matches (tournament_id, round, status, winner_id, ai_score, finished_at) VALUES (?, ?, ?, ?, ?, ?)',
+        [null, null, 'finished', winnerId, aiScore, now]
     )
 
     const matchId = matchResult.lastInsertRowid as number
