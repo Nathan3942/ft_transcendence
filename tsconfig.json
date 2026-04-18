@@ -11,5 +11,5 @@
     "forceConsistentCasingInFileNames": true //Upper and lowercases have to match in file names
   },
   "include": ["srcs/**/*"], // compile all
-  "exclude": ["node_modules"] // do not compile node_modules (node_modules are additional tools to node.js)
+  "exclude": ["node_modules", "srcs/frontend/src"] // do not compile node_modules (node_modules are additional tools to node.js)
 }
