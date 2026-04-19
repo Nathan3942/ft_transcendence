@@ -15,7 +15,6 @@ import { getLocalId } from "../helpers/apiHelper.js";
 import { getItem } from "../helpers/localStoragehelper.js";
 import { getCurrentTournamentId, setCurrentMatchId } from "../services/onlineStore.js";
 import { t } from "../i18n/i18n.js";
-import { API_BASE } from "../handler/loginHandler.js";
 
 function randomId(): string {
 	const c: any = globalThis.crypto as any;
@@ -207,7 +206,7 @@ export default function onlineTournament(): HTMLDivElement {
 
 	page.append(status, controls, bracketContainer);
 
-	const ws = new WebSocket(`wss://${window.location.host}${API_BASE}/ws`);
+	const ws = new WebSocket(`wss://${window.location.host}/ws`);
 
 	let closed = false;
 

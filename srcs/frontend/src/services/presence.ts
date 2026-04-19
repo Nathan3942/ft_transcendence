@@ -1,4 +1,3 @@
-import { API_BASE } from "../handler/loginHandler";
 import { getLocalId } from "../helpers/apiHelper";
 
 let ws: WebSocket | null = null;
@@ -10,7 +9,7 @@ export function startPresence(): void {
 }
 
 function connect(): void {
-	ws = new WebSocket(`wss://${window.location.host}${API_BASE}/ws`);
+	ws = new WebSocket(`wss://${window.location.host}/ws`);
 
 	ws.send(JSON.stringify({type: "ping", id: getLocalId()}));
 
