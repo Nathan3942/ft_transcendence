@@ -16,6 +16,7 @@ import { toRenderState, type RenderState, type ServerGameState, type GameSlot } 
 import { getRouter } from "../handler/routeHandler.js";
 import { t } from "../i18n/i18n.js";
 import { getItem } from "../helpers/localStoragehelper.js";
+import { API_BASE } from "../handler/loginHandler.js";
 
 // import { getTournamentStatus } from "../../../services/tournamentService";
 
@@ -227,7 +228,7 @@ export default function onlineMatch(): HTMLDivElement {
 	let running = true;
 	let rafId = 0;
 
-	const ws = new WebSocket(`ws://${window.location.hostname}:3000/ws`);
+	const ws = new WebSocket(`wss://${window.location.host}${API_BASE}/ws`);
 
 	// ResizeObserver
 	const ro = new ResizeObserver(() => {

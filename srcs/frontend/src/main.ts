@@ -2,6 +2,7 @@ import './style.css';
 import { initRouter, Router } from './handler/routeHandler';
 import { routes } from './routes/routes';
 import { getItem, setItem } from './helpers/localStoragehelper';
+import { API_BASE } from './handler/loginHandler';
 
 let globalWs: WebSocket | null = null;
 
@@ -26,7 +27,7 @@ export function connectGlobalWS() {
     if (globalWs && globalWs.readyState === WebSocket.OPEN)
       return;
 
-    globalWs = new WebSocket(`ws://${window.location.hostname}:3000/ws`);
+    globalWs = new WebSocket(`wss://${window.location.host}${API_BASE}/ws`);
 
     globalWs.onopen = () => {
       console.log("Global WS connected");

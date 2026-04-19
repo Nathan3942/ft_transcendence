@@ -10,7 +10,7 @@ export function startPresence(): void {
 }
 
 function connect(): void {
-	ws = new WebSocket(`ws://${API_BASE}/ws`);
+	ws = new WebSocket(`wss://${window.location.host}${API_BASE}/ws`);
 
 	ws.send(JSON.stringify({type: "ping", id: getLocalId()}));
 
