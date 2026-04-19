@@ -216,7 +216,7 @@ export default function initUSerSettings(): void {
 		const newLanguageButton = createButton({
 			id: "language-settings-button",
 			extraClasses: [
-				"px-3 py-1.5 text-left cursor-pointer relative group",
+				"px-3 py-1.5 text-left cursor-pointer relative",
 				"bg-gray-100 dark:bg-gray-800",
 				"hover:bg-gray-300 dark:hover:bg-gray-600",
 				"text-gray-800 dark:text-gray-100",
@@ -229,11 +229,19 @@ export default function initUSerSettings(): void {
 		const languageDropDown = document.createElement("div");
 		languageDropDown.className = [
 			"flex flex-col w-full absolute left-0 top-full z-10",
-			"invisible group-hover:visible",
 			"bg-gray-100 dark:bg-gray-800",
 			"border border-gray-400 dark:border-gray-500",
-			"shadow-md"
+			"shadow-md hidden"
 		].join(" ");
+
+		const closeDropdown = () => languageDropDown.classList.add("hidden");
+
+		newLanguageButton.addEventListener("click", (e) => {
+			e.stopPropagation();
+			languageDropDown.classList.toggle("hidden");
+		});
+
+		document.addEventListener("click", closeDropdown, { capture: true });
 
 		languageDropDown.append(
 			createButton({
