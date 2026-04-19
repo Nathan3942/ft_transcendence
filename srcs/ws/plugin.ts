@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/13 15:48:09 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/16 06:31:24 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/18 13:49:14 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,8 @@ const sockets = new Set<WsSocket>();
 declare module "fastify" {
 	interface FastifyInstance {
 		wsHub: WsHub;
+		gameManager: GameManager;
+		tournamentManager: TournamentMaganer;
 	}
 }
 
@@ -174,6 +176,9 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 		(room, payload) => hub.broadcast(room as any, payload),
 		tournamentManager
 	);
+
+	app.decorate("gameManager", gameManager);
+	app.decorate("tournamentManager", tournamentManager);
     /* 
     	endpoint websocket 
 		client co a l'url
@@ -425,6 +430,8 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 
 				return;
 			}
+
+		
 
 
 			if (msg.type === "input") {

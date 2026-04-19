@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/09 16:26:29 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/16 05:49:48 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/18 13:21:16 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -293,5 +293,35 @@ export class TournamentMaganer {
 		const t = this.tournaments.get(tournamentId);
 		if (!t?.bracket) return null;
 		return t.bracket.final[0]?.winnername ?? null;
+	}
+
+	forceCloseTournament(tournamentId: string) {
+		const t = this.tournaments.get(tournamentId);
+		if (!t)
+			return;
+
+		if (t.bracket) {
+			for (const match of [
+				...t.bracket.quarterFinals,
+				...t.bracket.semiFinals,
+				...t.bracket.final,
+			]) {
+				match.status = "finished";
+			}
+		}
+	}
+
+	getActiveMatchIds(tournamentId: string): number[] {
+		const t = this.tournaments.get(tournamentId);
+		if (!t?.bracket)
+			return [];
+
+		return [
+			...t.bracket.quarterFinals,
+			...t.bracket.semiFinals,
+			...t.bracket.final,
+		]
+			.map((m) => m.matchId)
+			.filter((id): id is number => typeof id === "number");
 	}
 }

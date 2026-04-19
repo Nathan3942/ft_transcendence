@@ -1,5 +1,5 @@
-import { authGuard} from "../handler/routeHandler.js";
 import type { Route } from "../interfaces/properties.js";
+import { authGuard } from "../handler/guards.js";
 
 const lazy = <T extends HTMLElement>(
 	loader: () => Promise<{default: (params?: Record<string, string>) => T | Promise<T>}>
@@ -61,11 +61,6 @@ export const routes: Route[] = [
 	{
 		path: "/about",
 		component: lazy(() => import("./about"))
-	},
-	{
-		path: "/game-online",
-		component: lazy(() => import("./game-online")),
-		guarded: [authGuard]
 	},
 	{
 		path: "/online-tournament",

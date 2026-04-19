@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 16:56:00 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/16 08:22:29 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/17 15:40:27 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 import type { ModeId, PongConfig, PongEvents, PongInput, PongState } from "./pong_core.js";
 import { computePlayfield } from "./pong_core.js"
 import { DEFAULT_CONFIG, clamp, creatInitialState, updateCore, paddleReact } from "./pong_core.js";
-
+import { t } from "../i18n/i18n.js";
 
 // ================= Rendering ===================
 
@@ -81,10 +81,6 @@ function render(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, state:
 	ctx.lineWidth = 2;
 	ctx.strokeRect(state.playX, state.playY, state.playW, state.playH);
 
-	// ctx.fillStyle = "white";
-	// ctx.font = "120px 'VT323'";
-	// ctx.textAlign = "center";
-	// ctx.fillText("COCO_PONG", canvas.width / 2, state.playY - 20);
 
 	if (state.mod === "3p" || state.mod === "4p") {
 		ctx.beginPath();
@@ -129,13 +125,13 @@ function render(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, state:
 	{
 		ctx.font = `${mediumFont}px 'VT323'`;
 		ctx.textAlign = "center";
-		ctx.fillText("Press START", state.playX + state.playW / 2, state.playY + state.playH / 2);
+		ctx.fillText(t("ingameMsg.start"), state.playX + state.playW / 2, state.playY + state.playH / 2);
 	}
 	else if (state.phase === "PAUSED")
 	{
 		ctx.font = `${bigFont}px 'VT323'`;
 		ctx.textAlign = "center";
-		ctx.fillText("PAUSED", canvas.width / 2, canvas.height / 2);
+		ctx.fillText(t("ingameMsg.pause"), canvas.width / 2, canvas.height / 2);
 	}
 	else if (state.phase === "COUNTDOWN")
 	{
@@ -147,10 +143,10 @@ function render(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, state:
 	{
 		ctx.font = `${mediumFont}px 'VT323'`;
 		ctx.textAlign = "center";
-		ctx.fillText(String("PLAYER " + state.winner + " WINS!"), canvas.width / 2, canvas.height / 2);
+		ctx.fillText(String(t("ingameMsg.player") + state.winner + t("ingameMsg.wins")), canvas.width / 2, canvas.height / 2);
 		if (opts.tournament === false) {
 			ctx.font = `${smallFont}px 'VT323'`;
-			ctx.fillText("Press START to restart", canvas.width / 2, canvas.height / 2 + 80);
+			ctx.fillText(t("ingameMsg.restart"), canvas.width / 2, canvas.height / 2 + 80);
 		}
 	}
 }
@@ -489,16 +485,3 @@ export function startPong(
 	};
 }
 
-
-// const controller = startPong(canvas, ctx, {}, {
-//   onGameOver: (winner) => console.log("winner", winner),
-// });
-
-// // démontage composant pour SPA
-// controller.stop();
-
-// // Si canvas resize:
-// controller.resize(newW, newH);
-
-// // Pour input réseau plus tard:
-// controller.setInputSource(() => networkInput);

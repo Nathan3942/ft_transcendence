@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/09 15:18:28 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/17 12:01:09 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/18 13:41:10 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -304,6 +304,13 @@ export default function onlineTournament(): HTMLDivElement {
 			status.textContent = `Winner: ${msg.winnerName}`;
 			console.log("alerte\n\n");
 			alert(`🏆 Tournament finished!\nWinner: ${msg.winnerName}`);
+			cleanup();
+			getRouter().lazyLoad("/game-online");
+			return;
+		}
+
+		if (msg.type === "tournament_deleted") {
+			alert("Tournament deleted");
 			cleanup();
 			getRouter().lazyLoad("/game-online");
 			return;

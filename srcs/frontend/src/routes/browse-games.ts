@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 14:42:50 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/17 12:03:36 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/17 16:25:51 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,12 +15,10 @@ import { listOnlineMatches, type Match, updateMatchStatus } from "../services/on
 import { setCurrentMatchId } from "../services/onlineStore";
 import { t } from "../i18n/i18n";
 
-
 function matchRow(m: Match, onDeleted: () => void): HTMLDivElement {
 	const row = document.createElement("div");
 	row.className = "w-full flex items-center justify-between p-3 rounded bg-white dark:bg-gray-800";
 
-	// ---- bloc gauche : infos ----
 	const left = document.createElement("div");
 	left.className = "flex flex-col";
 
@@ -34,34 +32,73 @@ function matchRow(m: Match, onDeleted: () => void): HTMLDivElement {
 
 	left.append(title, meta);
 
-	// ---- bloc droite : actions ----
 	const actions = document.createElement("div");
 	actions.className = "flex gap-2";
 
 	const joinBtn = document.createElement("button");
 	joinBtn.className = "px-4 py-2 rounded bg-blue-600 text-white";
 	joinBtn.textContent = t("browseGames.join");
-	joinBtn.onclick = () => {
-		if (m.status === "finished")
-			confirm(`${t("common.match")} ${m.id} ${t("browseGames.matchFinished")}`);
-		else {
+
+	let isJoining = false;
+	joinBtn.onclick = async () => {
+		if (isJoining)
+			return;
+
+		if (m.status === "finished") {
+			alert(`${t("common.match")} ${m.id} ${t("browseGames.matchFinished")}`);
+			return;
+		}
+
+		isJoining = true;
+		joinBtn.disabled = true;
+		joinBtn.classList.add("opacity-50", "cursor-not-allowed");
+
+		try {
 			setCurrentMatchId(String(m.id));
-			getRouter().lazyLoad("/online-match");
+			await getRouter().lazyLoad("/online-match");
+		}
+		finally {
+			isJoining = false;
+			joinBtn.disabled = false;
+			joinBtn.classList.remove("opacity-50", "cursor-not-allowed");
 		}
 	};
 
 	const delBtn = document.createElement("button");
 	delBtn.className = "px-4 py-2 rounded bg-red-600 text-white";
 	delBtn.textContent = t("common.delete");
+
+	let isDeleting = false;
 	delBtn.onclick = async () => {
+		if (isDeleting)
+			return;
+
 		const ok = confirm(`${t("browseGames.deleteConfirm")} #${m.id} ?`);
 		if (!ok)
 			return;
+
+		isDeleting = true;
+		delBtn.disabled = true;
+		delBtn.classList.add("opacity-50", "cursor-not-allowed");
+
 		try {
 			await updateMatchStatus(m.id, "finished");
-			onDeleted(); // refresh list
-		} catch (e) {
-			alert(`${t("browseGames.deleteFailed")}: ${(e as Error).message}`);
+			onDeleted();
+		}
+		catch (e) {
+			const msg = (e as Error).message;
+
+			if (msg.includes("429") || msg.includes("Rate limit") || msg.includes("Too Many Requests")) {
+				alert(t("browseGames.tooManyRequests"));
+			}
+			else {
+				alert(`${t("browseGames.deleteFailed")}: ${msg}`);
+			}
+		}
+		finally {
+			isDeleting = false;
+			delBtn.disabled = false;
+			delBtn.classList.remove("opacity-50", "cursor-not-allowed");
 		}
 	};
 
@@ -72,11 +109,9 @@ function matchRow(m: Match, onDeleted: () => void): HTMLDivElement {
 }
 
 export default function createBrowseGamesPage(): HTMLDivElement {
-	
 	const page = document.createElement("div");
 	page.className = "flex flex-col flex-1 min-h-0 p-6 gap-4";
 
-	// ---- header ----
 	const header = document.createElement("div");
 	header.className = "flex items-center justify-between shrink-0";
 
@@ -87,11 +122,10 @@ export default function createBrowseGamesPage(): HTMLDivElement {
 	const back = document.createElement("button");
 	back.className = "px-4 py-2 rounded bg-gray-300 dark:bg-gray-700";
 	back.textContent = t("common.back");
-	back.onclick = () => getRouter().lazyLoad("/game-online");
+	back.onclick = () => getRouter().lazyLoad("/choose-browse");
 
 	header.append(h1, back);
 
-	// ---- status + list container ----
 	const status = document.createElement("div");
 	status.className = "text-sm opacity-70 shrink-0";
 	status.textContent = t("browseGames.loading");
@@ -105,16 +139,20 @@ export default function createBrowseGamesPage(): HTMLDivElement {
 	panel.appendChild(list);
 	page.append(header, status, panel);
 
-	/*
-		Charge la liste des matchs depuis l'API et met à jour le DOM.
-		On l'appelle au chargement + après chaque delete.
-	*/
+	let isLoading = false;
+
 	async function load() {
+		if (isLoading)
+			return;
+
+		isLoading = true;
 		status.textContent = t("browseGames.loading");
 		list.innerHTML = "";
 
 		try {
-			const matches = (await listOnlineMatches()).filter(m => !m.tournamentId && m.status !== "finished");
+			const matches = (await listOnlineMatches()).filter(
+				m => !m.tournamentId && m.status !== "finished"
+			);
 
 			if (!Array.isArray(matches) || matches.length === 0) {
 				status.textContent = t("browseGames.empty");
@@ -128,7 +166,17 @@ export default function createBrowseGamesPage(): HTMLDivElement {
 			});
 		}
 		catch (e) {
-			status.textContent = `${t("browseGames.error")}: ${(e as Error).message}`;
+			const msg = (e as Error).message;
+
+			if (msg.includes("429") || msg.includes("Rate limit") || msg.includes("Too Many Requests")) {
+				status.textContent = t("browseGames.tooManyRequests");
+			}
+			else {
+				status.textContent = `${t("browseGames.error")}: ${msg}`;
+			}
+		}
+		finally {
+			isLoading = false;
 		}
 	}
 

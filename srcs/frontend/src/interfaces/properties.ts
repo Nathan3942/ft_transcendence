@@ -1,4 +1,4 @@
-import type { Guard } from "../handler/routeHandler";
+import type { Guard } from "../handler/guards";
 
 export interface standardProps {
 	id?: string;

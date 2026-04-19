@@ -186,6 +186,15 @@ const en: TranslationDict = {
 		browseGames: "Browse Games"
 	},
 
+	ingameMsg: {
+		ended: "Ended...",
+		start: "Press START",
+		pause: "PAUSED",
+		player: "PLAYER ",
+		wins: " WINS!",
+		restart: "Press START to restart"
+	},
+
 	about: {
 		title: "ABOUT",
 		projectDescription: "ft_transcendence is the final project of 42's Common Core. We built a real-time multiplayer Pong platform from scratch — full-stack, containerised with Docker, secured end-to-end, and loaded with features like live tournaments, friend systems, and match history / statistics. All using pure TypeScript and Tailwind CSS!",
@@ -230,7 +239,8 @@ const en: TranslationDict = {
 		matchFull: "Match full",
 		winner: "Winner",
 		wsError: "Connection error",
-		wsClosed: "Connection closed"
+		wsClosed: "Connection closed",
+		matchDeleted: "Match deleted"
 	},
 
 	onlineTournament: {
