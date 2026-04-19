@@ -152,6 +152,7 @@ async function replyToFriendRequest(state: "accept" | "reject", uid: number, fri
 	const resp = await fetch(`${API_BASE}/users/${uid}/friends/${friendId}`, {
 		method: "PATCH",
 		credentials: "include",
+		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(form)
 	});
 
@@ -199,6 +200,7 @@ export async function populateFriendOverlay(mode: number): Promise<void> {
 
 			const resp = await fetch(`${API_BASE}/users/${getLocalId()}/friends`, {
 				method: "POST",
+				headers: { "Content-Type": "application/json" },
 				credentials: "include",
 				body: JSON.stringify(form)
 			})
