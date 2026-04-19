@@ -186,6 +186,15 @@ const fr: TranslationDict = {
 		browseGames: "Parcourir les Matchs"
 	},
 
+	ingameMsg: {
+		ended: "Terminé...",
+		start: "Appuyez sur DÉMARRER",
+		pause: "EN PAUSE",
+		player: "JOUEUR ",
+		wins: " GAGNE!",
+		restart: "Appuyez sur DÉMARRER pour redémarrer"
+	},
+
 	about: {
 		title: "À PROPOS",
 		projectDescription: "ft_transcendence est le projet final du Tronc Commun de 42. Nous avons construit de zéro une plateforme Pong multijoueur en temps réel — full-stack, containerisée avec Docker, sécurisée de bout en bout, avec des fonctionnalités comme les tournois en direct, le système d'amis, et l'historique des matchs. Le tout en TypeScript pur et Tailwind CSS !",
@@ -230,7 +239,8 @@ const fr: TranslationDict = {
 		matchFull: "Match complet",
 		winner: "Vainqueur",
 		wsError: "Erreur de connexion",
-		wsClosed: "Connexion fermée"
+		wsClosed: "Connexion fermée",
+		matchDeleted: "Match supprimé"
 	},
 
 	onlineTournament: {

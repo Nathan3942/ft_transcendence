@@ -7,6 +7,7 @@
 import { FastifyInstance } from 'fastify'
 import { success } from '../../utils/response'
 import * as tournamentService from '../../services/tournamentService'
+import { updateMatchStatus } from '../../services/matchService'
 
 export default async function tournamentsRoutes(server: FastifyInstance) {
 
@@ -37,11 +38,25 @@ export default async function tournamentsRoutes(server: FastifyInstance) {
         return success(result)
     })
 
-    /************************* UPDATE MATCH STATUS **********************************/
+    /************************* UPDATE TOURNAMENT STATUS **********************************/
     server.patch('/tournaments/:id/status', async (request, reply) => {
-        const { id } = request.params as { id: string }
-        const { status } = request.body as { status: 'open' | 'in_progress' | 'finished' }
-        const result = tournamentService.updateTournamentStatus(id, status)
+        const { id } = request.params as { id: string };
+        const { status } = request.body as { status: 'open' | 'in_progress' | 'finished' };
+        const result = tournamentService.updateTournamentStatus(id, status);
+
+        if (status === "finished") {
+            const matchIds = server.tournamentManager.getActiveMatchIds(id);
+
+            server.tournamentManager.forceCloseTournament(id);
+
+            server.wsHub.broadcast(`tournament:${id}`, { type: "tournament_deleted", tournamentId: id, reason: "deleted", });
+        
+            for (const matchId of matchIds) {
+                // server.gameManager.forceCloseGame(String(matchId), "deleted");
+                updateMatchStatus(matchId, "finished");
+            }
+        }
+
         return success(result)
     })
 

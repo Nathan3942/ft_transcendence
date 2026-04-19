@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/13 14:47:51 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/16 05:54:57 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/18 13:36:08 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,8 @@ export type WsClientEvent =
 	| { type: "leave_game"; gameId: string, clientId: string, userId: string }
 	| { type: "join_tournament", tournamentId: string, clientId: string, userId: number, username: string }
 	| { type: "pause_toggle", gameId: string, clientId: string, userId: string }
+	| { type: "match_deleted", gameId: string, reason: string }
+	| { type: "tournament_deleted", tournamentId: string, reason: string }
 	| { type: "input"; gameId: string; slot: PlayerSlot; input: PaddleInput };
 
 export type GameState = {
@@ -72,6 +74,7 @@ export type WsServerEvent =
 	| { type: "tournament_started", tournamentId: string, count: number, bracket: any }
 	| { type: "tournament_finished", tournamentId: string, winnerName?: any, winnerId?: any }
 	| { type: "tournament_bracket_update", tournamentId: string, bracket: any }
+	| { type: "tournament_deleted", tournamentId: string, reason: string }
 	| { type: "tournament_full", tournamentId: string };
 
 export type WsEnvelope<T extends { type: string }> = T;

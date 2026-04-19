@@ -186,6 +186,15 @@ const de: TranslationDict = {
 		browseGames: "Spiele durchsuchen"
 	},
 
+	ingameMsg: {
+		ended: "Beendet...",
+		start: "Drücken Sie START",
+		pause: "PAUSE",
+		player: "SPIELER ",
+		wins: " GEWINNT!",
+		restart: "Drücken Sie START, um neu zu starten"
+	},
+
 	about: {
 		title: "ÜBER UNS",
 		projectDescription: "ft_transcendence ist das Abschlussprojekt des 42-Common-Core. Wir haben von Grund auf eine Echtzeit-Multiplayer-Pong-Plattform gebaut — Full-Stack, mit Docker containerisiert, durchgehend gesichert, mit Funktionen wie Live-Turnieren, Freundschaftssystem und Spielverlauf. Alles in reinem TypeScript und Tailwind CSS!",
@@ -230,7 +239,8 @@ const de: TranslationDict = {
 		matchFull: "Spiel voll",
 		winner: "Gewinner",
 		wsError: "Verbindungsfehler",
-		wsClosed: "Verbindung getrennt"
+		wsClosed: "Verbindung getrennt",
+		matchDeleted: "Spiel gelöscht"
 	},
 
 	onlineTournament: {

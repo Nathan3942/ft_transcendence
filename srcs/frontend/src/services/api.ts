@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 14:57:26 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/17 06:26:44 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/17 16:16:26 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,11 @@ export async function api<T>(path: string, opts?: RequestInit): Promise<T> {
 			(json as ApiError)?.error ||
 			text ||
 			res.statusText;
+
+		if (res.status === 429) {
+			throw new Error(`API 429: ${msg}`);
+		}
+		
 		throw new Error(`API ${res.status}: ${msg}`);
 	}
 

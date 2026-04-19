@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 16:33:40 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/17 12:05:19 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/17 16:22:42 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,9 +15,8 @@ import { listOnlineTournament, updateTournamentStatus, type Tournament } from ".
 import { setCurrentTournamentId } from "../services/onlineStore";
 import { t } from "../i18n/i18n";
 
-
 function formatWinner(winnerId: number | null) {
-  	return winnerId === null ? "—" : `#${winnerId}`;
+	return winnerId === null ? "—" : `#${winnerId}`;
 }
 
 function tournamentRow(tmnt: Tournament, onDeleted: () => void): HTMLDivElement {
@@ -25,7 +24,6 @@ function tournamentRow(tmnt: Tournament, onDeleted: () => void): HTMLDivElement 
 	row.className =
 		"w-full flex items-center justify-between p-3 rounded bg-white dark:bg-gray-800";
 
-	// ---- bloc gauche : infos ----
 	const left = document.createElement("div");
 	left.className = "flex flex-col";
 
@@ -41,7 +39,6 @@ function tournamentRow(tmnt: Tournament, onDeleted: () => void): HTMLDivElement 
 
 	left.append(title, meta);
 
-	// ---- bloc droite : actions ----
 	const actions = document.createElement("div");
 	actions.className = "flex gap-2";
 
@@ -56,17 +53,39 @@ function tournamentRow(tmnt: Tournament, onDeleted: () => void): HTMLDivElement 
 	const delBtn = document.createElement("button");
 	delBtn.className = "px-4 py-2 rounded bg-red-600 text-white";
 	delBtn.textContent = t("common.delete");
+
+	let isDeleting = false;
+
 	delBtn.onclick = async () => {
+		if (isDeleting)
+			return;
+
 		const ok = confirm(`${t("browseTournaments.deleteConfirm")} #${tmnt.id} ?`);
 		if (!ok)
 			return;
+
+		isDeleting = true;
+		delBtn.disabled = true;
+		delBtn.classList.add("opacity-50", "cursor-not-allowed");
 
 		try {
 			await updateTournamentStatus(tmnt.id, "finished");
 			onDeleted();
 		}
 		catch (e) {
-			alert(`${t("browseTournaments.deleteFailed")}: ${(e as Error).message}`);
+			const msg = (e as Error).message;
+
+			if (msg.includes("429") || msg.includes("Rate limit") || msg.includes("Too Many Requests")) {
+				alert(t("browseTournaments.tooManyRequests"));
+			}
+			else {
+				alert(`${t("browseTournaments.deleteFailed")}: ${msg}`);
+			}
+		}
+		finally {
+			isDeleting = false;
+			delBtn.disabled = false;
+			delBtn.classList.remove("opacity-50", "cursor-not-allowed");
 		}
 	};
 
@@ -77,61 +96,75 @@ function tournamentRow(tmnt: Tournament, onDeleted: () => void): HTMLDivElement 
 }
 
 export default function createBrowseTournamentsPage(): HTMLDivElement {
-    const page = document.createElement("div");
-    page.className = "flex flex-col flex-1 min-h-0 p-6 gap-4";
+	const page = document.createElement("div");
+	page.className = "flex flex-col flex-1 min-h-0 p-6 gap-4";
 
-    // ---- header ----
-    const header = document.createElement("div");
-    header.className = "flex items-center justify-between shrink-0";
+	const header = document.createElement("div");
+	header.className = "flex items-center justify-between shrink-0";
 
-    const h1 = document.createElement("div");
-    h1.className = "text-2xl font-bold";
-    h1.textContent = t("browseTournaments.title");
+	const h1 = document.createElement("div");
+	h1.className = "text-2xl font-bold";
+	h1.textContent = t("browseTournaments.title");
 
-    const back = document.createElement("button");
-    back.className = "px-4 py-2 rounded bg-gray-300 dark:bg-gray-700";
-    back.textContent = t("common.back");
-    back.onclick = () => getRouter().lazyLoad("/game-online");
+	const back = document.createElement("button");
+	back.className = "px-4 py-2 rounded bg-gray-300 dark:bg-gray-700";
+	back.textContent = t("common.back");
+	back.onclick = () => getRouter().lazyLoad("/choose-browse");
 
-    header.append(h1, back);
+	header.append(h1, back);
 
-    // ---- status + list container ----
-    const status = document.createElement("div");
-    status.className = "text-sm opacity-70 shrink-0";
-    status.textContent = t("browseTournaments.loading");
+	const status = document.createElement("div");
+	status.className = "text-sm opacity-70 shrink-0";
+	status.textContent = t("browseTournaments.loading");
 
 	const panel = document.createElement("div");
 	panel.className = "flex-1 min-h-0 overflow-y-auto rounded bg-black/5 dark:bg-white/5 p-3";
 
-    const list = document.createElement("div");
-    list.className = "flex flex-col gap-3";
+	const list = document.createElement("div");
+	list.className = "flex flex-col gap-3";
 
 	panel.appendChild(list);
-    page.append(header, status, panel);
+	page.append(header, status, panel);
 
-    async function load() {
-        status.textContent = t("browseTournaments.loading");
-        list.innerHTML = "";
+	let isLoading = false;
 
-        try {
-        const tournaments = (await listOnlineTournament()).filter(t => t.status !== "finished");
+	async function load() {
+		if (isLoading)
+			return;
 
-        if (!Array.isArray(tournaments) || tournaments.length === 0) {
-            status.textContent = t("browseTournaments.empty");
-            return;
-        }
+		isLoading = true;
+		status.textContent = t("browseTournaments.loading");
+		list.innerHTML = "";
 
-        status.textContent = `${tournaments.length} ${t("browseTournaments.tournamentCount")}`;
+		try {
+			const tournaments = (await listOnlineTournament()).filter(t => t.status !== "finished");
 
-        tournaments.forEach((tmnt: Tournament) => {
-            	list.appendChild(tournamentRow(tmnt, load));
-        	});
-        }
-        catch (e) {
-            status.textContent = `${t("browseTournaments.error")}: ${(e as Error).message}`;
-        }
-    }
+			if (!Array.isArray(tournaments) || tournaments.length === 0) {
+				status.textContent = t("browseTournaments.empty");
+				return;
+			}
 
-    load();
-    return page;
+			status.textContent = `${tournaments.length} ${t("browseTournaments.tournamentCount")}`;
+
+			tournaments.forEach((tmnt: Tournament) => {
+				list.appendChild(tournamentRow(tmnt, load));
+			});
+		}
+		catch (e) {
+			const msg = (e as Error).message;
+
+			if (msg.includes("429") || msg.includes("Rate limit") || msg.includes("Too Many Requests")) {
+				status.textContent = t("browseTournaments.tooManyRequests");
+			}
+			else {
+				status.textContent = `${t("browseTournaments.error")}: ${msg}`;
+			}
+		}
+		finally {
+			isLoading = false;
+		}
+	}
+
+	load();
+	return page;
 }

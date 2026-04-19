@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 17:15:35 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/17 12:05:43 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/18 13:02:08 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -403,10 +403,27 @@ export default function onlineMatch(): HTMLDivElement {
 					getRouter().lazyLoad("/online-tournament");
 				} else {
 					if (!msg.tournamentId)
-						alert(`Winner: ${winner}`);
+						alert(`${t("onlineMatch.winner")}: ${winner}`);
 					getRouter().lazyLoad("/game-online");
 				}
 			}, 1500);
+			return;
+		}
+
+		if (msg.type === "match_deleted") {
+			status.textContent = t("onlineMatch.matchDeleted")
+
+			if (unbindInput) {
+				unbindInput();
+				unbindInput = null;
+			}
+
+			setTimeout(() => {
+				cleanup();
+				alert(t("onlineMatch.matchDeleted"));
+				getRouter().lazyLoad("/game-online");
+			}, 300);
+
 			return;
 		}
 

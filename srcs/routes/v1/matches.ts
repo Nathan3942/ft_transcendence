@@ -83,6 +83,11 @@ export default async function matchesRoutes(server: FastifyInstance) {
         const { id } = request.params as { id: string }
         const { status } = request.body as { status: 'pending' | 'in_progress' | 'finished' }
         const result = matchService.updateMatchStatus(id, status)
+
+        if (status === "finished") {
+            server.gameManager.forceCloseGame(id, "deleted");
+        }
+
         return success(result)
     })
 

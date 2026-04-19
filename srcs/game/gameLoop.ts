@@ -6,13 +6,15 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 15:45:48 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/17 09:22:13 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/18 12:37:56 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import type { GameState, PaddleInput, GameSlot, ModeId } from "./types";
 import { randomSign, slotsForMode } from "./gameManager";
 import { stat } from "fs";
+import { getMatchStatus } from "../services/matchService";
+import { wsPlugin } from "../ws";
 
 const H = 750;
 const W = 1000;
@@ -124,7 +126,7 @@ export class GameLoop {
 		const now = Date.now();
 		const dt = (now - this.state.lastTickMs) / 1000;
 		this.state.lastTickMs = now;
-
+			
 		// console.log(`pos paddle left: ${this.state.paddles.left?.pos}`)
 
 		if (this.state.phase === "COUNTDOWN") {

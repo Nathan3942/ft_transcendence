@@ -5,6 +5,11 @@ import { connectGlobalWS } from "../main";
 
 export const API_BASE = `/api/v1`;
 
+let authCache: boolean | string | null = null;
+let authCacheTime = 0;
+const AUTH_CACHE_MS = 50000;
+
+
 export async function loginHandler(payload: loginRequest): Promise<number> {
 	const resp = await fetch(`${API_BASE}/auth/login`, {
 		method: "POST",
@@ -149,6 +154,13 @@ export async function fetchProtected<T = unknown>(endpoint: string, opts: Reques
 }
 
 export async function authenticate(): Promise<boolean | string> {
+	
+	const now = Date.now();
+
+	if (authCache !== null && now - authCacheTime < AUTH_CACHE_MS) {
+		return authCache;
+	}
+	
 	try {
 		const resp = await fetch(`${API_BASE}/auth/me`, {
 			method: "GET",
@@ -174,6 +186,9 @@ export async function authenticate(): Promise<boolean | string> {
 			setItem<boolean>("loggedIn", true);
 			connectGlobalWS();
 
+			authCache = true;
+			authCacheTime = now;
+
 			return true;
 		}
 		if (resp.status === 401) {
@@ -185,20 +200,20 @@ export async function authenticate(): Promise<boolean | string> {
 			return (false);
 		}
 
-		const text = await resp.text(); // ✅ UNE FOIS
-
-		if (resp.status === 404 && text.length === 0) {
-			renderMessage("You appear to be offline. Some features may be unavailable");
-			return "offline";
-		}
-
-		if (resp.status === 404) {
-			renderMessage(`Error: ${text}`);
+		if (resp.status === 401) {
+			authCache = false;
+			authCacheTime = now;
 			redirectToLogin();
 			return false;
 		}
 
-		console.warn("Unexpected auth/me status:", resp.status);
+		if (resp.status === 429) {
+			console.warn("auth/me rate limited");
+			return "offline";
+		}
+
+		const text = await resp.text();
+		console.warn("Unexpected auth/me status:", resp.status, text);
 		return resp.status.toString();
 	}
 	catch (err) {

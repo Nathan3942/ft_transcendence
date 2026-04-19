@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 15:46:15 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/13 14:10:33 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/17 12:39:39 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ export default function chooseBrowse(): HTMLDivElement {
 	
 	const btnClasses = "w-full h-full flex flex-row p-4"; 
 	inner.append(
-		makeButtonBlock("bg-yellow-300 dark:bg-green-900", createButton({
+		makeButtonBlock("bg-green-300 dark:bg-green-800", createButton({
 			id: "create-match-button",
 			extraClasses:btnClasses,
 			buttonText: t("browse.browseMatch"),
@@ -41,7 +41,7 @@ export default function chooseBrowse(): HTMLDivElement {
 			iconBClass: "h-10 pr-3 dark:invert"
 			})
 		),
-		makeButtonBlock("bg-yellow-400 dark:bg-yellow-900", createButton({
+		makeButtonBlock("bg-lime-200 dark:bg-lime-800", createButton({
 			id: "browse-matches-button",
 			extraClasses: btnClasses,
 			buttonText: t("browse.browseTournaments"),

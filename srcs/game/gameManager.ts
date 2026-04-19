@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 15:45:30 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/16 07:10:51 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/18 12:58:35 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -372,5 +372,18 @@ export class GameManager {
 				return true;
 		}
 		return false;
+	}
+
+	forceCloseGame(GameId: GameId, reason: "finish" | "deleted" = "finish") {
+		
+		const g = this.games.get(GameId);
+
+		if (g) {
+			g.finished = true;
+			g.loop.pause();
+			g.state.status = "ended";
+		}
+
+		this.broadcastToRoom(`game:${GameId}`, { type: "match_deleted", GameId, reason, });
 	}
 }

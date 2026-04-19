@@ -6,11 +6,12 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/23 16:55:07 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/16 07:37:58 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/17 15:22:06 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import type { RenderState, GameSlot } from "./server_state_adapter.js";
+import { t } from "../i18n/i18n";
 
 
 export function drawPong(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, state: RenderState, mySlot: GameSlot | null) {
@@ -127,7 +128,7 @@ export function drawPong(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElemen
 		ctx.textAlign = "center";
 		ctx.textBaseline = "middle";
 		ctx.font = `${Math.max(24, Math.floor(minDim * 0.08))}px 'VT323'`;
-		ctx.fillText("Ended...", state.playX + state.playW / 2, state.playY + state.playH / 2);
+		ctx.fillText(t("ingameMsg.ended"), state.playX + state.playW / 2, state.playY + state.playH / 2);
 	}
 }
 
