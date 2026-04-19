@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 16:32:13 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/17 12:00:00 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/17 15:48:29 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,11 +15,11 @@ import makeButtonBlock from "../components/button/buttonBlock";
 import createSoftBackLoad from "../components/button/softLoadButton";
 import { t } from "../i18n/i18n";
 import { startPong } from "../game/pong";
-import type { PongInput, PongState } from "../game/pong_core";
+import type { PongState } from "../game/pong_core";
 
 import { makeAIPolicyP2 } from "../game/ai/policy";
 
-import { loadHardGenome, genomeForDifficulty, createKeyMap, keyboardToInput, bindKeyboard, mergeKeyboardWithAIP2 } from "./game-local-ai";
+import { genomeForDifficulty, createKeyMap, keyboardToInput, bindKeyboard, mergeKeyboardWithAIP2 } from "./game-local-ai";
 import hardGenome from "../game/ai/genomes/hard.json";
 
 
@@ -105,9 +105,9 @@ function chooseAiLvl(inner: HTMLDivElement, onPick: (lvl: AiLvl) => void) {
 
 	const wrap = document.createElement("div");
 	wrap.className = "w-full max-w-xs sm:max-w-sm flex flex-col gap-3";
-	wrap.appendChild(makePickBtn("diff-easy-btn", "Easy", "bg-blue-300 dark:bg-blue-900", "easy"));
-	wrap.appendChild(makePickBtn("diff-medium-btn", "Medium", "bg-purple-300 dark:bg-purple-900", "medium"));
-	wrap.appendChild(makePickBtn("diff-hard-btn", "Hard", "bg-red-300 dark:bg-red-900", "hard"));
+	wrap.appendChild(makePickBtn("diff-easy-btn", `${t("gameLocalAi.easy")}`, "bg-blue-300 dark:bg-blue-900", "easy"));
+	wrap.appendChild(makePickBtn("diff-medium-btn", `${t("gameLocalAi.medium")}`, "bg-purple-300 dark:bg-purple-900", "medium"));
+	wrap.appendChild(makePickBtn("diff-hard-btn", `${t("gameLocalAi.hard")}`, "bg-red-300 dark:bg-red-900", "hard"));
 
 	inner.appendChild(wrap);
 }
@@ -556,7 +556,7 @@ export default function createLocalTournament(): HTMLDivElement {
     fromBlock.className = `w-full max-w-2xl flex flex-col gap-3 p-4 sm:p-6 bg-blue-300 dark:bg-blue-900 rounded-xl`;
 
     const title = document.createElement("h2");
-    title.textContent = "Enter players names";
+    title.textContent = t("tournamentLocal.enterPlayerNames");
     title.className = "text-white text-xl sm:text-2xl font-semibold self-start mb-2";
     fromBlock.appendChild(title);
 

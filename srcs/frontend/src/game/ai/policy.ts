@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 12:47:52 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/17 05:39:29 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/18 14:04:50 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,7 +69,7 @@ function predictYWithBounces(
 
 
 export function makeAIPolicyP2(genome: Genome) {
-    let visionAcc = 0;
+    let visionAcc = 1.0;
     let lastDecision: -1 | 0 | 1 = 0;
 
 	let lastTargetY = 0; // cible memorise

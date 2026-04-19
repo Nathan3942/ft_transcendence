@@ -2,10 +2,11 @@ import { renderError } from "../components/popup/popup.js";
 import type { Route, RouteParams } from "../interfaces/properties.js";
 import create404Page from "../routes/404page.js";
 import createTestPage from "../routes/test.js";
-import { authenticate } from "./loginHandler.js";
 import assemblePage from "./pageHandler.js";
 
 // Router singleton
+
+console.log("[LOAD] routeHandler.ts");
 
 let _router: Router | null = null;
 
@@ -23,15 +24,6 @@ export function getRouter(): Router {
 
 // Router Proper
 export type ComponentFactory<T extends HTMLElement = HTMLElement> = () => T | Promise<T>;
-
-type GuardTypes = true | false | "offline" | "string" | string;
-export type Guard = () => Promise<GuardTypes>;
-
-export const authGuard: Guard = async () => {
-	const result = await authenticate();
-
-	return result;
-}
 
 export class Router {
 	private readonly routeMap: Map<String, Route>;
