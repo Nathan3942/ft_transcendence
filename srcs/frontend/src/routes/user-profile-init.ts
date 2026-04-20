@@ -189,8 +189,10 @@ export default async function initUserProfile(params?: RouteParams): Promise<voi
 			cell4.textContent = match.won ? t("profile.win") : t("profile.loss");
 
 			if (match.finishedAt) {
-				const [datePart, timePart] = match.finishedAt.split("T");
-				cell5.textContent = `${datePart} - ${(timePart ?? "").replace("Z", "")}`;
+				const d = new Date(match.finishedAt);
+				const datePart = d.toLocaleDateString("fr-FR", { year: "numeric", month: "2-digit", day: "2-digit" });
+				const timePart = d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+				cell5.textContent = `${datePart} - ${timePart}`;
 			} 
 			else
 				cell5.textContent = t("profile.unknownDate");
