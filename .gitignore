@@ -48,3 +48,9 @@ transcendence.txt
 data/transcendence.db-shm
 data/transcendence.db-waldata/transcendence.db
 data/transcendence.db
+
+# Uploaded avatars
+uploads/avatars/*.png
+uploads/avatars/*.jpg
+uploads/avatars/*.jpeg
+uploads/avatars/*.webp

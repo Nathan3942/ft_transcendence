@@ -15,9 +15,14 @@ import { getLocalId } from "../helpers/apiHelper.js";
    et fait 2 appels API :
    - avant le match : POST /users pour créer/récupérer les 2 joueurs (obtenir leurs IDs)
    - après le match : POST /matches/result pour sauvegarder le score en base */
+let activeController: { stop: () => void } | null = null;
+
 async function createLocalMatch(outer: HTMLDivElement, p1Name: string, p2Name: string)
 {
-	/* Etape A : créer ou récupérer les 2 joueurs dans le backend */
+	if (activeController) {
+		activeController.stop();
+		activeController = null;
+	}
 
 	const p1Id = getLocalId();
 	const p2Id = null;
@@ -44,9 +49,20 @@ async function createLocalMatch(outer: HTMLDivElement, p1Name: string, p2Name: s
 
 	/* Etape B : callback appelé quand le match se termine
 	   → envoie le résultat au backend via POST /matches/result */
+	let matchSaved = false;
+	let inGameOver = false;
 	const events: PongEvents = {
+		onStateChange: (phase) => {
+			if (phase === "GAMEOVER") inGameOver = true;
+			else if (inGameOver && phase === "COUNTDOWN") {
+				matchSaved = false;
+				inGameOver = false;
+			}
+		},
 		onGameOver: async (winner: 1 | 2 | 3 | 4, s1: number, s2: number, md: ModeId) => {
 			if (winner !== 1 && winner !== 2) return;
+			if (matchSaved) return;
+			matchSaved = true;
 			const winnerId = winner === 1 ? p1Id : p2Id;
 			console.log(`p1 : ${p1Id}, p2: ${p2Id}`);
 			try {
@@ -70,9 +86,9 @@ async function createLocalMatch(outer: HTMLDivElement, p1Name: string, p2Name: s
 		},
 	};
 
-	/* On passe events à startPong (le 5ème paramètre qui existait déjà) */
 	fitCanvasToDisplay(canvas);
 	const controller = startPong(canvas, ctx, { mode: "1v1", tournament: false }, {}, events);
+	activeController = controller;
 
 	const onResize = () => {
 		const r = outer.getBoundingClientRect();

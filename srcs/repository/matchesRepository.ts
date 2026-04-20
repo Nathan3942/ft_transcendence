@@ -180,6 +180,14 @@ export function finishMatch(matchId: number, winnerId: number | null) {
 }
 
 
+export function addMatchPlayer(matchId: number, userId: number, score: number) {
+    return queryExecute(
+        'INSERT OR IGNORE INTO match_player (match_id, user_id, score) VALUES (?, ?, ?)',
+        [matchId, userId, score]
+    )
+}
+
+
 export function getMatchesByStatus(status: MatchStatus): Match[] {
     return queryAll(`
         SELECT
@@ -211,8 +219,8 @@ export function createFinishedMatchWithPlayers(
     // Create match with status finished and finished_at set
     const aiScore = player2Id === null ? scorePlayer2 : null
     const matchResult = queryExecute(
-        'INSERT INTO matches (tournament_id, round, status, winner_id, ai_score, finished_at) VALUES (?, ?, ?, ?, ?, ?)',
-        [null, null, 'finished', winnerId, aiScore, now]
+        'INSERT INTO matches (tournament_id, round, status, mode, winner_id, ai_score, finished_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [null, null, 'finished', mode, winnerId, aiScore, now]
     )
 
     const matchId = matchResult.lastInsertRowid as number

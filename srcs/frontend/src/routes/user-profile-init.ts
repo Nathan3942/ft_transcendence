@@ -118,7 +118,7 @@ export default async function initUserProfile(params?: RouteParams): Promise<voi
 		document.getElementById("tournamentsWon")!.textContent = userStats.tournamentsWon.toString();
 		document.getElementById("wins")!.textContent = userStats.wins.toString();
 		document.getElementById("losses")!.textContent = userStats.losses.toString();
-		document.getElementById("winrate")!.textContent = `${Math.round(userStats.winrate * 100)}%`;
+		document.getElementById("winrate")!.textContent = `${userStats.winrate}%`;
 
 		const winCircle = document.getElementById("winCircle");
 		if (winCircle instanceof SVGCircleElement) {
@@ -172,15 +172,15 @@ export default async function initUserProfile(params?: RouteParams): Promise<voi
 			cell1.textContent = match.matchId.toString();
 			if (match.opponentId) {
 				cell2.append(createButton({
-					buttonText: match.opponentName,
+					buttonText: match.opponentName ?? undefined,
 					href: `/user-profile/${match.opponentId}`,
 					id: `profile-button-${match.opponentId}`,
 					extraClasses: "hover:opacity-80"
 				}));
 			} else {
-				cell2.textContent = "AI";
+				cell2.textContent = match.mode === "ai" ? "AI" : "Guest";
 			}
-			cell3.textContent = `${match.userScore} - ${match.opponentScore ?? "AI"}`;
+			cell3.textContent = `${match.userScore} - ${match.opponentScore ?? (match.mode === "ai" ? "AI" : "?")} `;
 			if (match.won)
 				cell4.classList.add("text-green-600", "dark:text-green-400");
 			else
@@ -189,8 +189,10 @@ export default async function initUserProfile(params?: RouteParams): Promise<voi
 			cell4.textContent = match.won ? t("profile.win") : t("profile.loss");
 
 			if (match.finishedAt) {
-				const [datePart, timePart] = match.finishedAt.split("T");
-				cell5.textContent = `${datePart} - ${(timePart ?? "").replace("Z", "")}`;
+				const d = new Date(match.finishedAt);
+				const datePart = d.toLocaleDateString("fr-FR", { year: "numeric", month: "2-digit", day: "2-digit" });
+				const timePart = d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+				cell5.textContent = `${datePart} - ${timePart}`;
 			} 
 			else
 				cell5.textContent = t("profile.unknownDate");
@@ -208,7 +210,7 @@ export default async function initUserProfile(params?: RouteParams): Promise<voi
 					? "w-9 h-9 flex items-center justify-center rounded-full bg-green-500 text-white font-bold text-sm"
 					: "w-9 h-9 flex items-center justify-center rounded-full bg-red-500 text-white font-bold text-sm";
 				badge.textContent = match.won ? t("profile.win") : t("profile.loss");
-				badge.title = `${match.userScore} - ${match.opponentScore} vs ${match.opponentName ?? "AI"}`;
+				badge.title = `${match.userScore} - ${match.opponentScore} vs ${match.opponentName ?? (match.mode === "ai" ? "AI" : "Guest")}`;
 				recentForm.appendChild(badge);
 			});
 		}
