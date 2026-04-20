@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 17:15:35 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/18 13:02:08 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/20 00:00:00 by ChatGPT           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,10 +17,15 @@ import { getRouter } from "../handler/routeHandler.js";
 import { t } from "../i18n/i18n.js";
 import { getItem } from "../helpers/localStoragehelper.js";
 
-// import { getTournamentStatus } from "../../../services/tournamentService";
-
-
 type Dir = -1 | 0 | 1;
+
+type TimedSnapshot = {
+	at: number;
+	state: RenderState;
+};
+
+const RENDER_DELAY_MS = 100;
+const MAX_SNAPSHOTS = 20;
 
 function randomId(): string {
 	const c: any = globalThis.crypto as any;
@@ -47,15 +52,45 @@ function isHorizontal(slot: GameSlot) {
 	return slot === "top" || slot === "bottom";
 }
 
+function lerp(a: number, b: number, t: number) {
+	return a + (b - a) * t;
+}
+
+function cloneRenderState(state: RenderState): RenderState {
+	return structuredClone(state);
+}
+
+function interpolateRenderState(a: RenderState, b: RenderState, alpha: number): RenderState {
+	const out = cloneRenderState(b);
+
+	out.ballX = lerp(a.ballX, b.ballX, alpha);
+	out.ballY = lerp(a.ballY, b.ballY, alpha);
+
+	if (a.paddles && b.paddles && a.paddles.length === b.paddles.length) {
+		out.paddles = b.paddles.map((p, i) => {
+			const pa = a.paddles[i];
+			return {
+				...p,
+				x: lerp(pa.x, p.x, alpha),
+				y: lerp(pa.y, p.y, alpha),
+				w: p.w,
+				h: p.h,
+			};
+		});
+	}
+
+	return out;
+}
+
 function bindInput(ws: WebSocket, gameId: string, slot: GameSlot, canvas: HTMLCanvasElement) {
-	let negPressed = false; // up / left
-	let posPressed = false; // down / right
+	let negPressed = false;
+	let posPressed = false;
 	let currentDir: Dir = 0;
 
 	function computeDir(): Dir {
-		if (negPressed && !posPressed) 
+		if (negPressed && !posPressed)
 			return -1;
-		if (!negPressed && posPressed) 
+		if (!negPressed && posPressed)
 			return 1;
 		return 0;
 	}
@@ -113,21 +148,15 @@ function bindInput(ws: WebSocket, gameId: string, slot: GameSlot, canvas: HTMLCa
 		else
 			return;
 
-		const next = computeDir();
-		if (next !== currentDir) {
-			currentDir = next;
-			sendDir(currentDir);
-		}
+		updateDir(computeDir());
 	}
 
 	function touchDirFromEvent(e: TouchEvent): Dir {
-
 		if (e.touches.length === 0)
 			return 0;
 
 		const t = e.touches[0];
 		const rect = canvas.getBoundingClientRect();
-
 		const localX = t.clientX - rect.left;
 		const localY = t.clientY - rect.top;
 
@@ -143,16 +172,15 @@ function bindInput(ws: WebSocket, gameId: string, slot: GameSlot, canvas: HTMLCa
 				return 1;
 			return 0;
 		}
-		else {
-			const centerY = rect.height / 2;
-			const deadZone = Math.max(20, rect.height * 0.08);
 
-			if (localY < centerY - deadZone)
-				return -1;
-			if (localY > centerY + deadZone)
-				return 1;
-			return 0;
-		}
+		const centerY = rect.height / 2;
+		const deadZone = Math.max(20, rect.height * 0.08);
+
+		if (localY < centerY - deadZone)
+			return -1;
+		if (localY > centerY + deadZone)
+			return 1;
+		return 0;
 	}
 
 	function onTouchStart(e: TouchEvent) {
@@ -219,7 +247,7 @@ export default function onlineMatch(): HTMLDivElement {
 	const ctx: CanvasRenderingContext2D = ctxMaybe;
 
 	let lastServerState: ServerGameState | null = null;
-	let lastRenderState: RenderState | null = null;
+	let snapshots: TimedSnapshot[] = [];
 
 	let mySlot: GameSlot = "left";
 	let unbindInput: null | (() => void) = null;
@@ -229,18 +257,19 @@ export default function onlineMatch(): HTMLDivElement {
 
 	const ws = new WebSocket(`wss://${window.location.host}/ws`);
 
-	// ResizeObserver
 	const ro = new ResizeObserver(() => {
 		const rect = gameContainer.getBoundingClientRect();
 		canvas.width = Math.max(300, Math.floor(rect.width));
 		canvas.height = Math.max(300, Math.floor(rect.height));
-		if (lastServerState)
-			lastRenderState = toRenderState(lastServerState, canvas.width, canvas.height);
-		
+
+		if (lastServerState) {
+			const resized = toRenderState(lastServerState, canvas.width, canvas.height);
+			const now = performance.now();
+			snapshots = [{ at: now, state: resized }];
+		}
 	});
 	ro.observe(gameContainer);
-	
-	
+
 	const cleanup = () => {
 		if (!running)
 			return;
@@ -254,30 +283,31 @@ export default function onlineMatch(): HTMLDivElement {
 			unbindInput = null;
 		}
 
-		// prévenir serveur
 		try {
 			const matchId = getCurrentMatchId();
 			if (matchId && ws.readyState === WebSocket.OPEN) {
-				ws.send(JSON.stringify({ type: "leave_game", gameId: matchId, clientId: getClientId(), userId: getUserId() }));
+				ws.send(JSON.stringify({
+					type: "leave_game",
+					gameId: matchId,
+					clientId: getClientId(),
+					userId: getUserId()
+				}));
 			}
-		}
-		catch {}
+		} catch {}
 
 		try {
 			ws.close(1000, "leave");
-		}
-		catch {}
+		} catch {}
 
 		window.removeEventListener("beforeunload", onBeforeUnload);
 		window.removeEventListener("pagehide", onPageHide);
 		window.removeEventListener("navigate", onNavigate as any);
+		window.removeEventListener("popstate", cleanup);
 	};
 
 	const onPageHide = () => cleanup();
-
 	const onBeforeUnload = () => cleanup();
 
-	// SPA navigation : cleanup quand on quitte /online-match
 	const onNavigate = (ev: any) => {
 		const nextPath = ev?.detail?.path as string | undefined;
 		if (!nextPath) {
@@ -293,19 +323,50 @@ export default function onlineMatch(): HTMLDivElement {
 	window.addEventListener("navigate", onNavigate as any);
 	window.addEventListener("popstate", cleanup);
 	window.addEventListener("pageshow", (event) => {
-	if (event.persisted) {
+		if (event.persisted) {
 			console.log("Page restored from bfcache");
 			window.location.reload();
 		}
 	});
 
-	// RAF loop
-	
-	function loop() {
+	function getBufferedRenderState(now: number): RenderState | null {
+		if (snapshots.length === 0)
+			return null;
+
+		if (snapshots.length === 1)
+			return snapshots[0].state;
+
+		const renderTime = now - RENDER_DELAY_MS;
+
+		while (snapshots.length >= 2 && snapshots[1].at <= renderTime) {
+			snapshots.shift();
+		}
+
+		if (snapshots.length === 1)
+			return snapshots[0].state;
+
+		const a = snapshots[0];
+		const b = snapshots[1];
+
+		if (renderTime <= a.at)
+			return a.state;
+
+		const span = b.at - a.at;
+		if (span <= 0)
+			return b.state;
+
+		const alpha = Math.max(0, Math.min(1, (renderTime - a.at) / span));
+		return interpolateRenderState(a.state, b.state, alpha);
+	}
+
+	function loop(now: number) {
 		if (!running)
 			return;
-		if (lastRenderState)
-			drawPong(ctx, canvas, lastRenderState, mySlot);
+
+		const renderState = getBufferedRenderState(now);
+		if (renderState)
+			drawPong(ctx, canvas, renderState, mySlot);
+
 		rafId = requestAnimationFrame(loop);
 	}
 	rafId = requestAnimationFrame(loop);
@@ -318,16 +379,15 @@ export default function onlineMatch(): HTMLDivElement {
 			return;
 		}
 
-		ws.send(
-		JSON.stringify({
+		ws.send(JSON.stringify({
 			type: "join_game",
 			gameId: matchId,
 			clientId: getClientId(),
 			userId: getItem<number>("userId"),
 			username: getItem<string>("username"),
 			mode: getCurrentMatchMode(),
-		})
-		);
+		}));
+
 		console.log("JOIN USERNAME =", getItem("username"));
 	};
 
@@ -335,8 +395,7 @@ export default function onlineMatch(): HTMLDivElement {
 		let msg: any;
 		try {
 			msg = JSON.parse(e.data);
-		}
-		catch {
+		} catch {
 			return;
 		}
 
@@ -351,7 +410,6 @@ export default function onlineMatch(): HTMLDivElement {
 		}
 
 		if (msg.type === "game_paused") {
-			
 			if (msg.reason === "Escape")
 				status.textContent = `${t("onlineMatch.pausedBy")} ${msg.userId}`;
 			else
@@ -368,7 +426,8 @@ export default function onlineMatch(): HTMLDivElement {
 			mySlot = msg.slot as GameSlot;
 			const matchId = getCurrentMatchId();
 			if (matchId) {
-				if (unbindInput) unbindInput();
+				if (unbindInput)
+					unbindInput();
 				unbindInput = bindInput(ws, String(matchId), mySlot, canvas);
 			}
 			return;
@@ -384,10 +443,8 @@ export default function onlineMatch(): HTMLDivElement {
 		if (msg.type === "game_over") {
 			const winner = msg.winnerName ?? msg.winnerUserId ?? msg.winnerSlot;
 
-			console.log(`${msg.winnerName}, ${msg.winnerUserId},  ${msg.winnerSlot}`);
-
 			status.textContent = `${t("onlineMatch.winner")}: ${winner}`;
-			
+
 			if (unbindInput) {
 				unbindInput();
 				unbindInput = null;
@@ -395,9 +452,7 @@ export default function onlineMatch(): HTMLDivElement {
 
 			setTimeout(() => {
 				cleanup();
-				
-				console.log(`tournament id: ${msg.tournamentId}`);
-				
+
 				if (msg.tournamentId && !msg.tournamentFinished) {
 					setCurrentTournamentId(String(msg.tournamentId));
 					getRouter().lazyLoad("/online-tournament");
@@ -411,7 +466,7 @@ export default function onlineMatch(): HTMLDivElement {
 		}
 
 		if (msg.type === "match_deleted") {
-			status.textContent = t("onlineMatch.matchDeleted")
+			status.textContent = t("onlineMatch.matchDeleted");
 
 			if (unbindInput) {
 				unbindInput();
@@ -429,7 +484,17 @@ export default function onlineMatch(): HTMLDivElement {
 
 		if (msg.type === "game_tick" && msg.state) {
 			lastServerState = msg.state as ServerGameState;
-			lastRenderState = toRenderState(lastServerState, canvas.width, canvas.height);
+
+			const nextRender = toRenderState(lastServerState, canvas.width, canvas.height);
+
+			snapshots.push({
+				at: performance.now(),
+				state: nextRender,
+			});
+
+			if (snapshots.length > MAX_SNAPSHOTS)
+				snapshots.shift();
+
 			return;
 		}
 	};
@@ -439,11 +504,9 @@ export default function onlineMatch(): HTMLDivElement {
 	};
 
 	ws.onclose = () => {
-		// si on est encore sur la page, affiche juste un message
-		if (running) status.textContent = t("onlineMatch.wsClosed");
+		if (running)
+			status.textContent = t("onlineMatch.wsClosed");
 	};
 
 	return page;
 }
-
-
