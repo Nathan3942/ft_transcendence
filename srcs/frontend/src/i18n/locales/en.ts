@@ -58,7 +58,10 @@ const en: TranslationDict = {
 		errorForbidden: "You don't have the permissions to modify this data",
 		errorTargetNotFound: "The specified user does not exist",
 		errorUnexpected: "Unexpected error",
-		errorDeleteFailed: "Error deleting account"
+		errorDeleteFailed: "Error deleting account",
+		passwordUpdated: "Password updated successfully",
+		passwordNoMatch: "Passwords do not match",
+		errorCurrentPassIncorrect: "Current password is incorrect"
 	},
 
 	errors: {

@@ -58,7 +58,10 @@ const de: TranslationDict = {
 		errorForbidden: "Sie haben keine Berechtigung, diese Daten zu ändern",
 		errorTargetNotFound: "Der angegebene Benutzer existiert nicht",
 		errorUnexpected: "Unerwarteter Fehler",
-		errorDeleteFailed: "Fehler beim Löschen des Kontos"
+		errorDeleteFailed: "Fehler beim Löschen des Kontos",
+		passwordUpdated: "Passwort erfolgreich aktualisiert",
+		passwordNoMatch: "Passwörter stimmen nicht überein",
+		errorCurrentPassIncorrect: "Das aktuelle Passwort ist falsch"
 	},
 
 	errors: {

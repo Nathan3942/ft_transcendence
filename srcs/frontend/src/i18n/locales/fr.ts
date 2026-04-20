@@ -58,7 +58,10 @@ const fr: TranslationDict = {
 		errorForbidden: "Vous n'avez pas les permissions pour modifier ces données",
 		errorTargetNotFound: "L'utilisateur spécifié n'existe pas",
 		errorUnexpected: "Erreur inattendue",
-		errorDeleteFailed: "Erreur lors de la suppression du compte"
+		errorDeleteFailed: "Erreur lors de la suppression du compte",
+		passwordUpdated: "Mot de passe mis à jour avec succès",
+		passwordNoMatch: "Les mots de passe ne correspondent pas",
+		errorCurrentPassIncorrect: "Le mot de passe actuel est incorrect"
 	},
 
 	errors: {
