@@ -325,6 +325,7 @@ async function InitAiGame(diffNum: number, pageRoot: HTMLDivElement) {
 						scorePlayer1: s1,
 						scorePlayer2: s2,
 						winnerId: winner === 1 ? p1Id : null,
+						mode: "ai",
 					}),
 				});
 				console.log(`Match vs IA sauvegardé : Player 1 ${s1} - ${s2} AI (${diff})`);

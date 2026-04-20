@@ -42,6 +42,7 @@ export function getUserMatchHistory(userId: number): MatchHistory[] {
             m.winner_id as winnerId,
             m.finished_at as finishedAt,
             m.ai_score as aiScore,
+            m.mode as mode,
             mp_self.score as userScore,
             mp_opp.user_id as opponentId,
             mp_opp.score as opponentScore,
@@ -61,7 +62,8 @@ export function getUserMatchHistory(userId: number): MatchHistory[] {
         userScore: r.userScore ?? null,
         opponentScore: r.opponentScore ?? r.aiScore ?? null,
         won: r.winnerId === userId,
-        finishedAt: r.finishedAt ?? null
+        finishedAt: r.finishedAt ?? null,
+        mode: r.mode ?? null
     }))
 }
 

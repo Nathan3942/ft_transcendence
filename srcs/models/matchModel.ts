@@ -2,7 +2,7 @@
 
 export type MatchStatus = 'pending' | 'in_progress' | 'finished';
 
-export type ModeStatus = '1v1' | '2v2' | '3p' | '4p';
+export type ModeStatus = '1v1' | '2v2' | '3p' | '4p' | 'ai';
 
 export interface Match {
   id: number;

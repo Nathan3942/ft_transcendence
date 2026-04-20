@@ -18,6 +18,7 @@ export interface MatchHistory {
     opponentScore: number | null;
     won: boolean;
     finishedAt: string | null;
+    mode: string | null;
 }
 
 export interface LeaderboardEntry {

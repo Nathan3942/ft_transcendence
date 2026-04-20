@@ -76,12 +76,13 @@ export interface userStatsResponse {
 export interface userMatchHistoryResponse {
 	data: Array<{
 		matchId: number;
-		opponentId: number;
-		opponentName: string;
+		opponentId: number | null;
+		opponentName: string | null;
 		userScore: number;
 		opponentScore: number;
 		won: boolean;
 		finishedAt: string;
+		mode: string | null;
 	}>;
 }
 

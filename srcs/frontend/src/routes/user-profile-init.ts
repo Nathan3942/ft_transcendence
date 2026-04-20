@@ -178,9 +178,9 @@ export default async function initUserProfile(params?: RouteParams): Promise<voi
 					extraClasses: "hover:opacity-80"
 				}));
 			} else {
-				cell2.textContent = "AI";
+				cell2.textContent = match.mode === "ai" ? "AI" : "Guest";
 			}
-			cell3.textContent = `${match.userScore} - ${match.opponentScore ?? "AI"}`;
+			cell3.textContent = `${match.userScore} - ${match.opponentScore ?? (match.mode === "ai" ? "AI" : "?")} `;
 			if (match.won)
 				cell4.classList.add("text-green-600", "dark:text-green-400");
 			else
@@ -210,7 +210,7 @@ export default async function initUserProfile(params?: RouteParams): Promise<voi
 					? "w-9 h-9 flex items-center justify-center rounded-full bg-green-500 text-white font-bold text-sm"
 					: "w-9 h-9 flex items-center justify-center rounded-full bg-red-500 text-white font-bold text-sm";
 				badge.textContent = match.won ? t("profile.win") : t("profile.loss");
-				badge.title = `${match.userScore} - ${match.opponentScore} vs ${match.opponentName ?? "AI"}`;
+				badge.title = `${match.userScore} - ${match.opponentScore} vs ${match.opponentName ?? (match.mode === "ai" ? "AI" : "Guest")}`;
 				recentForm.appendChild(badge);
 			});
 		}
