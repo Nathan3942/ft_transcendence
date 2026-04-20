@@ -16,6 +16,10 @@ export function getById(id: string | number): PublicUser | undefined {
     return queryOne(`SELECT ${PUBLIC_FIELDS} FROM users WHERE id = ?`, [id]) as PublicUser | undefined
 }
 
+export function getByIdWithHash(id: string | number): User | undefined {
+    return queryOne(`SELECT * FROM users WHERE id = ?`, [id]) as User | undefined
+}
+
 export function getByUsername(username: string): PublicUser | undefined {
     return queryOne(`SELECT ${PUBLIC_FIELDS} FROM users WHERE username = ?`, [username]) as PublicUser | undefined
 }

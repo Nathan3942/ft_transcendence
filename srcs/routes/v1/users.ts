@@ -9,10 +9,12 @@ import { pipeline } from 'stream/promises'
 import { createWriteStream } from 'fs'
 import { mkdir } from 'fs/promises'
 import path from 'path'
+import bcrypt from 'bcryptjs'
 import { success } from '../../utils/response'
 import * as userService from '../../services/userService'
 import { authenticate } from '../../plugins/authenticate'
-import { BadRequestError, ForbiddenError } from '../../utils/appErrors'
+import { BadRequestError, ForbiddenError, UnauthorizedError } from '../../utils/appErrors'
+import { getByIdWithHash, updateUser as updateUserRepo } from '../../repository/usersRepository'
 
 const AVATAR_DIR = path.join(process.cwd(), 'uploads', 'avatars')
 const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
@@ -75,6 +77,39 @@ export default async function usersRoutes(server: FastifyInstance) {
         const avatar_url = `/uploads/avatars/${filename}`
         const updatedUser = userService.updateUser(id, { avatar_url })
         return success(updatedUser)
+    })
+
+    /************************* PATCH /users/:id/password — change password **********************************/
+    server.patch('/users/:id/password', { preHandler: authenticate }, async (request, _reply) => {
+        const { id } = request.params as { id: string }
+        const { id: tokenId } = request.user as { id: number; username: string }
+
+        if (parseInt(id) !== tokenId) {
+            throw new ForbiddenError('You can only change your own password')
+        }
+
+        const { currentPassword, newPassword } = request.body as { currentPassword?: string; newPassword?: string }
+        if (!currentPassword || !newPassword) {
+            throw new BadRequestError('Missing currentPassword or newPassword')
+        }
+        if (newPassword.length < 8) {
+            throw new BadRequestError('New password must be at least 8 characters')
+        }
+
+        const user = getByIdWithHash(id)
+        if (!user) {
+            throw new BadRequestError('User not found')
+        }
+
+        const match = await bcrypt.compare(currentPassword, user.password_hash)
+        if (!match) {
+            throw new UnauthorizedError('Current password is incorrect')
+        }
+
+        const newHash = await bcrypt.hash(newPassword, 10)
+        updateUserRepo(id, { password_hash: newHash } as any)
+
+        return success({ message: 'Password updated successfully' })
     })
 
     /************************* DELETE USER — requiert auth + ownership **********************************/
