@@ -389,17 +389,30 @@ export async function populateFriendOverlay(mode: number): Promise<void> {
 				li.className = liClasses;
 
 				li.innerHTML = `
-					<img src="${friend.avatar_url}" alt="${friend.display_name}" class="w-10 h-10" />
 					<span
 						id="presence-dot-${friend.id}"
 						class="absolute bottom-0 right-0 w-2 h-2 rounded-full ${friend.is_online ? "bg-green-500" : "bg-gray-400"}">
 					</span>
-					<div class="flex flex-col">
-						<p class="font-medium">${friend.display_name}</p>
+					<div id="friend-info-${friend.id}" class="flex flex-col">
 						<p class="font-sm">@${friend.username}</p>
 					</div>
 					<p id="friendStatusBox-${friend.id}" class="text-xs text-red-500"></p>
 				`;
+	
+				li.prepend(createButton({
+					href: `/user-profile/${friend.id}`,
+					icon: friend.avatar_url,
+					iconAlt: friend.display_name,
+					iconBClass: "w-10 h-10"
+				}));
+
+				const friendInfo = li.querySelector(`#friend-info-${friend.id}`)!;
+				friendInfo.prepend(createButton({
+					buttonText: `${friend.display_name}`,
+					href: `/user-profile/${friend.id}`,
+					id: `friend-button-${friend.id}`,
+					extraClasses: "hover:opacity-80"
+				}));
 
 				li.appendChild(createButton({
 					id: `removeFriendButton-${friend.id}`,
