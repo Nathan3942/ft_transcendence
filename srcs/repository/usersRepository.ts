@@ -75,11 +75,18 @@ export function updateUser(id: string | number, fields: Partial<Pick<User, 'user
     if (entries.length === 0) return false
     const setClauses = entries.map(([k]) => `${k} = ?`).join(', ')
     const values = entries.map(([, v]) => v)
-    const result = queryExecute(
-        `UPDATE users SET ${setClauses} WHERE id = ?`,
-        [...values, id]
-    )
-    return result.changes > 0
+    try {
+        const result = queryExecute(
+            `UPDATE users SET ${setClauses} WHERE id = ?`,
+            [...values, id]
+        )
+        return result.changes > 0
+    } catch (err: any) {
+        if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+            throw new ConflictError('Display name already taken')
+        }
+        throw err
+    }
 }
 
 export function deleteUser(id: string | number): boolean {
