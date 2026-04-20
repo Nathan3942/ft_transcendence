@@ -278,10 +278,8 @@ function setupOverlayOnce() {
 
 			const resp = await fetch(`${API_BASE}/users/${getLocalId()}/friends`, {
 				method: "POST",
+				headers: { "Content-Type": "application/json" },
 				credentials: "include",
-				headers: {
-					"Content-Type": "application/json"
-				},
 				body: JSON.stringify(form)
 			});
 
