@@ -265,13 +265,19 @@ declare global {
 /* MODIF 2 : InitAiGame crée maintenant les users dans le backend avant le match
    et sauvegarde le résultat via POST /matches/result quand le match se termine.
    player2Id est null car le joueur 2 est une IA (pas un vrai user) */
+let activeAIController: { stop: () => void } | null = null;
+
 async function InitAiGame(diffNum: number, pageRoot: HTMLDivElement) {
+
+	if (activeAIController) {
+		activeAIController.stop();
+		activeAIController = null;
+	}
 
 	const diff: AIDifficulty = diffNum === 1 ? "easy" : diffNum === 2 ? "medium" : "hard";
 
 	const p1Id = getLocalId();
 
-	// remplace le menu par le canvas
 	pageRoot.innerHTML = "";
 	pageRoot.style.width = "100vw";
 	pageRoot.style.height = "80vh";
@@ -301,12 +307,13 @@ async function InitAiGame(diffNum: number, pageRoot: HTMLDivElement) {
 	// lance pong
 	await (document as any).fonts?.ready;
 
-	/* MODIF 3 : callback quand le match se termine → sauvegarde le résultat
-	   player2Id = null car c'est une IA, pas un vrai joueur en base */
+	let matchSaved = false;
 	const events: PongEvents = {
 		onGameOver: async (winner: 1 | 2 | 3 | 4, s1: number, s2: number) => {
 			if (winner !== 1 && winner !== 2)
 				return;
+			if (matchSaved) return;
+			matchSaved = true;
 			try {
 				await fetch(`/api/v1/matches/result`, {
 					method: "POST",
@@ -329,6 +336,7 @@ async function InitAiGame(diffNum: number, pageRoot: HTMLDivElement) {
 
 	fitCanvasToDisplay(canvas);
 	const controller = startPong(canvas, ctx, { mode: "1v1", tournament: false }, {}, events);
+	activeAIController = controller;
 
 	// injection IA
 	const keysDown = createKeyMap();
