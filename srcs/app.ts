@@ -10,7 +10,6 @@ import v1Routes from './routes/v1'
 import { errorHandler, notFoundHandler } from './utils/ErrorHandler'
 import { registerRateLimit } from './plugins/rateLimit'
 import { env, isDev, isProd } from './config/env'
-
 import { wsPlugin } from './ws'
 
 

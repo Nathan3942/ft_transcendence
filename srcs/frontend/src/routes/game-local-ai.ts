@@ -3,7 +3,7 @@ import makeButtonBlock from "../components/button/buttonBlock";
 import createBackButton from "../components/button/backButton";
 import { t } from "../i18n/i18n";
 import { startPong } from "../game/pong.js";
-import type { PongInput, PongState, PongEvents } from "../game/pong_core.js";
+import { type PongInput, type PongState, type PongEvents, fitCanvasToDisplay } from "../game/pong_core.js";
 import { makeAIPolicyP2 } from "../game/ai/policy.js";
 import type { Genome, GAConfig } from "../game/ai/type.js";
 import hardGenome from "../game/ai/genomes/hard.json";
@@ -12,7 +12,6 @@ import { getLocalId } from "../helpers/apiHelper.js";
 // Vite worker import
 import AIWorker from "../game/ai/worker?worker";
 
-const API_URL = `http://${window.location.hostname}:3000/api/v1`;
 
 // ================= Difficulty presets ===================
 
@@ -100,12 +99,24 @@ function createTouchState(): TouchState {
 }
 
 function bindTouch(canvas: HTMLCanvasElement, touchState: TouchState) {
+	const getCanvasPos = (touch: Touch) => {
+		const rect = canvas.getBoundingClientRect();
+
+		return {
+			x: (touch.clientX - rect.left) * (canvas.width / rect.width),
+			y: (touch.clientY - rect.top) * (canvas.height / rect.height),
+		};
+	};
+
 	const updateFromTouch = (e: TouchEvent) => {
 		if (e.touches.length === 0)
 			return;
-		const t = e.touches[0];
+
+		const touch = e.touches[0];
+		const pos = getCanvasPos(touch);
+
 		touchState.active = true;
-		touchState.y = t.clientY;
+		touchState.y = pos.y;
 	};
 
 	const onTouchStart = (e: TouchEvent) => {
@@ -121,12 +132,14 @@ function bindTouch(canvas: HTMLCanvasElement, touchState: TouchState) {
 
 	const onTouchEnd = (e: TouchEvent) => {
 		e.preventDefault();
+
 		if (e.touches.length > 0) {
-			const t = e.touches[0];
+			const pos = getCanvasPos(e.touches[0]);
 			touchState.active = true;
-			touchState.y = t.clientY;
+			touchState.y = pos.y;
 			return;
 		}
+
 		touchState.active = false;
 		touchState.y = null;
 	};
@@ -292,9 +305,10 @@ async function InitAiGame(diffNum: number, pageRoot: HTMLDivElement) {
 	   player2Id = null car c'est une IA, pas un vrai joueur en base */
 	const events: PongEvents = {
 		onGameOver: async (winner: 1 | 2 | 3 | 4, s1: number, s2: number) => {
-			if (winner !== 1 && winner !== 2) return;
+			if (winner !== 1 && winner !== 2)
+				return;
 			try {
-				await fetch(`${API_URL}/matches/result`, {
+				await fetch(`/api/v1/matches/result`, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
 					credentials: "include",
@@ -313,6 +327,7 @@ async function InitAiGame(diffNum: number, pageRoot: HTMLDivElement) {
 		},
 	};
 
+	fitCanvasToDisplay(canvas);
 	const controller = startPong(canvas, ctx, { mode: "1v1", tournament: false }, {}, events);
 
 	// injection IA
@@ -331,8 +346,8 @@ async function InitAiGame(diffNum: number, pageRoot: HTMLDivElement) {
 	});
 
 	const onResize = () => {
-		const r = pageRoot.getBoundingClientRect();
-		controller.resize(r.width || window.innerWidth, r.height || window.innerHeight);
+		fitCanvasToDisplay(canvas);
+		controller.resize(canvas.width, canvas.height);
 	};
 	window.addEventListener("resize", onResize);
 

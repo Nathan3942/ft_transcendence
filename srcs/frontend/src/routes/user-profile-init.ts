@@ -147,6 +147,13 @@ export default async function initUserProfile(params?: RouteParams): Promise<voi
 	try {
 
 		const matchHistoryArray = (await fetchMatchHistory(id)).data;
+		
+		matchHistoryArray.sort((a, b) => {
+			const dateA = a.finishedAt ? new Date(a.finishedAt).getTime() : 0;
+			const dateB = b.finishedAt ? new Date(b.finishedAt).getTime() : 0;
+			return dateB - dateA; 
+		});
+		
 		const tbody = matchHistoryTable.querySelector("tbody")!;
 
 		tbody.innerHTML = "";
@@ -154,7 +161,7 @@ export default async function initUserProfile(params?: RouteParams): Promise<voi
 		for (let i = matchHistoryArray.length - 1; i >= 0; --i) {
 			const match = matchHistoryArray[i];
 			const newRow = tbody.insertRow();
-			newRow.classList.add("text-center");
+			newRow.className = "text-center border-b border-gray-200 dark:border-gray-700";
 			
 			const cell1 = newRow.insertCell(0); // Match ID
 			const cell2 = newRow.insertCell(1); // Opponent Info
@@ -177,10 +184,16 @@ export default async function initUserProfile(params?: RouteParams): Promise<voi
 			if (match.won)
 				cell4.classList.add("text-green-600", "dark:text-green-400");
 			else
-				cell4.classList.add("text-red-600", "text-red-400");
+				cell4.classList.add("text-red-600", "dark:text-red-400");
+
 			cell4.textContent = match.won ? t("profile.win") : t("profile.loss");
-			const date: string[] = match.finishedAt.split("T");
-			cell5.textContent = `${date.at(0)} - ${date.at(1)?.replace("Z", "")}`;
+
+			if (match.finishedAt) {
+				const [datePart, timePart] = match.finishedAt.split("T");
+				cell5.textContent = `${datePart} - ${(timePart ?? "").replace("Z", "")}`;
+			} 
+			else
+				cell5.textContent = t("profile.unknownDate");
 
 		}
 		const recentForm = document.getElementById("recentForm")!;

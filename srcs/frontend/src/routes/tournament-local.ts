@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 16:32:13 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/17 15:48:29 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/20 03:04:05 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@ import makeButtonBlock from "../components/button/buttonBlock";
 import createSoftBackLoad from "../components/button/softLoadButton";
 import { t } from "../i18n/i18n";
 import { startPong } from "../game/pong";
-import type { PongState } from "../game/pong_core";
+import { fitCanvasToDisplay, type PongState } from "../game/pong_core";
 
 import { makeAIPolicyP2 } from "../game/ai/policy";
 
@@ -481,6 +481,7 @@ async function CreateMatch(inner: HTMLDivElement, match: Match, onDone: (res: Ga
 		},
 	};
 
+	fitCanvasToDisplay(canvas);
 	controller = startPong(canvas, ctx, { mode: "1v1", tournament: true }, {}, events);
 	
 	if (gTournament?.aiLvl) {

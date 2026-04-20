@@ -92,11 +92,11 @@ export default function buildUserProfile(): HTMLDivElement {
 				<h2 class="text-xl font-bold mb-2 text-gray-800 dark:text-white">▐ ${t("profile.recentForm")}</h2>
 				<div id="recentForm" class="flex gap-2"></div>
 			</div>
-			<div class="mt-6">
+			<div class="mt-6 flex flex-col min-h-0">
 				<h2 class="text-xl font-bold mb-2 text-gray-800 dark:text-white">▐ ${t("profile.matchHistory")}</h2>
-				<div class="overflow-x-auto">
-					<table id="matchHistory" class="w-full border border-gray-200 dark:border-gray-700">
-						<thead>
+				<div class="overflow-x-auto overflow-y-auto max-h-140 border border-gray-200 dark:border-gray-700 rounded-sm">
+					<table id="matchHistory" class="w-full border-collapse">
+						<thead class="sticky top-0 z-10 bg-gray-100 dark:bg-gray-800">
 							<tr>
 								<th class="${thClasses} hidden md:table-cell">${t("profile.matchId")}</th>
 								<th class="${thClasses}">${t("profile.opponent")}</th>

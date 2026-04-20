@@ -171,7 +171,8 @@ const fr: TranslationDict = {
 		errorNotAuthenticated: "Non authentifié",
 		errorUnexpected: "Erreur inattendue",
 		recentForm: "Forme Récente",
-		noRecentMatches: "Aucun match joué pour l'instant"
+		noRecentMatches: "Aucun match joué pour l'instant",
+		unknownDate: "Date inconnue"
 	},
 
 	gameLocal: {

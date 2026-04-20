@@ -1,0 +1,11 @@
+Le chargement du module à l’adresse « https://192.168.1.40/assets/game-online-D-tDLPV3.js » a été bloqué en raison d’un type MIME interdit (« text/html »). game-online
+Failed to load component for /game-online TypeError: error loading dynamically imported module: https://192.168.1.40/assets/game-online-D-tDLPV3.js index-CIde8f0f.js:72:4762
+    handleLocation https://192.168.1.40/assets/index-CIde8f0f.js:72
+    navigateTo https://192.168.1.40/assets/index-CIde8f0f.js:72
+    setupListeners https://192.168.1.40/assets/index-CIde8f0f.js:72
+    (Asynchrone : EventListener.handleEvent)
+    setupListeners https://192.168.1.40/assets/index-CIde8f0f.js:72
+    fe https://192.168.1.40/assets/index-CIde8f0f.js:72
+    <anonyme> https://192.168.1.40/assets/index-CIde8f0f.js:72
+
+    

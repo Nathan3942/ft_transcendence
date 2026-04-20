@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/19 10:11:49 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/16 07:29:02 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/20 04:11:53 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,10 +101,8 @@ export const DEFAULT_CONFIG: PongConfig = {
 // ================= Helpers ===================
 
 export function computePlayfield(mod: ModeId, canvasW: number, canvasH: number) {
-	const isSmallScreen = canvasW < 700 || canvasH < 500;
-
 	if (mod === "3p" || mod === "4p") {
-		const size = Math.min(canvasW, canvasH) * (isSmallScreen ? 0.92 : 0.78);
+		const size = Math.min(canvasW, canvasH) * 0.82;
 		return {
 			x: (canvasW - size) / 2,
 			y: (canvasH - size) / 2,
@@ -113,15 +111,17 @@ export function computePlayfield(mod: ModeId, canvasW: number, canvasH: number) 
 		};
 	}
 
+	// Toujours garder un vrai 4/3 pour les modes classiques
 	const targetAspect = 4 / 3;
-	const scale = isSmallScreen ? 0.92 : 0.78;
 
-	const maxW = canvasW * scale;
-	const maxH = canvasH * scale;
+	// marge globale pour éviter que le terrain touche les bords
+	const maxW = canvasW * 0.92;
+	const maxH = canvasH * 0.92;
 
 	let w = maxW;
 	let h = w / targetAspect;
 
+	// si trop haut, on limite par la hauteur
 	if (h > maxH) {
 		h = maxH;
 		w = h * targetAspect;
@@ -131,8 +131,24 @@ export function computePlayfield(mod: ModeId, canvasW: number, canvasH: number) 
 		x: (canvasW - w) / 2,
 		y: (canvasH - h) / 2,
 		w,
-		h
+		h,
 	};
+}
+
+export function fitCanvasToDisplay(canvas: HTMLCanvasElement) {
+	
+	const rect = canvas.getBoundingClientRect();
+	const dpr = window.devicePixelRatio || 1;
+
+	const displayWidth = Math.round(rect.width * dpr);
+	const displayHeight = Math.round(rect.height * dpr);
+
+	if (canvas.width !== displayWidth || canvas.height !== displayHeight) {
+		canvas.width = displayWidth;
+		canvas.height = displayHeight;
+		return true;
+	}
+	return false;
 }
 
 export function clamp(v: number, min: number, max: number) {

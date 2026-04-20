@@ -5,13 +5,11 @@ import { t } from "../i18n/i18n";
 
 import { startPong } from "../game/pong.js";
 /* MODIF 1 : on importe PongEvents pour typer le callback onGameOver */
-import type { ModeId, PongEvents } from "../game/pong_core.js";
+import { fitCanvasToDisplay, type ModeId, type PongEvents } from "../game/pong_core.js";
 import { getRouter } from "../handler/routeHandler.js";
-import createLocalTournament from "./tournament-local.js";
 import { getLocalId } from "../helpers/apiHelper.js";
 
 /* URL de base de l'API backend */
-const API_URL = `http://${window.location.hostname}:3000/api/v1`;
 
 /* MODIF 2 : createLocalMatch prend maintenant les noms des joueurs en paramètre
    et fait 2 appels API :
@@ -50,8 +48,9 @@ async function createLocalMatch(outer: HTMLDivElement, p1Name: string, p2Name: s
 		onGameOver: async (winner: 1 | 2 | 3 | 4, s1: number, s2: number, md: ModeId) => {
 			if (winner !== 1 && winner !== 2) return;
 			const winnerId = winner === 1 ? p1Id : p2Id;
+			console.log(`p1 : ${p1Id}, p2: ${p2Id}`);
 			try {
-				await fetch(`${API_URL}/matches/result`, {
+				await fetch(`/api/v1/matches/result`, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
 					credentials: "include",
@@ -72,6 +71,7 @@ async function createLocalMatch(outer: HTMLDivElement, p1Name: string, p2Name: s
 	};
 
 	/* On passe events à startPong (le 5ème paramètre qui existait déjà) */
+	fitCanvasToDisplay(canvas);
 	const controller = startPong(canvas, ctx, { mode: "1v1", tournament: false }, {}, events);
 
 	const onResize = () => {

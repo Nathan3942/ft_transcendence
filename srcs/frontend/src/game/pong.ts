@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 16:56:00 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/17 15:40:27 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/20 04:16:16 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,36 @@ import { DEFAULT_CONFIG, clamp, creatInitialState, updateCore, paddleReact } fro
 import { t } from "../i18n/i18n.js";
 
 // ================= Rendering ===================
+
+function buildResponsiveConfig(w: number, h: number, baseConfig: Partial<PongConfig> = {}): PongConfig {
+	
+	const minDim = Math.min(w, h);
+	const shortSide = minDim;
+	const isPortrait = h > w;
+
+	return {
+		...DEFAULT_CONFIG,
+		...baseConfig,
+
+		ballRadius: baseConfig.ballRadius ?? clamp(Math.round(shortSide * 0.012), 4, 12),
+
+		paddleWidth: baseConfig.paddleWidth ?? clamp(Math.round(shortSide * 0.012), 6, 16),
+
+		paddleHeight: baseConfig.paddleHeight ?? clamp(
+			Math.round(shortSide * (isPortrait ? 0.16 : 0.18)),
+			50,
+			180
+		),
+
+		paddleMargin: baseConfig.paddleMargin ?? clamp(Math.round(shortSide * 0.01), 4, 16),
+
+		paddleSpeed: baseConfig.paddleSpeed ?? clamp(Math.round(shortSide * 0.9), 220, 700),
+
+		ballSpeed: baseConfig.ballSpeed ?? clamp(Math.round(shortSide * 0.6), 180, 500),
+
+		winningScore: baseConfig.winningScore ?? DEFAULT_CONFIG.winningScore,
+	};
+}
 
 function drawScore(ctx: CanvasRenderingContext2D, state: PongState) {
 
@@ -187,29 +217,44 @@ function bindTouch(canvas: HTMLCanvasElement) {
 	let touchX: number | null = null;
 	let startPressed = false;
 
+	const getCanvasPos = (t: Touch) => {
+	const rect = canvas.getBoundingClientRect();
+
+	return {
+		x: (t.clientX - rect.left) * (canvas.width / rect.width),
+		y: (t.clientY - rect.top) * (canvas.height / rect.height),
+		};
+	};
+
 	const onTouchStart = (e: TouchEvent) => {
 		e.preventDefault();
 		const t = e.touches[0];
-		touchY = t.clientY;
-		touchX = t.clientX;
+		const pos = getCanvasPos(t);
+
+		touchX = pos.x;
+		touchY = pos.y;
 		startPressed = true;
 	};
 
 	const onTouchMove = (e: TouchEvent) => {
 		e.preventDefault();
 		const t = e.touches[0];
-		touchY = t.clientY;
-		touchX = t.clientX;
+		const pos = getCanvasPos(t);
+
+		touchX = pos.x;
+		touchY = pos.y;
 	};
 
 	const onTouchEnd = (e: TouchEvent) => {
 		e.preventDefault();
+
 		if (e.touches.length > 0) {
-			touchY = e.touches[0].clientY;
-			touchX = e.touches[0].clientX;
+			const pos = getCanvasPos(e.touches[0]);
+			touchX = pos.x;
+			touchY = pos.y;
 		} else {
-			touchY = null;
 			touchX = null;
+			touchY = null;
 		}
 	};
 
@@ -325,23 +370,7 @@ export function startPong(
 
 	console.log("START PONG LOOP");
 
-	
-	const minCanvas = Math.min(canvas.width, canvas.height);
-	const isSmallScreen = canvas.width < 700 || canvas.height < 500;
-
-	const responsiveConfig: PongConfig = {
-		...DEFAULT_CONFIG,
-		...config,
-		ballRadius: isSmallScreen ? Math.max(5, Math.floor(minCanvas * 0.012)) : (config.ballRadius ?? DEFAULT_CONFIG.ballRadius),
-		paddleWidth: isSmallScreen ? Math.max(6, Math.floor(minCanvas * 0.012)) : (config.paddleWidth ?? DEFAULT_CONFIG.paddleWidth),
-		paddleHeight: isSmallScreen ? Math.max(60, Math.floor(minCanvas * 0.18)) : (config.paddleHeight ?? DEFAULT_CONFIG.paddleHeight),
-		paddleMargin: isSmallScreen ? Math.max(4, Math.floor(minCanvas * 0.01)) : (config.paddleMargin ?? DEFAULT_CONFIG.paddleMargin),
-		paddleSpeed: isSmallScreen ? Math.max(280 , Math.floor(minCanvas * 0.9)) : (config.paddleSpeed ?? DEFAULT_CONFIG.paddleSpeed),
-
-		ballSpeed: isSmallScreen ? Math.max(200, Math.floor(minCanvas * 0.6)) : (config.ballSpeed ?? DEFAULT_CONFIG.ballSpeed), 
-	};
-
-	const cfg: PongConfig = responsiveConfig;
+	const cfg: PongConfig = buildResponsiveConfig(canvas.width, canvas.height, config);
 	
 	const state = creatInitialState(opts.mode, canvas.width, canvas.height, cfg);
 
@@ -406,33 +435,15 @@ export function startPong(
 			state.width = w;
 			state.height = h;
 
-			const minCanvas = Math.min(w, h);
-			const isSmallScreen = w < 700 || h < 500;
+			const nextCfg = buildResponsiveConfig(w, h, config);
 
-			// config
-			cfg.ballRadius = isSmallScreen
-				? Math.max(5, Math.floor(minCanvas * 0.012))
-				: (config.ballRadius ?? DEFAULT_CONFIG.ballRadius);
-
-			cfg.paddleWidth = isSmallScreen
-				? Math.max(6, Math.floor(minCanvas * 0.012))
-				: (config.paddleWidth ?? DEFAULT_CONFIG.paddleWidth);
-
-			cfg.paddleHeight = isSmallScreen
-				? Math.max(60, Math.floor(minCanvas * 0.18))
-				: (config.paddleHeight ?? DEFAULT_CONFIG.paddleHeight);
-
-			cfg.paddleMargin = isSmallScreen
-				? Math.max(4, Math.floor(minCanvas * 0.01))
-				: (config.paddleMargin ?? DEFAULT_CONFIG.paddleMargin);
-
-			cfg.paddleSpeed = isSmallScreen
-				? Math.max(280, Math.floor(minCanvas * 0.9))
-				: (config.paddleSpeed ?? DEFAULT_CONFIG.paddleSpeed);
-
-			cfg.ballSpeed = isSmallScreen
-				? Math.max(200, Math.floor(minCanvas * 0.6))
-				: (config.ballSpeed ?? DEFAULT_CONFIG.ballSpeed);
+			cfg.ballRadius = nextCfg.ballRadius;
+			cfg.paddleWidth = nextCfg.paddleWidth;
+			cfg.paddleHeight = nextCfg.paddleHeight;
+			cfg.paddleMargin = nextCfg.paddleMargin;
+			cfg.paddleSpeed = nextCfg.paddleSpeed;
+			cfg.ballSpeed = nextCfg.ballSpeed;
+			cfg.winningScore = nextCfg.winningScore;
 
 			// playfield
 			const pf = computePlayfield(state.mod, w, h);

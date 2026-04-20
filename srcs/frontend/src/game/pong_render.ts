@@ -6,13 +6,16 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/23 16:55:07 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/19 21:47:47 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/20 04:07:32 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import type { RenderState, GameSlot } from "./server_state_adapter.js";
 import { t } from "../i18n/i18n";
 
+function px(n: number): number {
+	return Math.round(n) + 0.5;
+}
 
 export function drawPong(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, state: RenderState, mySlot: GameSlot | null) {
 
@@ -37,7 +40,7 @@ export function drawPong(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElemen
 	// playfield
 	ctx.strokeStyle = "white";
 	ctx.lineWidth = borderSize;
-	ctx.strokeRect(state.playX, state.playY, state.playW, state.playH);
+	ctx.strokeRect(Math.round(state.playX) + 0.5, Math.round(state.playY) + 0.5, Math.round(state.playW), Math.round(state.playH));
 
 	const cx = state.playX + state.playW / 2;
 
@@ -105,7 +108,7 @@ export function drawPong(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElemen
 
 		const isMine = mySlot && p.slot === mySlot;
 		ctx.fillStyle = isMine ? "#00ff88" : "white";
-		ctx.fillRect(p.x, p.y, p.w, p.h);
+		ctx.fillRect(Math.round(p.x), Math.round(p.y), Math.round(p.w),	Math.round(p.h));
 	}
 
 	// ball
