@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 14:57:26 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/17 16:16:26 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/19 18:37:37 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,6 @@ type ApiSuccess<T> = { success: true, data: T };
 type ApiError = { success?: false; error?: string, message?: string; details?: unknown };
 
 export async function api<T>(path: string, opts?: RequestInit): Promise<T> {
-
 	const headers: Record<string, string> = {};
 
 	if (opts?.body) {
@@ -34,22 +33,25 @@ export async function api<T>(path: string, opts?: RequestInit): Promise<T> {
 	const json = text ? JSON.parse(text) : null;
 
 	if (!res.ok) {
-		const msg = 
+		const retryAfter = res.headers.get("retry-after");
+		const remaining = res.headers.get("x-ratelimit-remaining");
+
+		const msg =
 			(json as ApiError)?.message ||
 			(json as ApiError)?.error ||
 			text ||
 			res.statusText;
 
-		if (res.status === 429) {
-			throw new Error(`API 429: ${msg}`);
+		if (remaining === "0" || retryAfter) {
+			throw new Error(`Rate limit exceeded. Retry after ${retryAfter ?? "a few"} seconds.`);
 		}
-		
+
 		throw new Error(`API ${res.status}: ${msg}`);
 	}
 
 	if (json && (json as ApiSuccess<T>).success === true && "data" in json) {
-		return ((json as ApiSuccess<T>).data);
+		return (json as ApiSuccess<T>).data;
 	}
 
-	return (json as T);
+	return json as T;
 }

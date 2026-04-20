@@ -40,12 +40,36 @@ export function errorHandler(
         })
     }
 
+    const err = error as any;
+    const statusCode =
+        typeof err?.statusCode === "number" ? err.statusCode :
+        typeof err?.status === "number" ? err.status :
+        undefined;
+
+    if (statusCode === 429 || err?.name === "TooManyRequests") {
+        const retryAfter =
+            err?.headers?.["retry-after"] ??
+            err?.headers?.["Retry-After"];
+
+        if (retryAfter) {
+            reply.header("retry-after", String(retryAfter));
+        }
+
+        return reply.status(429).send({
+            error: "TooManyRequests",
+            message: isProd
+                ? "Too many requests. Please try again later."
+                : (err?.message || "Rate limit exceeded."),
+            details: []
+        })
+    }
+
+
     // Handle HTTP errors from Fastify plugins (ex: @fastify/jwt)
     // Ces erreurs ont un statusCode mais ne sont pas des BaseError
-    if (error instanceof Error && 'statusCode' in error) {
-        const statusCode = (error as any).statusCode as number
+    if (error instanceof Error && statusCode) {
         return reply.status(statusCode).send({
-            error: error.name || 'HttpError',
+            error: error.name || "HttpError",
             message: isProd ? getProductionMessage(statusCode) : error.message,
             details: []
         })

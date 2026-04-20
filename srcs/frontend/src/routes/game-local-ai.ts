@@ -2,20 +2,17 @@ import { createButton } from "../components/button/button";
 import makeButtonBlock from "../components/button/buttonBlock";
 import createBackButton from "../components/button/backButton";
 import { t } from "../i18n/i18n";
-
 import { startPong } from "../game/pong.js";
 import type { PongInput, PongState, PongEvents } from "../game/pong_core.js";
-
-const API_URL = `http://${window.location.hostname}:3000/api/v1`;
-
 import { makeAIPolicyP2 } from "../game/ai/policy.js";
 import type { Genome, GAConfig } from "../game/ai/type.js";
-
 import hardGenome from "../game/ai/genomes/hard.json";
 import { getLocalId } from "../helpers/apiHelper.js";
 
 // Vite worker import
 import AIWorker from "../game/ai/worker?worker";
+
+const API_URL = `http://${window.location.hostname}:3000/api/v1`;
 
 // ================= Difficulty presets ===================
 
@@ -55,8 +52,10 @@ export async function loadHardGenome(): Promise<Genome> {
 }
 
 export function genomeForDifficulty(diff: AIDifficulty, hard: Genome): Genome {
-	if (diff === "easy") return AI_EASY;
-	if (diff === "medium") return AI_MEDIUM;
+	if (diff === "easy")
+		return AI_EASY;
+	if (diff === "medium")
+		return AI_MEDIUM;
 	return hard;
 }
 
@@ -421,7 +420,6 @@ export default function createLocalAIGamePage(): HTMLDivElement {
 			extraClasses: btnClasses,
 			buttonText: t("gameLocalAi.medium"),
 			f: () => InitAiGame(2, outer),
-			href: "/game-local-ai-medium"
 			})
 		),
 		makeButtonBlock("bg-indigo-300 dark:bg-indigo-900", createButton({

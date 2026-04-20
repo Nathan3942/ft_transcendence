@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 12:47:43 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/01 18:43:11 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/20 02:18:07 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,8 @@ self.onmessage = (e: MessageEvent<Incoming>) => {
 		const res = evolve(
 			msg.cfg,
 			(g: Genome) => {
-				if (shouldStop) return -1e18;
+				if (shouldStop)
+					return -1e18;
 				return evaluateGenome(g, msg.cfg.episodesPerGenome);
 			},
 			(p) => {
@@ -67,54 +68,3 @@ self.onmessage = (e: MessageEvent<Incoming>) => {
 	}
 };
 
-
-
-// import type { GAConfig, Genome } from "./type";
-// import { evolve } from "./ga";
-// import { evaluateGenome } from "./sim";
-
-// type TrainMsg = { type: "train"; cfg: GAConfig };
-// type StopMsg = { type: "stop" };
-// type Incoming = TrainMsg | StopMsg;
-
-// let shouldStop = false;
-
-// self.onmessage = (e: MessageEvent<Incoming>) => {
-// 	console.log("FROM WORKER:", e.data);
-// 	const msg = e.data;
-
-// 	if (msg.type === "stop") {
-// 		shouldStop = true;
-// 		return;
-// 	}
-
-// 	if (msg.type === "train") {
-// 		shouldStop = false;
-// 		const gaCfg = msg.cfg;
-
-// 		const best = train(gaCfg);
-
-// 		(self as any).postMessage({ type: "done", bestGenome: best.best, bestFitness: best.bestFit });
-// 	}
-// };
-
-// function train(cfg: GAConfig) {
-// 	let lastSentGen = -1;
-
-// 	const res = evolve(
-// 		cfg,
-// 		(g: Genome) => {
-// 			if (shouldStop) return (-1e18);
-// 			return (evaluateGenome(g, cfg.episodesPerGenome));
-// 		},
-// 		(p) => {
-// 			// throttle: envoie tous les 1 gen (ou mets 2/5)
-// 			if (p.gen !== lastSentGen) {
-// 				lastSentGen = p.gen;
-// 				(self as any).postMessage({ type: "progress", ...p });
-// 			}
-// 		}
-// 	);
-
-// 	return (res);
-// }

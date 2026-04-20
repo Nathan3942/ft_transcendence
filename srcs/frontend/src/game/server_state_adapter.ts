@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/23 17:28:04 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/16 07:00:45 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/19 22:04:33 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -128,7 +128,8 @@ export function toRenderState(s: ServerGameState, canvasW: number, canvasH: numb
 
 	const minDim = Math.min(playW, playH);
 	const paddleThick = Math.max(6, Math.floor(minDim * 0.012));
-	const paddleLen = Math.max(50, (PADDLE_LEN / H) * playH);
+	const baseH = (s.mode === "3p" || s.mode === "4p") ? H_CARRE : H;
+	const paddleLen = (PADDLE_LEN / baseH) * playH;
 	const margin = Math.max(4, Math.floor(minDim * 0.01));
 	const gap = paddleThick + Math.max(4, Math.floor(minDim * 0.01));
 

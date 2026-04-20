@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 12:47:55 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/01 18:43:11 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/20 02:20:19 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,6 +64,7 @@ function crossover(a: Genome, b: Genome): Genome {
 }
 
 function tournament<T>(arr: T[], score: (t: T) => number, k = 5): T {
+	
 	let best = arr[(Math.random() * arr.length) | 0];
 	let bestS = score(best);
 	for (let i = 1; i < k; i++) {
@@ -78,8 +79,8 @@ function tournament<T>(arr: T[], score: (t: T) => number, k = 5): T {
 }
 
 export function evolve(cfg: GAConfig, evaluate: (g: Genome) => number, onProgress?: (p: TrainProgress) => void) {
+	
 	let pop: Genome[] = Array.from({ length: cfg.popSize }, randomGenome);
-
 	let best = pop[0];
 	let bestFit = -Infinity;
 
@@ -96,9 +97,7 @@ export function evolve(cfg: GAConfig, evaluate: (g: Genome) => number, onProgres
 
 		const elitCount = Math.max(1, Math.floor(cfg.popSize * cfg.elitism));
 		const elite = scored.slice(0, elitCount).map((x) => x.g);
-
 		const next: Genome[] = [...elite];
-
 		const scoreFn = (g: Genome) => scored.find((x) => x.g === g)?.f ?? -Infinity;
 
 		while (next.length < cfg.popSize) {

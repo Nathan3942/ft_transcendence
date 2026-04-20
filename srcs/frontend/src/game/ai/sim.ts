@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 12:47:49 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/17 05:39:55 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/20 02:17:22 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,95 +30,101 @@ function emptyInput(): PongInput {
 
 // Baseline P1 simple: suit la balle quand elle arrive, sinon se recentre
 function baselineP1(state: PongState): PongInput {
-  const input = emptyInput();
+	const input = emptyInput();
 
-  if (state.phase === "LOBBY") {
-    input.p1.start = true;
-    input.p2.start = true;
-    return input;
-  }
+	if (state.phase === "LOBBY") {
+		input.p1.start = true;
+		input.p2.start = true;
+		return input;
+	}
 
-  // pendant COUNTDOWN/PAUSED -> pas besoin de bouger
-  if (state.phase !== "RUNNING") return input;
+	// pendant COUNTDOWN/PAUSED -> pas besoin de bouger
+	if (state.phase !== "RUNNING")
+		return input;
 
-  // P1 = paddles[0] en 1v1 (chez toi)
-  const p1 = state.paddles[0];
-  const center = p1.pos + p1.len / 2;
+	const p1 = state.paddles[0];
+	const center = p1.pos + p1.len / 2;
 
-  const targetY = state.ballVX < 0 ? state.ballY : (state.playY + state.playH / 2);
-  const dy = targetY - center;
+	const targetY = state.ballVX < 0 ? state.ballY : (state.playY + state.playH / 2);
+	const dy = targetY - center;
 
-  if (Math.abs(dy) < 12) return input;
+	if (Math.abs(dy) < 12)
+		return input;
 
-  if (dy < 0) input.p1.up = true;
-  else input.p1.down = true;
+	if (dy < 0) 
+		input.p1.up = true;
+	else 
+		input.p1.down = true;
 
-  return input;
+	return input;
 }
 
 export function evaluateGenome(genome: Genome, episodes: number, config?: Partial<PongConfig>): number {
-  const cfg: PongConfig = { ...DEFAULT_CONFIG, ...config, winningScore: 5 };
-  let total = 0;
+	const cfg: PongConfig = { ...DEFAULT_CONFIG, ...config, winningScore: 5 };
+	let total = 0;
 
-  for (let ep = 0; ep < episodes; ep++) {
-    const state = creatInitialState("1v1", 800, 600, cfg);
+	for (let ep = 0; ep < episodes; ep++) {
+		const state = creatInitialState("1v1", 800, 600, cfg);
 
-    const aiP2 = makeAIPolicyP2(genome);
+		const aiP2 = makeAIPolicyP2(genome);
 
-    const dt = 1 / 120;
-    const maxFrames = 60 * 120;
+		const dt = 1 / 120;
+		const maxFrames = 60 * 120;
 
-    let frames = 0;
-    let touches = 0;
-    let dirChanges = 0;
+		let frames = 0;
+		let touches = 0;
+		let dirChanges = 0;
 
-    let prevVX = state.ballVX;
-    let prevDir: -1 | 0 | 1 = 0;
+		let prevVX = state.ballVX;
+		let prevDir: -1 | 0 | 1 = 0;
 
-    for (; frames < maxFrames; frames++) {
-      const p1In = baselineP1(state);
-      const p2In = aiP2(state, dt);
+		for (; frames < maxFrames; frames++) {
+			const p1In = baselineP1(state);
+			const p2In = aiP2(state, dt);
 
-      const input = emptyInput();
-      input.p1 = p1In.p1;
+			const input = emptyInput();
+			input.p1 = p1In.p1;
 
-      // P2: IA
-      input.p2 = {
-        ...input.p2,
-        up: p2In.p2.up,
-        down: p2In.p2.down,
-      };
+			// P2: IA
+			input.p2 = {
+				...input.p2,
+				up: p2In.p2.up,
+				down: p2In.p2.down,
+			};
 
-      // start/pause: laisse baseline gérer start
-      input.p1.start = p1In.p1.start;
-      input.p2.start = p1In.p2.start; // on start aussi P2 pour être sûr
+			// start/pause: laisse baseline gérer start
+			input.p1.start = p1In.p1.start;
+			input.p2.start = p1In.p2.start; // on start aussi P2 pour être sûr
 
-      // pénalité jitter (P2)
-      const dir: -1 | 0 | 1 = input.p2.up ? -1 : input.p2.down ? 1 : 0;
-      if (dir !== prevDir && dir !== 0 && prevDir !== 0) dirChanges++;
-      prevDir = dir;
+			// pénalité jitter (P2)
+			const dir: -1 | 0 | 1 = input.p2.up ? -1 : input.p2.down ? 1 : 0;
+			if (dir !== prevDir && dir !== 0 && prevDir !== 0)
+				dirChanges++;
+			prevDir = dir;
 
-      prevVX = state.ballVX;
+			prevVX = state.ballVX;
 
-      updateCore(state, input, dt, cfg);
+			updateCore(state, input, dt, cfg);
 
-      // heuristique touche: vx passe de + à - (retour P2)
-      if (prevVX > 0 && state.ballVX < 0 && state.phase === "RUNNING") touches++;
+			// heuristique touche: vx passe de + à - (retour P2)
+			if (prevVX > 0 && state.ballVX < 0 && state.phase === "RUNNING")
+				touches++;
 
-      if (state.phase === "GAMEOVER") break;
+			if (state.phase === "GAMEOVER")
+				break;
 
-      // accélère la sim: si COUNTDOWN, on force la reprise (optionnel)
-      if (state.phase === "COUNTDOWN") {
-        state.phase = "RUNNING";
-      }
-    }
+			// accélère la sim: si COUNTDOWN, on force la reprise (optionnel)
+			if (state.phase === "COUNTDOWN") {
+				state.phase = "RUNNING";
+			}
+		}
 
-    const winBonus = state.winner === 2 ? 5000 : state.winner === 1 ? -1000 : 0;
-    const fitness = frames + touches * 500 + winBonus - state.scoreP1 * 100;
+		const winBonus = state.winner === 2 ? 5000 : state.winner === 1 ? -1000 : 0;
+		const fitness = frames + touches * 500 + winBonus - state.scoreP1 * 100;
 
-    total += fitness;
-  }
+		total += fitness;
+	}
 
-  return total / episodes;
+	return total / episodes;
 }
 

@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/23 16:55:07 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/17 15:22:06 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/19 21:47:47 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,15 +24,15 @@ export function drawPong(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElemen
 	const minDim = Math.min(state.playW, state.playH);
 
 	// tailles responsives
-	const borderSize = Math.max(1, Math.floor(minDim * 0.004));
-	const dashSize = Math.max(4, Math.floor(minDim * 0.012));
-	const dashGap = Math.max(6, Math.floor(minDim * 0.02));
-	const ballRadius = Math.max(4, Math.floor(minDim * 0.012));
-	const scoreFontSize = Math.max(24, Math.floor(minDim * 0.16));
-	const countdownFontSize = Math.max(36, Math.floor(minDim * 0.18));
-	const uiPadding = Math.max(8, Math.floor(minDim * 0.03));
-	const lifeSize = Math.max(6, Math.floor(minDim * 0.012));
-	const lifeGap = Math.max(8, Math.floor(minDim * 0.025));
+	const borderSize = Math.max(1, minDim * 0.004);
+	const dashSize = Math.max(4, minDim * 0.012);
+	const dashGap = Math.max(6, minDim * 0.02);
+	const ballRadius = Math.max(4, minDim * 0.012);
+	const scoreFontSize = Math.max(24, minDim * 0.16);
+	const countdownFontSize = Math.max(36, minDim * 0.18);
+	const uiPadding = Math.max(8, minDim * 0.03);
+	const lifeSize = Math.max(6, minDim * 0.012);
+	const lifeGap = Math.max(8, minDim * 0.025);
 
 	// playfield
 	ctx.strokeStyle = "white";
