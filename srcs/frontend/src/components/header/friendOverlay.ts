@@ -31,6 +31,7 @@ let friendRequestsCacheAt = 0;
 const FRIEND_REQUESTS_CACHE_MS = 5000;
 
 export function buildFriendOverlay(): HTMLDivElement {
+	overlayInitialized = false;
 	const overlay = document.createElement("div");
 	overlay.classList.add(
 		"w-full",
