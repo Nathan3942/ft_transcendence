@@ -308,7 +308,15 @@ async function InitAiGame(diffNum: number, pageRoot: HTMLDivElement) {
 	await (document as any).fonts?.ready;
 
 	let matchSaved = false;
+	let inGameOver = false;
 	const events: PongEvents = {
+		onStateChange: (phase) => {
+			if (phase === "GAMEOVER") inGameOver = true;
+			else if (inGameOver && phase === "COUNTDOWN") {
+				matchSaved = false;
+				inGameOver = false;
+			}
+		},
 		onGameOver: async (winner: 1 | 2 | 3 | 4, s1: number, s2: number) => {
 			if (winner !== 1 && winner !== 2)
 				return;

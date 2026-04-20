@@ -180,6 +180,14 @@ export function finishMatch(matchId: number, winnerId: number | null) {
 }
 
 
+export function addMatchPlayer(matchId: number, userId: number, score: number) {
+    return queryExecute(
+        'INSERT OR IGNORE INTO match_player (match_id, user_id, score) VALUES (?, ?, ?)',
+        [matchId, userId, score]
+    )
+}
+
+
 export function getMatchesByStatus(status: MatchStatus): Match[] {
     return queryAll(`
         SELECT

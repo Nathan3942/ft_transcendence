@@ -118,7 +118,7 @@ export default async function initUserProfile(params?: RouteParams): Promise<voi
 		document.getElementById("tournamentsWon")!.textContent = userStats.tournamentsWon.toString();
 		document.getElementById("wins")!.textContent = userStats.wins.toString();
 		document.getElementById("losses")!.textContent = userStats.losses.toString();
-		document.getElementById("winrate")!.textContent = `${Math.round(userStats.winrate * 100)}%`;
+		document.getElementById("winrate")!.textContent = `${userStats.winrate}%`;
 
 		const winCircle = document.getElementById("winCircle");
 		if (winCircle instanceof SVGCircleElement) {
@@ -172,7 +172,7 @@ export default async function initUserProfile(params?: RouteParams): Promise<voi
 			cell1.textContent = match.matchId.toString();
 			if (match.opponentId) {
 				cell2.append(createButton({
-					buttonText: match.opponentName,
+					buttonText: match.opponentName ?? undefined,
 					href: `/user-profile/${match.opponentId}`,
 					id: `profile-button-${match.opponentId}`,
 					extraClasses: "hover:opacity-80"

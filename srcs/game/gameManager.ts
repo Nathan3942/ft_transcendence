@@ -14,10 +14,8 @@ import type { FastifyBaseLogger } from "fastify";
 import type { WsSocket } from "../ws/hub";
 import type { GameId, GameState, PaddleInput, ModeId, GameSlot } from "./types";
 import { GameLoop } from "./gameLoop";
-import { deleteMatch, updateMatchStatus } from "../services/matchService";
-import { match } from "assert";
+import { addMatchPlayer, finishMatch, getMatchById } from "../repository/matchesRepository";
 import { TournamentMaganer } from "../tournament/tournamentManager";
-import { getMatchById } from "../repository/matchesRepository";
 
 
 const H = 750;
@@ -206,8 +204,24 @@ export class GameManager {
 					if (!m)
 						return;
 
-					if (m.status !== "finished")
-						updateMatchStatus(id, "finished");
+					if (m.status !== "finished") {
+						finishMatch(Number(id), winnerUserId ? Number(winnerUserId) : null);
+
+						const slots = slotsForMode(g.state.mode);
+						const is4pLike = g.state.mode === "3p" || g.state.mode === "4p";
+						for (const slot of slots) {
+							const player = g.players[slot];
+							if (!player?.userId) continue;
+							let score: number;
+							if (is4pLike) {
+								score = g.state.paddles[slot]?.life ?? 0;
+							} else {
+								const baseSlot = slot.replace(/\d+/, '') as "left" | "right";
+								score = g.state.score[baseSlot] ?? 0;
+							}
+							addMatchPlayer(Number(id), Number(player.userId), score);
+						}
+					}
 
 					const match = getMatchById(id);
 

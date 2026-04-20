@@ -50,7 +50,15 @@ async function createLocalMatch(outer: HTMLDivElement, p1Name: string, p2Name: s
 	/* Etape B : callback appelé quand le match se termine
 	   → envoie le résultat au backend via POST /matches/result */
 	let matchSaved = false;
+	let inGameOver = false;
 	const events: PongEvents = {
+		onStateChange: (phase) => {
+			if (phase === "GAMEOVER") inGameOver = true;
+			else if (inGameOver && phase === "COUNTDOWN") {
+				matchSaved = false;
+				inGameOver = false;
+			}
+		},
 		onGameOver: async (winner: 1 | 2 | 3 | 4, s1: number, s2: number, md: ModeId) => {
 			if (winner !== 1 && winner !== 2) return;
 			if (matchSaved) return;

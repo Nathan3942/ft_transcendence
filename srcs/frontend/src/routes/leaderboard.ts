@@ -208,7 +208,7 @@ export default async function buildLeaderboardPage(): Promise<HTMLDivElement> {
 		for (let i = 0; i < users.length; ++i) {
 			let user = users.at(i);
 			if (user) {
-				user.winrateString = Math.round(user.winrate * 100) + "%";
+				user.winrateString = user.winrate + "%";
 			}
 		}
 		
