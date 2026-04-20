@@ -21,6 +21,12 @@ export default function initUSerSettings(): void {
 	const emailInput = document.getElementById("emailInput") as HTMLInputElement;
 	const userInfoText = document.getElementById("userInfoText") as HTMLParagraphElement;
 
+	const pdwChangeForm = document.getElementById("pwdForm") as HTMLFormElement;
+	const currentPwdInput = document.getElementById("currentPwd") as HTMLInputElement;
+	const newPwdInput = document.getElementById("newPwd") as HTMLInputElement;
+	const confirmPwdInput = document.getElementById("confirmPwd") as HTMLInputElement;
+	const pwdChangeText = document.getElementById("errorMsg") as HTMLParagraphElement;
+
 	const deleteButton = document.getElementById("deleteButton") as HTMLButtonElement;
 	const confirmationDiv = document.getElementById("confirmationDiv") as HTMLDivElement;
 	const confirmationButton = document.getElementById("confirmationButton") as HTMLButtonElement;
@@ -61,8 +67,8 @@ export default function initUSerSettings(): void {
 	}
 
 	async function updateUserInfo(): Promise<string> {
-		const username = usernameInput.value;
-		const email = emailInput.value;
+		const username = usernameInput.value.trim();
+		const email = emailInput.value.trim();
 		
 		authenticate();
 
@@ -93,6 +99,42 @@ export default function initUSerSettings(): void {
 			throw new Error(`403: ${t("settings.errorForbidden")}`);
 		} else if (resp.status === 404) {
 			throw new Error(`404: ${t("settings.errorTargetNotFound")}`);
+		} else {
+			throw new Error(`${resp.status}: ${t("settings.errorUnexpected")}`);
+		}
+	}
+
+	async function updatePassword(): Promise<string> {
+		const currentPass = currentPwdInput.value.trim();
+		const newPass = newPwdInput.value.trim();
+		const confirmPass = confirmPwdInput.value.trim();
+
+		authenticate();
+
+		const payload: Record<string, string> = {}
+		payload["currentPassword"] = currentPass;
+
+		if (newPass !== confirmPass)
+			throw(t("settings.passwordNoMatch"));
+
+		payload["newPassword"] = newPass;
+
+		const resp = await fetch(`${API_BASE}/users/${getLocalId()}/password`, {
+			method: "PATCH",
+			credentials: "include",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(payload)
+		})
+
+		if (resp.ok) {
+			return t("settings.passwordUpdated");
+		} else if (resp.status === 400) {
+			const body = await resp.text();
+			throw new Error(`400: ${body}`);
+		} else if (resp.status === 401) {
+			throw new Error(`401: ${t("settings.errorCurrentPassIncorrect")}`);
+		} else if (resp.status === 403) {
+			throw new Error(`403: ${t("settings.errorForbidden")}`);
 		} else {
 			throw new Error(`${resp.status}: ${t("settings.errorUnexpected")}`);
 		}
@@ -129,15 +171,6 @@ export default function initUSerSettings(): void {
 		"active:brightness-95 dark:active:brightness-110",
 		"transition-colors duration-100"
 	].join(" ")
-	
-	if (submitPass) {
-		submitPass.replaceWith(createButton({
-			id: "submitPass",
-			type: "submit",
-			extraClasses: buttonClasses,
-			buttonText: `▶ ${t("settings.updatePassword")}`
-		}));
-	}
 
 	if (avatarInput && profileImg) {
 		avatarInput.addEventListener("change", async () => {
@@ -205,6 +238,37 @@ export default function initUSerSettings(): void {
 			}
 		})
 	}
+
+	if (submitPass) {
+		submitPass.replaceWith(createButton({
+			id: "submitPass",
+			type: "submit",
+			extraClasses: buttonClasses,
+			buttonText: `▶ ${t("settings.updatePassword")}`
+		}));
+	}
+
+	if (pdwChangeForm) {
+		pdwChangeForm.addEventListener("submit", async (e) => {
+			e.preventDefault();
+			try {
+				const txt = await updatePassword();
+				if (!pwdChangeText.classList.contains("text-green-600"))
+					pwdChangeText.classList.add("text-green-600");
+				if (pwdChangeText.classList.contains("text-red-600"))
+					pwdChangeText.classList.remove("text-red-600");
+				pwdChangeText.innerText = txt;
+			} catch (e) {
+				console.error(`Failed to update password: ${e}`);
+				if (!pwdChangeText.classList.contains("text-red-600"))
+					pwdChangeText.classList.add("text-red-600");
+				if (pwdChangeText.classList.contains("text-green-600"))
+					pwdChangeText.classList.remove("text-green-600");
+				pwdChangeText.innerText = `${e}`;
+			}
+		})
+	}
+
 
 	const languageButtonClasses = [
 		"w-full px-4 py-1 text-left cursor-pointer",
