@@ -6,7 +6,11 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 17:15:35 by njeanbou          #+#    #+#             */
+<<<<<<< HEAD
 /*   Updated: 2026/04/20 00:00:00 by ChatGPT           ###   ########.fr       */
+=======
+/*   Updated: 2026/04/21 02:44:01 by njeanbou         ###   ########.fr       */
+>>>>>>> 0fa00c9 (front local tournament and leave game)
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +48,7 @@ function getClientId(): string {
 	return v;
 }
 
-function getUserId(): string | null {
+function getUserName(): string | null {
 	return getItem<string>("username") ?? null;
 }
 
@@ -117,7 +121,7 @@ function bindInput(ws: WebSocket, gameId: string, slot: GameSlot, canvas: HTMLCa
 				type: "pause_toggle",
 				gameId,
 				clientId: getClientId(),
-				userId: getUserId()
+				userId: getUserName()
 			}));
 			return;
 		}
@@ -286,12 +290,7 @@ export default function onlineMatch(): HTMLDivElement {
 		try {
 			const matchId = getCurrentMatchId();
 			if (matchId && ws.readyState === WebSocket.OPEN) {
-				ws.send(JSON.stringify({
-					type: "leave_game",
-					gameId: matchId,
-					clientId: getClientId(),
-					userId: getUserId()
-				}));
+				ws.send(JSON.stringify({ type: "leave_game", gameId: matchId, clientId: getClientId(), userId: getItem<number>("userid"), userName: getUserName() }));
 			}
 		} catch {}
 

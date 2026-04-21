@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/13 15:48:09 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/18 13:49:14 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/21 02:54:52 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,8 @@ export type GameSlot = Slot1v1 | Slot2v2 | Slot3p | Slot4p;
 const userConnections = new Map<number, number>();
 
 const sockets = new Set<WsSocket>();
+
+const disconnectTimers = new Map<number, NodeJS.Timeout>();
 
 // etend le type FastifyInstance pour l'ajouter au wsHub
 declare module "fastify" {
@@ -127,9 +129,14 @@ function randomId(): string {
 function handleUserConnect(userId: number) {
 	const count = userConnections.get(userId) ?? 0;
 
+	const pendingTimer = disconnectTimers.get(userId);
+	if (pendingTimer) {
+		clearTimeout(pendingTimer);
+		disconnectTimers.delete(userId);
+	}
+
 	userConnections.set(userId, count + 1);
 
-	// première connexion uniquement
 	if (count === 0) {
 		console.log(`User ${userId} ONLINE`);
 
@@ -146,18 +153,34 @@ function handleUserDisconnect(userId: number) {
 	if (!count)
 		return;
 
-	if (count <= 1) {
-		userConnections.delete(userId);
-
-		console.log(`User ${userId} OFFLINE`);
-
-		queryExecute(
-			`UPDATE users SET is_online = 0 WHERE id = ?`,
-			[userId]
-		);
-	} else {
+	if (count > 1) {
 		userConnections.set(userId, count - 1);
+		return;
 	}
+
+	// plus socket active user
+	userConnections.delete(userId);
+
+	// pas plusieurs timers meme user
+	const oldTimer = disconnectTimers.get(userId);
+	if (oldTimer) {
+		clearTimeout(oldTimer);
+	}
+
+	const timer = setTimeout(() => {
+		if (!userConnections.has(userId)) {
+			console.log(`User ${userId} OFFLINE`);
+
+			queryExecute(
+				`UPDATE users SET is_online = 0 WHERE id = ?`,
+				[userId]
+			);
+		}
+
+		disconnectTimers.delete(userId);
+	}, 3000); // délai 3 secondes
+
+	disconnectTimers.set(userId, timer);
 }
 
 export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
@@ -295,8 +318,6 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 
 				ws._clientId = msg.clientId;
 				ws._username = msg.username;
-				// tester sans
-				console.log(`user id 2 ${ws._userId} : ${msg.userId}`);
 				
 				const slot = pickSlotForUser(game, mode, ws._userId);
 
@@ -441,10 +462,21 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 			}
 
 			if (msg.type === "leave_game") {
+				
+				const game = getMatchById(msg.gameId);
+
 				const room = `game:${msg.gameId}` as WsRoom;
 				hub.leave(ws, room);
-				console.log(`leave game ${ws._userId}, ${msg.userId}`);
-				gameManager.pauseGame(msg.gameId, "player_disconnect", msg.clientId, msg.userId);
+
+				if (game?.status === "pending") {
+					console.log(`leave game ${ws._userId}, ${msg.userId}`);
+					gameManager.unregisterPlayer(msg.gameId, msg.userId);
+				}
+				else {
+					console.log(`leave game ${ws._userId}, ${msg.userId}`);
+					gameManager.pauseGame(msg.gameId, "player_disconnect", msg.clientId, msg.userId);
+				}
+				
 				return;
 			}
 
@@ -456,7 +488,7 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 				
 				if (g.state.status === "running") {
 					g.loop.pause();
-					hub.broadcast(`game:${msg.gameId}`, { type: "game_paused", reason: "Escape", clientId: msg.clientId, userId: msg.userId });
+					hub.broadcast(`game:${msg.gameId}`, { type: "game_paused", reason: "Escape", clientId: msg.clientId, userName: msg.userName });
 				}
 				else if (g.state.status === "paused") {
 					g.loop.resume();

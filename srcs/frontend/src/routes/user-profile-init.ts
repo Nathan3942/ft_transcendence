@@ -46,6 +46,7 @@ async function fetchMatchHistory(userId: number): Promise<userMatchHistoryRespon
 
 export default async function initUserProfile(params?: RouteParams): Promise<void> {
 
+	console.log("Profile Page");
 	// Initialisation of document elements
 	const pfp = document.getElementById("profilePfp") as HTMLImageElement;
 	const username = document.getElementById("profileUsername") as HTMLHeadingElement;
@@ -74,26 +75,21 @@ export default async function initUserProfile(params?: RouteParams): Promise<voi
 
 	let userInfo: user;
 
-	if (id === getLocalId()) {
-		userInfo = {
-			id: id,
-			username: getItem<string>("username") ?? "null",
-			display_name: getItem<string>("display_name") ?? "null",
-			avatar_url: getLocalUserAvatar(),
-			is_online: getItem<boolean>("is_online") ?? false
-		};
-	} else {
-		try {
-			userInfo = await fetchUser(id);
-		} catch (e) {
-			console.error(`Error: Cannot get user information for id ${id}: ${e}`);
-			pfp.src = BASE_PFP;
-			username.innerText = t("profile.userNotFound");
-			userIdDisplay.append(`${id}`);
-			userStatsDiv.innerHTML = `<div class="col-span-4 pl-6">${t("profile.userNotFound")}.</div>`;
-			matchHistoryTable.innerHTML = `<div class="pl-6">${t("profile.userNotFound")}.</div>`;
-			return ;
-		}
+try {
+	userInfo = await fetchUser(id);
+
+	// optionnel : si c'est mon profil, on peut garder l'avatar local seulement en fallback
+	if (id === getLocalId() && !userInfo.avatar_url) {
+		userInfo.avatar_url = getLocalUserAvatar();
+	}
+	} catch (e) {
+		console.error(`Error: Cannot get user information for id ${id}: ${e}`);
+		pfp.src = BASE_PFP;
+		username.innerText = t("profile.userNotFound");
+		userIdDisplay.append(`${id}`);
+		userStatsDiv.innerHTML = `<div class="col-span-4 pl-6">${t("profile.userNotFound")}.</div>`;
+		matchHistoryTable.innerHTML = `<div class="pl-6">${t("profile.userNotFound")}.</div>`;
+		return;
 	}
 
 	username.innerText = userInfo.username;

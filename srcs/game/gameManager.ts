@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 15:45:30 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/18 12:58:35 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/21 02:59:17 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -211,7 +211,8 @@ export class GameManager {
 						const is4pLike = g.state.mode === "3p" || g.state.mode === "4p";
 						for (const slot of slots) {
 							const player = g.players[slot];
-							if (!player?.userId) continue;
+							if (!player?.userId)
+								continue;
 							let score: number;
 							if (is4pLike) {
 								score = g.state.paddles[slot]?.life ?? 0;
@@ -306,7 +307,7 @@ export class GameManager {
 		g.loop.start();
 	}
 
-	pauseGame(gameId: GameId, reason: string, clientId: string, userId: string) {
+	pauseGame(gameId: GameId, reason: string, clientId: string, userId: number) {
 		const g = this.games.get(gameId);
 		if (!g)
 			return;
@@ -352,6 +353,21 @@ export class GameManager {
 		const game = this.games.get(gameId)!;
 		game.players[slot] = { clientId, userId, username };
 		console.log(`\n\nUserid : ${userId}\n\n`);
+	}
+
+	unregisterPlayer(gameId: GameId, userId: number) {
+		const game = this.games.get(gameId);
+		if (!game)
+			return;
+
+		for (const slot of slotsForMode(game.state.mode)) {
+			if (game.players[slot]?.userId === userId) {
+				delete game.players[slot];
+				console.log(`Unregister user ${userId} from slot ${slot} in game ${gameId}`);
+				return;
+			}
+		}
+		return;
 	}
 
 	isCurentPlayer(gameId: GameId, slot: "left" | "right", userId: number): boolean {

@@ -145,7 +145,8 @@ const de: TranslationDict = {
 	common: {
 		back: "Zurück",
 		delete: "Löschen",
-		match: "Spiel"
+		match: "Spiel",
+		exit: "Ausfahrt"
 	},
 
 	profile: {
