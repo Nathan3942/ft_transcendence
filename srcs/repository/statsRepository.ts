@@ -10,7 +10,7 @@ export function getUserStats(userId: number): UserStats | null {
             u.username,
             COUNT(mp.id) as totalMatches,
             SUM(CASE WHEN m.winner_id = u.id THEN 1 ELSE 0 END) as wins,
-            SUM(CASE WHEN m.winner_id IS NOT NULL AND m.winner_id != u.id THEN 1 ELSE 0 END) as losses
+            SUM(CASE WHEN m.id IS NOT NULL AND (m.winner_id IS NULL OR m.winner_id != u.id) THEN 1 ELSE 0 END) as losses
         FROM users u
         LEFT JOIN match_player mp ON mp.user_id = u.id
         LEFT JOIN matches m ON mp.match_id = m.id AND m.status = 'finished'
@@ -74,7 +74,7 @@ export function getLeaderboard(limit: number = 20): LeaderboardEntry[] {
             u.username,
             COUNT(mp.id) as totalMatches,
             SUM(CASE WHEN m.winner_id = u.id THEN 1 ELSE 0 END) as wins,
-            SUM(CASE WHEN m.winner_id IS NOT NULL AND m.winner_id != u.id THEN 1 ELSE 0 END) as losses
+            SUM(CASE WHEN m.id IS NOT NULL AND (m.winner_id IS NULL OR m.winner_id != u.id) THEN 1 ELSE 0 END) as losses
         FROM users u
         JOIN match_player mp ON mp.user_id = u.id
         JOIN matches m ON mp.match_id = m.id AND m.status = 'finished'
