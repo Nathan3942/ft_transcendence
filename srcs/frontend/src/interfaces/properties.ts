@@ -78,10 +78,10 @@ export interface userMatchHistoryResponse {
 		matchId: number;
 		opponentId: number | null;
 		opponentName: string | null;
-		userScore: number;
-		opponentScore: number;
+		userScore: number | null;
+		opponentScore: number | null;
 		won: boolean;
-		finishedAt: string;
+		finishedAt: string | null;
 		mode: string | null;
 	}>;
 }

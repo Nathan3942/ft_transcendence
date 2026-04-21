@@ -121,7 +121,7 @@ try {
 			const lossCircle = document.getElementById("lossCircle")!;
 
 			const circumference = 251.2;
-			const winPercentage = userStats.winrate;
+			const winPercentage = userStats.winrate / 100;
 			const lossPercentage = 1 - winPercentage;
 			const winDegrees = winPercentage * 360;
 
@@ -195,7 +195,7 @@ try {
 
 		}
 		const recentForm = document.getElementById("recentForm")!;
-		const recent = matchHistoryArray.slice(-5).reverse();
+		const recent = matchHistoryArray.slice(0, 5);
 
 		if (recent.length === 0) {
 			recentForm.textContent = t("profile.noRecentMatches");
@@ -203,8 +203,8 @@ try {
 			recent.forEach(match => {
 				const badge = document.createElement("span");
 				badge.className = match.won
-					? "w-9 h-9 flex items-center justify-center rounded-full bg-green-500 text-white font-bold text-sm"
-					: "w-9 h-9 flex items-center justify-center rounded-full bg-red-500 text-white font-bold text-sm";
+					? "w-9 h-9 flex items-center justify-center rounded-sm bg-green-500 text-white font-bold text-sm"
+					: "w-9 h-9 flex items-center justify-center rounded-sm bg-red-500 text-white font-bold text-sm";
 				badge.textContent = match.won ? t("profile.win") : t("profile.loss");
 				badge.title = `${match.userScore} - ${match.opponentScore} vs ${match.opponentName ?? (match.mode === "ai" ? "AI" : "Guest")}`;
 				recentForm.appendChild(badge);
