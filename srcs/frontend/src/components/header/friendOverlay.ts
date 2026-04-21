@@ -470,13 +470,26 @@ export async function populateFriendOverlay(mode: number): Promise<void> {
 				li.className = liClasses;
 
 				li.innerHTML = `
-					<img src="${request.avatar_url}" alt="${request.display_name}" class="w-10 h-10" />
-					<div class="flex flex-col">
-						<p class="font-medium">${request.display_name}</p>
+					<div id="request-info-${request.requester_id}" class="flex flex-col">
 						<p class="font-sm">@${request.username}</p>
 					</div>
 					<p id="requestStatusBox-${request.requester_id}" class="text-xs text-red-500"></p>
 				`;
+
+				li.prepend(createButton({
+					href: `/user-profile/${request.requester_id}`,
+					icon: request.avatar_url,
+					iconAlt: request.display_name,
+					iconBClass: "w-10 h-10"
+				}));
+
+				const requestInfo = li.querySelector(`#request-info-${request.requester_id}`)!;
+				requestInfo.prepend(createButton({
+					buttonText: `${request.display_name}`,
+					href: `/user-profile/${request.requester_id}`,
+					id: `friend-button-${request.requester_id}`,
+					extraClasses: "hover:opacity-80"
+				}));
 
 				const buttons = document.createElement("div");
 				buttons.className = "ml-auto flex flex-row justify-between";
