@@ -23,7 +23,8 @@ const en: TranslationDict = {
 			errorUserNotFound: "Error: The requested user was not found",
 			errorUnexpected: "Error: Unexpected error: ",
 			removeFriend: "Remove friend",
-			errorNoLocalId: "Could not find your user ID, please refresh the page and try again"
+			errorNoLocalId: "Could not find your user ID, please refresh the page and try again",
+			alreadyFriends: "You are already friends with this user"
 		}
 	},
 
@@ -164,7 +165,9 @@ const en: TranslationDict = {
 		online: "Online",
 		offline: "Offline",
 		win: "Win",
+		win_s: "W",
 		loss: "Loss",
+		loss_s: "L",
 		userNotFound: "User not found",
 		profilePicture: "Profile picture",
 		errorNoIdStats: "Error: No user id found, cannot load statistics...",

@@ -23,7 +23,8 @@ const de: TranslationDict = {
 			errorUserNotFound: "Fehler: Der angeforderte Benutzer wurde nicht gefunden",
 			errorUnexpected: "Unerwarteter Fehler: ",
 			removeFriend: "Freund entfernen",
-			errorNoLocalId: "Ihre Benutzer-ID konnte nicht gefunden werden. Bitte laden Sie die Seite neu und versuchen Sie es erneut"
+			errorNoLocalId: "Ihre Benutzer-ID konnte nicht gefunden werden. Bitte laden Sie die Seite neu und versuchen Sie es erneut",
+			alreadyFriends: "Du bist bereits mit diesem Nutzer befreundet"
 		}
 	},
 
@@ -164,7 +165,9 @@ const de: TranslationDict = {
 		online: "Online",
 		offline: "Offline",
 		win: "Sieg",
+		win_s: "S",
 		loss: "Niederlage",
+		loss_s: "N",
 		userNotFound: "Benutzer nicht gefunden",
 		profilePicture: "Profilbild",
 		errorNoIdStats: "Fehler: Keine Benutzer-ID gefunden, Statistiken können nicht geladen werden...",

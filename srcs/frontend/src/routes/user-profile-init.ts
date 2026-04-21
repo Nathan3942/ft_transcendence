@@ -165,6 +165,7 @@ try {
 			const cell4 = newRow.insertCell(3); // Result
 			const cell5 = newRow.insertCell(4); // Date
 
+			cell1.classList.add("hidden", "md:table-cell");
 			cell1.textContent = match.matchId.toString();
 			if (match.opponentId) {
 				cell2.append(createButton({
@@ -205,7 +206,7 @@ try {
 				badge.className = match.won
 					? "w-9 h-9 flex items-center justify-center rounded-sm bg-green-500 text-white font-bold text-sm"
 					: "w-9 h-9 flex items-center justify-center rounded-sm bg-red-500 text-white font-bold text-sm";
-				badge.textContent = match.won ? t("profile.win") : t("profile.loss");
+				badge.textContent = match.won ? t("profile.win_s") : t("profile.loss_s");
 				badge.title = `${match.userScore} - ${match.opponentScore} vs ${match.opponentName ?? (match.mode === "ai" ? "AI" : "Guest")}`;
 				recentForm.appendChild(badge);
 			});
