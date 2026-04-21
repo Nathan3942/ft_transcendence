@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/09 15:18:28 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/18 13:41:10 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/21 20:34:27 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -173,7 +173,7 @@ function updateMyMatchButton(button: HTMLButtonElement, bracket: any) {
 	button.textContent = `${t("onlineTournament.goToMatch")} (#${myMatch.matchId})`;
 	button.onclick = () => {
 		setCurrentMatchId(String(myMatch.matchId));
-		getRouter().lazyLoad("/online-match");
+		getRouter().navigateTo("/online-match");
 	};
 }
 
@@ -306,7 +306,7 @@ export default function onlineTournament(): HTMLDivElement {
 
 		if (msg.type === "tournament_full") {
 			alert("Tournament full");
-			getRouter().lazyLoad("/game-online");
+			getRouter().navigateTo("/game-online");
 		}
 
 		if (msg.type === "tournament_finished") {
@@ -316,16 +316,16 @@ export default function onlineTournament(): HTMLDivElement {
 			tournamentFinished = true;
 			status.textContent = `Winner: ${msg.winnerName}`;
 			console.log("alerte\n\n");
-			alert(`🏆 Tournament finished!\nWinner: ${msg.winnerName}`);
+			alert(`Tournament finished!\nWinner: ${msg.winnerName}`);
 			cleanup();
-			getRouter().lazyLoad("/game-online");
+			getRouter().navigateTo("/game-online");
 			return;
 		}
 
 		if (msg.type === "tournament_deleted") {
 			alert("Tournament deleted");
 			cleanup();
-			getRouter().lazyLoad("/game-online");
+			getRouter().navigateTo("/game-online");
 			return;
 		}
 	};
