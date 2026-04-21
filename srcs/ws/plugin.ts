@@ -202,6 +202,70 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 
 	app.decorate("gameManager", gameManager);
 	app.decorate("tournamentManager", tournamentManager);
+
+
+	function leaveCurrentGame(ws: WsSocket) {
+		if (!ws._gameId || !ws._userId)
+			return;
+
+		const gameId = ws._gameId;
+		const userId = ws._userId;
+		const room = `game:${gameId}` as WsRoom;
+
+		hub.leave(ws, room);
+
+		const match = getMatchById(gameId);
+
+		if (match?.status === "pending") {
+			app.log.info({ gameId, userId }, "Pending match: unregister player");
+			gameManager.unregisterPlayer(gameId, userId);
+
+			const game = gameManager.get(gameId);
+			if (game) {
+				const mode = normalizeMode(game.state.mode);
+				const count = countRegisteredPlayers(game, mode);
+				const playerNeeded = slotsForMode(mode).length;
+
+				hub.broadcast(room, { type: "match_waiting", gameId, count, playerNeeded, mode });
+			}
+		}
+		else {
+			app.log.info({ gameId, userId }, "Running match: pause game");
+			gameManager.pauseGame(gameId, "player_disconnect", ws._clientId ?? "", userId);
+		}
+
+		ws._gameId = undefined;
+		ws._slot = undefined;
+	}
+
+
+	function leaveCurrentTournament(ws: WsSocket) {
+		
+		if (!ws._tournamentId || !ws._userId)
+			return;
+
+		const tournamentId = String(ws._tournamentId);
+		const userId = ws._userId;
+		const room = `tournament:${tournamentId}` as WsRoom;
+
+		hub.leave(ws, room);
+
+		const status = getTournamentStatus(tournamentId);
+
+		if (status === "open") {
+			
+			app.log.info({ tournamentId, userId }, "Pending tournament: unregister player");
+			tournamentManager.unregisterTournamentPlayer(tournamentId, userId);
+
+			const count = tournamentManager.countTournamentPlayers(tournamentId);
+			const needed = 8;
+
+			hub.broadcast(room, { type: "tournament_waiting", tournamentId, count, playerNeeded: needed, });
+		}
+
+		ws._tournamentId = undefined;
+	}
+
     /* 
     	endpoint websocket 
 		client co a l'url
@@ -233,6 +297,7 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 			ws.close(1008, "Invalid token");
 			return;
 		}
+		
 
 		const userid = payload.id;
 		ws._userId = userid;
@@ -387,7 +452,7 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 				}
 
 				// Si tournoi en cours, seuls les joueurs déjà enregistrés peuvent rejoin
-				if (status === "in_progress" && !tournamentManager.isTournamentPlayer(tournamentId, ws._clientId)) {
+				if (status === "in_progress" && !tournamentManager.isTournamentUser(tournamentId, ws._userId)) {
 					hub.send(ws, {
 						type: "tournament_full",
 						tournamentId,
@@ -396,7 +461,7 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 				}
 
 				// Enregistrer le joueur si pas encore connu
-				if (!tournamentManager.isTournamentPlayer(tournamentId, ws._clientId)) {
+				if (!tournamentManager.isTournamentUser(tournamentId, ws._userId)) {
 					tournamentManager.registerTournamentPlayer(
 						tournamentId,
 						ws._clientId,
@@ -462,21 +527,14 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 			}
 
 			if (msg.type === "leave_game") {
-				
-				const game = getMatchById(msg.gameId);
 
-				const room = `game:${msg.gameId}` as WsRoom;
-				hub.leave(ws, room);
+				leaveCurrentGame(ws);
+				return;
+			}
 
-				if (game?.status === "pending") {
-					console.log(`leave game ${ws._userId}, ${msg.userId}`);
-					gameManager.unregisterPlayer(msg.gameId, msg.userId);
-				}
-				else {
-					console.log(`leave game ${ws._userId}, ${msg.userId}`);
-					gameManager.pauseGame(msg.gameId, "player_disconnect", msg.clientId, msg.userId);
-				}
+			if (msg.type === "leave_tournament") {
 				
+				leaveCurrentTournament(ws);
 				return;
 			}
 
@@ -505,17 +563,21 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 		
 
 		ws.on("close", (code, reason) => {
+
+			leaveCurrentGame(ws);
+			leaveCurrentTournament(ws);
 			hub.leaveAll(ws);
 
 			if (ws._userId)
 				handleUserDisconnect(ws._userId);
+
 			sockets.delete(ws);
 
-			const gameId = ws._gameId;
-			const slot = ws._slot;
-
-			app.log.info({ wsId: ws._wsId, code, reason: reason.toString() }, "WS disconnected");
-		});	
+			app.log.info(
+				{ wsId: ws._wsId, code, reason: reason.toString() },
+				"WS disconnected"
+			);
+		});
 
 		ws.on("error", (err) => {
 			app.log.warn({ wsId: ws._wsId, err }, "WS error");

@@ -6,6 +6,28 @@ import { t } from "../../i18n/i18n";
 import { createButton } from "../button/button";
 import { getFriendRequests, populateFriendOverlay } from "./friendOverlay";
 
+
+// catch les clique sur les bouton avec href
+function bindHeaderNavigationCleanup(header: HTMLElement) {
+	header.addEventListener("click", (e) => {
+		const target = e.target as HTMLElement | null;
+		if (!target)
+			return;
+
+		const btn = target.closest("button[data-href]") as HTMLButtonElement | null;
+		if (!btn)
+			return;
+
+		const path = btn.getAttribute("data-href");
+		if (!path)
+			return;
+
+		window.dispatchEvent(new CustomEvent("navigate", {
+			detail: { path }
+		}));
+	});
+}
+
 export default function createHeader(): HTMLHeadElement {
 
 	const header = document.createElement("header");
@@ -14,6 +36,8 @@ export default function createHeader(): HTMLHeadElement {
 	
 	header.className = "min-h-15 h-15 flex justify-between align-middle items-center bg-gray-200 dark:bg-gray-800 header z-[200]";
 	
+	bindHeaderNavigationCleanup(header);
+
 	title.appendChild(createButton({
 		id: "home-button",
 		buttonText: "PONG",
@@ -45,7 +69,12 @@ export default function createHeader(): HTMLHeadElement {
 			}),
 			createButton({
 				id: "logout-button",
-				f: () => logoutHandler(),
+				f: () => {
+					window.dispatchEvent(new CustomEvent("navigate", {
+						detail: { path: "/" }
+					}));
+					logoutHandler();
+				},
 				buttonText: t("nav.logout"),
 				extraClasses: "hover:opacity-80"
 			})

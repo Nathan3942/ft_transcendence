@@ -286,7 +286,13 @@ export default function onlineMatch(): HTMLDivElement {
 		try {
 			const matchId = getCurrentMatchId();
 			if (matchId && ws.readyState === WebSocket.OPEN) {
-				ws.send(JSON.stringify({ type: "leave_game", gameId: matchId, clientId: getClientId(), userId: getItem<number>("userid"), userName: getUserName() }));
+				ws.send(JSON.stringify({
+					type: "leave_game",
+					gameId: matchId,
+					clientId: getClientId(),
+					userId: getItem<number>("userId"),
+					userName: getUserName()
+				}));
 			}
 		} catch {}
 

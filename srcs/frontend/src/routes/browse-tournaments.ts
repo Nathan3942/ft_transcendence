@@ -109,7 +109,7 @@ export default function createBrowseTournamentsPage(): HTMLDivElement {
 	const back = document.createElement("button");
 	back.className = "px-4 py-2 rounded bg-gray-300 dark:bg-gray-700";
 	back.textContent = t("common.back");
-	back.onclick = () => getRouter().lazyLoad("/choose-browse");
+	back.onclick = () => getRouter().navigateTo("/choose-browse");
 
 	header.append(h1, back);
 

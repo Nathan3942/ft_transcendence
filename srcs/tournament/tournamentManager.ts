@@ -87,6 +87,12 @@ export class TournamentMaganer {
 		return this.tournaments.get(tournamentId)?.players.some((p) => p.clientId === clientId) ?? false;
 	}
 
+	isTournamentUser(tournamentId: string, userId?: number): boolean {
+		if (typeof userId !== "number")
+			return false;
+		return this.tournaments.get(tournamentId)?.players.some((p) => p.userId === userId) ?? false;
+	}
+
 	countTournamentPlayers(tournamentId: string): number {
 		return this.tournaments.get(tournamentId)?.players.length ?? 0;
 	}
@@ -323,5 +329,17 @@ export class TournamentMaganer {
 		]
 			.map((m) => m.matchId)
 			.filter((id): id is number => typeof id === "number");
+	}
+
+	unregisterTournamentPlayer(tournamentId: string, userId: number) {
+		
+		const t = this.tournaments.get(tournamentId);
+		if (!t)
+			return;
+
+		const before = t.players.length;
+		t.players = t.players.filter((p) => p.userId !== userId);
+
+		console.log(`Tournament ${tournamentId}: unregister user ${userId} (${before} -> ${t.players.length})`);
 	}
 }

@@ -216,6 +216,19 @@ export default function onlineTournament(): HTMLDivElement {
 		closed = true;
 
 		try {
+			const tournamentId = getCurrentTournamentId();
+			if (tournamentId && ws.readyState === WebSocket.OPEN) {
+				ws.send(JSON.stringify({
+					type: "leave_tournament",
+					tournamentId,
+					clientId: getClientId(),
+					userId: getItem<number>("userId"),
+					username: getUsername()
+				}));
+			}
+		} catch {}
+
+		try {
 			ws.close(1000, "leave tournament");
 		} catch {}
 

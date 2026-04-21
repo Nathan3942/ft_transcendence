@@ -34,7 +34,7 @@ export default function chooseBrowse(): HTMLDivElement {
 			extraClasses:btnClasses,
 			buttonText: t("browse.browseMatch"),
 			f: () => {
-				getRouter().lazyLoad("/browse-games");
+				getRouter().navigateTo("/browse-games");
 			},
 			icon: "assets/images/list-svgrepo-com.svg",
 			iconAlt: "Icon",
@@ -47,7 +47,7 @@ export default function chooseBrowse(): HTMLDivElement {
 			buttonText: t("browse.browseTournaments"),
 			// href: "/browse-games",
 			f: async () => {
-				getRouter().lazyLoad("/browse-tournaments");
+				getRouter().navigateTo("/browse-tournaments");
 			},
 			icon: "assets/images/list-svgrepo-com.svg",
 			iconAlt: "Icon",

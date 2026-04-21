@@ -36,6 +36,7 @@ export type WsClientEvent =
 	| { type: "join_game"; gameId: string; clientId: string, userId: number, username: string, mode: ModeId }
 	| { type: "leave_game"; gameId: string, clientId: string, userId: number, userName: string }
 	| { type: "join_tournament", tournamentId: string, clientId: string, userId: number, username: string }
+	| { type: "leave_tournament", tournamentId: string }
 	| { type: "pause_toggle", gameId: string, clientId: string, userName: string }
 	| { type: "match_deleted", gameId: string, reason: string }
 	| { type: "tournament_deleted", tournamentId: string, reason: string }

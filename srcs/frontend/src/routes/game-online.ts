@@ -62,7 +62,7 @@ export default function createGameOnlinePage(): HTMLDivElement {
 			buttonText: t("gameOnline.browseGames"),
 			href: "/browse-games",
 			f: async () => {
-				getRouter().lazyLoad("/choose-browse");
+				getRouter().navigateTo("/choose-browse");
 			},
 			icon: "assets/images/list-svgrepo-com.svg",
 			iconAlt: "Icon",

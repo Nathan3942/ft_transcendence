@@ -42,10 +42,17 @@ function buildResponsiveConfig(w: number, h: number, baseConfig: Partial<PongCon
 
 		paddleSpeed: baseConfig.paddleSpeed ?? clamp(Math.round(shortSide * 0.9), 220, 700),
 
-		ballSpeed: baseConfig.ballSpeed ?? clamp(Math.round(shortSide * 0.6), 180, 500),
+		ballSpeed: baseConfig.ballSpeed ?? DEFAULT_CONFIG.ballSpeed,
 
 		winningScore: baseConfig.winningScore ?? DEFAULT_CONFIG.winningScore,
 	};
+}
+
+function getResponsiveBallSpeed(mode: ModeId, w: number, h: number): number {
+	const pf = computePlayfield(mode, w, h);
+
+	// la balle parcourt ~55% de la largeur du terrain par seconde
+	return pf.w * 0.50;
 }
 
 function drawScore(ctx: CanvasRenderingContext2D, state: PongState) {
@@ -371,7 +378,7 @@ export function startPong(
 	console.log("START PONG LOOP");
 
 	const cfg: PongConfig = buildResponsiveConfig(canvas.width, canvas.height, config);
-	
+	cfg.ballSpeed = config.ballSpeed ?? getResponsiveBallSpeed(opts.mode, canvas.width, canvas.height);
 	const state = creatInitialState(opts.mode, canvas.width, canvas.height, cfg);
 
 	//default input
@@ -432,6 +439,28 @@ export function startPong(
 			canvas.width = w;
 			canvas.height = h;
 
+			// ancien terrain
+			const oldPlayX = state.playX;
+			const oldPlayY = state.playY;
+			const oldPlayW = state.playW;
+			const oldPlayH = state.playH;
+
+			// ancienne position relative de la balle
+			const relBallX = oldPlayW > 0 ? (state.ballX - oldPlayX) / oldPlayW : 0.5;
+			const relBallY = oldPlayH > 0 ? (state.ballY - oldPlayY) / oldPlayH : 0.5;
+
+			// ancienne position relative des paddles
+			const paddleRel = state.paddles.map((p) => {
+				if (p.side === "LEFT" || p.side === "RIGHT") {
+					const oldRange = Math.max(1, oldPlayH - p.len);
+					return p.pos / oldRange;
+				}
+				else {
+					const oldRange = Math.max(1, oldPlayW - p.len);
+					return p.pos / oldRange;
+				}
+			});
+
 			state.width = w;
 			state.height = h;
 
@@ -442,23 +471,39 @@ export function startPong(
 			cfg.paddleHeight = nextCfg.paddleHeight;
 			cfg.paddleMargin = nextCfg.paddleMargin;
 			cfg.paddleSpeed = nextCfg.paddleSpeed;
-			cfg.ballSpeed = nextCfg.ballSpeed;
+			cfg.ballSpeed = config.ballSpeed ?? getResponsiveBallSpeed(state.mod, w, h);
 			cfg.winningScore = nextCfg.winningScore;
 
-			// playfield
+			// nouveau playfield
 			const pf = computePlayfield(state.mod, w, h);
 			state.playX = pf.x;
 			state.playY = pf.y;
 			state.playW = pf.w;
 			state.playH = pf.h;
 
-			// taille des paddles
-			for (const p of state.paddles) {
+			// repositionnement de la balle dans le nouveau terrain
+			state.ballX = state.playX + relBallX * state.playW;
+			state.ballY = state.playY + relBallY * state.playH;
+
+			// redimensionnement + repositionnement des paddles
+			for (let i = 0; i < state.paddles.length; i++) {
+				const p = state.paddles[i];
+				const rel = paddleRel[i];
+
 				p.thick = cfg.paddleWidth;
 				p.len = cfg.paddleHeight;
+
+				if (p.side === "LEFT" || p.side === "RIGHT") {
+					const newRange = Math.max(0, state.playH - p.len);
+					p.pos = rel * newRange;
+				}
+				else {
+					const newRange = Math.max(0, state.playW - p.len);
+					p.pos = rel * newRange;
+				}
 			}
 
-			// vitesse de la balle
+			// garder la direction de la balle mais adapter sa vitesse
 			const speed = Math.hypot(state.ballVX, state.ballVY);
 			if (speed > 0.0001) {
 				const ratio = cfg.ballSpeed / speed;
@@ -466,7 +511,7 @@ export function startPong(
 				state.ballVY *= ratio;
 			}
 
-			// clamp balle dans le terrain
+			// sécurité
 			state.ballX = clamp(
 				state.ballX,
 				state.playX + cfg.ballRadius,
@@ -478,11 +523,11 @@ export function startPong(
 				state.playY + state.playH - cfg.ballRadius
 			);
 
-			// clamp paddles dans le terrain
 			for (const p of state.paddles) {
 				if (p.side === "LEFT" || p.side === "RIGHT") {
 					p.pos = clamp(p.pos, 0, state.playH - p.len);
-				} else {
+				}
+				else {
 					p.pos = clamp(p.pos, 0, state.playW - p.len);
 				}
 			}
