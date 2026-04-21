@@ -23,7 +23,8 @@ const en: TranslationDict = {
 			errorUserNotFound: "Error: The requested user was not found",
 			errorUnexpected: "Error: Unexpected error: ",
 			removeFriend: "Remove friend",
-			errorNoLocalId: "Could not find your user ID, please refresh the page and try again"
+			errorNoLocalId: "Could not find your user ID, please refresh the page and try again",
+			alreadyFriends: "You are already friends with this user"
 		}
 	},
 

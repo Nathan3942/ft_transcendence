@@ -23,7 +23,8 @@ const fr: TranslationDict = {
 			errorUserNotFound: "Erreur : L'utilisateur demandé est introuvable",
 			errorUnexpected: "Erreur inattendue : ",
 			removeFriend: "Retirer l'ami",
-			errorNoLocalId: "Impossible de trouver votre identifiant, veuillez actualiser la page et réessayer"
+			errorNoLocalId: "Impossible de trouver votre identifiant, veuillez actualiser la page et réessayer",
+			alreadyFriends: "Vous êtes déjà ami avec cet utilisateur"
 		}
 	},
 

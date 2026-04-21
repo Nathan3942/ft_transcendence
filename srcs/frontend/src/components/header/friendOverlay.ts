@@ -298,6 +298,9 @@ function setupOverlayOnce() {
 			if (resp.status === 404) {
 				console.error("Error 404: The user you are trying to friend cannot be found");
 				statusMsg.innerText = t("nav.friends.notFound");
+			} else if (resp.status === 409) {
+				console.error("Error 409: You are already friends with this user");
+				statusMsg.innerText = t("nav.friends.alreadyFriends");
 			} else {
 				console.error(`Error: ${resp.status}: ${resp.statusText}`);
 				statusMsg.innerText = `${t("nav.friends.errorUnexpected")}${resp.status}: ${resp.statusText}`;
