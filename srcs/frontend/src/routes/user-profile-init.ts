@@ -165,6 +165,7 @@ try {
 			const cell4 = newRow.insertCell(3); // Result
 			const cell5 = newRow.insertCell(4); // Date
 
+			cell1.classList.add("hidden", "md:table-cell");
 			cell1.textContent = match.matchId.toString();
 			if (match.opponentId) {
 				cell2.append(createButton({

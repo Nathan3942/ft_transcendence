@@ -62,7 +62,6 @@ export default function initUSerSettings(): void {
 			throw `Unexpected error: ${resp.status}`;
 		}
 
-		// setItem("avatarUrl", await resp.text());
 		return await resp.text();
 	}
 
