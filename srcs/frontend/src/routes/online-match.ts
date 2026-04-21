@@ -6,11 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 17:15:35 by njeanbou          #+#    #+#             */
-<<<<<<< HEAD
-/*   Updated: 2026/04/20 00:00:00 by ChatGPT           ###   ########.fr       */
-=======
 /*   Updated: 2026/04/21 02:44:01 by njeanbou         ###   ########.fr       */
->>>>>>> 0fa00c9 (front local tournament and leave game)
 /*                                                                            */
 /* ************************************************************************** */
 
