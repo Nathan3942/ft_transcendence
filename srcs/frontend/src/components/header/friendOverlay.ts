@@ -395,7 +395,7 @@ export async function populateFriendOverlay(mode: number): Promise<void> {
 						class="absolute bottom-0 right-0 w-2 h-2 rounded-full ${friend.is_online ? "bg-green-500" : "bg-gray-400"}">
 					</span>
 					<div id="friend-info-${friend.id}" class="flex flex-col">
-						<p class="font-sm">@${friend.username}</p>
+						<p class="font-sm">uid: ${friend.id}</p>
 					</div>
 					<p id="friendStatusBox-${friend.id}" class="text-xs text-red-500"></p>
 				`;
@@ -403,13 +403,13 @@ export async function populateFriendOverlay(mode: number): Promise<void> {
 				li.prepend(createButton({
 					href: `/user-profile/${friend.id}`,
 					icon: friend.avatar_url,
-					iconAlt: friend.display_name,
+					iconAlt: friend.username,
 					iconBClass: "w-10 h-10"
 				}));
 
 				const friendInfo = li.querySelector(`#friend-info-${friend.id}`)!;
 				friendInfo.prepend(createButton({
-					buttonText: `${friend.display_name}`,
+					buttonText: `${friend.username}`,
 					href: `/user-profile/${friend.id}`,
 					id: `friend-button-${friend.id}`,
 					extraClasses: "hover:opacity-80"
@@ -471,7 +471,7 @@ export async function populateFriendOverlay(mode: number): Promise<void> {
 
 				li.innerHTML = `
 					<div id="request-info-${request.requester_id}" class="flex flex-col">
-						<p class="font-sm">@${request.username}</p>
+						<p class="font-sm">uid: ${request.requester_id}</p>
 					</div>
 					<p id="requestStatusBox-${request.requester_id}" class="text-xs text-red-500"></p>
 				`;
@@ -479,13 +479,13 @@ export async function populateFriendOverlay(mode: number): Promise<void> {
 				li.prepend(createButton({
 					href: `/user-profile/${request.requester_id}`,
 					icon: request.avatar_url,
-					iconAlt: request.display_name,
+					iconAlt: request.username,
 					iconBClass: "w-10 h-10"
 				}));
 
 				const requestInfo = li.querySelector(`#request-info-${request.requester_id}`)!;
 				requestInfo.prepend(createButton({
-					buttonText: `${request.display_name}`,
+					buttonText: `${request.username}`,
 					href: `/user-profile/${request.requester_id}`,
 					id: `friend-button-${request.requester_id}`,
 					extraClasses: "hover:opacity-80"
