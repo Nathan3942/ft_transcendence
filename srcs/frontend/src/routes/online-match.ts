@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 17:15:35 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/21 02:44:01 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/21 21:16:57 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,14 +18,6 @@ import { t } from "../i18n/i18n.js";
 import { getItem } from "../helpers/localStoragehelper.js";
 
 type Dir = -1 | 0 | 1;
-
-type TimedSnapshot = {
-	at: number;
-	state: RenderState;
-};
-
-const RENDER_DELAY_MS = 100;
-const MAX_SNAPSHOTS = 20;
 
 function randomId(): string {
 	const c: any = globalThis.crypto as any;
@@ -50,36 +42,6 @@ function getUserName(): string | null {
 
 function isHorizontal(slot: GameSlot) {
 	return slot === "top" || slot === "bottom";
-}
-
-function lerp(a: number, b: number, t: number) {
-	return a + (b - a) * t;
-}
-
-function cloneRenderState(state: RenderState): RenderState {
-	return structuredClone(state);
-}
-
-function interpolateRenderState(a: RenderState, b: RenderState, alpha: number): RenderState {
-	const out = cloneRenderState(b);
-
-	out.ballX = lerp(a.ballX, b.ballX, alpha);
-	out.ballY = lerp(a.ballY, b.ballY, alpha);
-
-	if (a.paddles && b.paddles && a.paddles.length === b.paddles.length) {
-		out.paddles = b.paddles.map((p, i) => {
-			const pa = a.paddles[i];
-			return {
-				...p,
-				x: lerp(pa.x, p.x, alpha),
-				y: lerp(pa.y, p.y, alpha),
-				w: p.w,
-				h: p.h,
-			};
-		});
-	}
-
-	return out;
 }
 
 function bindInput(ws: WebSocket, gameId: string, slot: GameSlot, canvas: HTMLCanvasElement) {
@@ -156,10 +118,10 @@ function bindInput(ws: WebSocket, gameId: string, slot: GameSlot, canvas: HTMLCa
 		if (e.touches.length === 0)
 			return 0;
 
-		const t = e.touches[0];
+		const tTouch = e.touches[0];
 		const rect = canvas.getBoundingClientRect();
-		const localX = t.clientX - rect.left;
-		const localY = t.clientY - rect.top;
+		const localX = tTouch.clientX - rect.left;
+		const localY = tTouch.clientY - rect.top;
 
 		const horiz = isHorizontal(slot);
 
@@ -248,7 +210,7 @@ export default function onlineMatch(): HTMLDivElement {
 	const ctx: CanvasRenderingContext2D = ctxMaybe;
 
 	let lastServerState: ServerGameState | null = null;
-	let snapshots: TimedSnapshot[] = [];
+	let lastRenderState: RenderState | null = null;
 
 	let mySlot: GameSlot = "left";
 	let unbindInput: null | (() => void) = null;
@@ -263,11 +225,8 @@ export default function onlineMatch(): HTMLDivElement {
 		canvas.width = Math.max(300, Math.floor(rect.width));
 		canvas.height = Math.max(300, Math.floor(rect.height));
 
-		if (lastServerState) {
-			const resized = toRenderState(lastServerState, canvas.width, canvas.height);
-			const now = performance.now();
-			snapshots = [{ at: now, state: resized }];
-		}
+		if (lastServerState)
+			lastRenderState = toRenderState(lastServerState, canvas.width, canvas.height);
 	});
 	ro.observe(gameContainer);
 
@@ -331,43 +290,12 @@ export default function onlineMatch(): HTMLDivElement {
 		}
 	});
 
-	function getBufferedRenderState(now: number): RenderState | null {
-		if (snapshots.length === 0)
-			return null;
-
-		if (snapshots.length === 1)
-			return snapshots[0].state;
-
-		const renderTime = now - RENDER_DELAY_MS;
-
-		while (snapshots.length >= 2 && snapshots[1].at <= renderTime) {
-			snapshots.shift();
-		}
-
-		if (snapshots.length === 1)
-			return snapshots[0].state;
-
-		const a = snapshots[0];
-		const b = snapshots[1];
-
-		if (renderTime <= a.at)
-			return a.state;
-
-		const span = b.at - a.at;
-		if (span <= 0)
-			return b.state;
-
-		const alpha = Math.max(0, Math.min(1, (renderTime - a.at) / span));
-		return interpolateRenderState(a.state, b.state, alpha);
-	}
-
-	function loop(now: number) {
+	function loop() {
 		if (!running)
 			return;
 
-		const renderState = getBufferedRenderState(now);
-		if (renderState)
-			drawPong(ctx, canvas, renderState, mySlot);
+		if (lastRenderState)
+			drawPong(ctx, canvas, lastRenderState, mySlot);
 
 		rafId = requestAnimationFrame(loop);
 	}
@@ -412,6 +340,7 @@ export default function onlineMatch(): HTMLDivElement {
 		}
 
 		if (msg.type === "game_paused") {
+			
 			if (msg.reason === "Escape")
 				status.textContent = `${t("onlineMatch.pausedBy")} ${msg.userName}`;
 			else
@@ -486,17 +415,7 @@ export default function onlineMatch(): HTMLDivElement {
 
 		if (msg.type === "game_tick" && msg.state) {
 			lastServerState = msg.state as ServerGameState;
-
-			const nextRender = toRenderState(lastServerState, canvas.width, canvas.height);
-
-			snapshots.push({
-				at: performance.now(),
-				state: nextRender,
-			});
-
-			if (snapshots.length > MAX_SNAPSHOTS)
-				snapshots.shift();
-
+			lastRenderState = toRenderState(lastServerState, canvas.width, canvas.height);
 			return;
 		}
 	};

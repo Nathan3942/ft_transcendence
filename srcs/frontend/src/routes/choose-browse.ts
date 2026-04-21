@@ -24,7 +24,7 @@ export default function chooseBrowse(): HTMLDivElement {
 	outer.append(createBackButton("bg-emerald-300 dark:bg-emerald-900", "/game-online"))
 
 	outer.className = "flex flex-col flex-1 justify-center items-end"
-	inner.className = "text-3xl w-9/12 h-2/3 flex flex-col items-end justify-evenly";
+	inner.className = "text-3xl w-9/12 flex flex-col items-end gap-4 py-4 md:h-2/3 md:justify-evenly md:gap-0 md:py-0";
 
 	
 	const btnClasses = "w-full h-full flex flex-row p-4"; 

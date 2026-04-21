@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/02/18 15:45:48 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/20 00:00:00 by ChatGPT           ###   ########.fr       */
+/*   Created: 2026/04/21 19:57:34 by njeanbou          #+#    #+#             */
+/*   Updated: 2026/04/21 20:09:26 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,11 +25,11 @@ const PADDLE_THICK = 10;
 const MARGIN = 10;
 const GAP = PADDLE_THICK + 8;
 
-// serveur ~30 Hz
+// simulation serveur ~60 Hz
 const TICK_MS = 16;
 
-// réseau ~20 Hz
-const NET_TICK_MS = 50;
+// envoi réseau ~30 Hz
+const NET_TICK_MS = 33;
 
 const WINNING_SCORE = 1;
 
@@ -66,9 +66,8 @@ function setBallSpeed(ball: { vx: number; vy: number }, targetSpeed: number) {
 
 export class GameLoop {
 	private timer: NodeJS.Timeout | null = null;
-
+	private nextTickAt = 0;
 	private inputs: Partial<Record<GameSlot, PaddleInput>> = {};
-
 	private broadcastAccMs = 0;
 
 	constructor(
@@ -91,23 +90,26 @@ export class GameLoop {
 		this.state.status = "running";
 		this.state.lastTickMs = Date.now();
 		this.broadcastAccMs = 0;
+		this.nextTickAt = Date.now() + TICK_MS;
 
 		for (const s of slotsForMode(this.state.mode)) {
 			if (!this.inputs[s])
 				this.inputs[s] = { dir: 0, ts: 0, esc: false };
 		}
 
-		this.timer = setInterval(() => this.step(), TICK_MS);
+		this.onTick(this.state);
+		this.scheduleNextTick();
 	}
 
 	pause() {
 		if (!this.timer)
 			return;
 
-		clearInterval(this.timer);
+		clearTimeout(this.timer);
 		this.timer = null;
 		this.state.status = "paused";
 		this.broadcastAccMs = 0;
+		this.onTick(this.state);
 	}
 
 	resume() {
@@ -120,18 +122,31 @@ export class GameLoop {
 		this.state.countdownAcc = 0;
 		this.state.lastTickMs = Date.now();
 		this.broadcastAccMs = 0;
+		this.nextTickAt = Date.now() + TICK_MS;
 
-		this.timer = setInterval(() => this.step(), TICK_MS);
+		this.onTick(this.state);
+		this.scheduleNextTick();
 	}
 
 	stop() {
 		if (!this.timer)
 			return;
 
-		clearInterval(this.timer);
+		clearTimeout(this.timer);
 		this.timer = null;
 		this.state.status = "ended";
 		this.broadcastAccMs = 0;
+		this.onTick(this.state);
+	}
+
+	private scheduleNextTick() {
+		if (this.timer)
+			clearTimeout(this.timer);
+
+		const delay = Math.max(0, this.nextTickAt - Date.now());
+		this.timer = setTimeout(() => {
+			this.step();
+		}, delay);
 	}
 
 	private emitTick(dt: number, force = false) {
@@ -142,18 +157,21 @@ export class GameLoop {
 		}
 
 		this.broadcastAccMs += dt * 1000;
-		if (this.broadcastAccMs >= NET_TICK_MS) {
-			this.broadcastAccMs = 0;
+
+		while (this.broadcastAccMs >= NET_TICK_MS) {
+			this.broadcastAccMs -= NET_TICK_MS;
 			this.onTick(this.state);
 		}
 	}
 
 	private step() {
+		if (!this.timer)
+			return;
+
 		const now = Date.now();
 		let dt = (now - this.state.lastTickMs) / 1000;
 
-		// évite les gros bonds si la VM freeze un moment
-		dt = Math.min(dt, 0.05);
+		dt = Math.max(0, Math.min(dt, 0.033));
 		this.state.lastTickMs = now;
 
 		if (this.state.phase === "COUNTDOWN") {
@@ -161,16 +179,19 @@ export class GameLoop {
 			if (this.state.countdownAcc >= 1) {
 				this.state.countdownAcc -= 1;
 				this.state.countdown--;
-				if (this.state.countdown <= 0) {
+				if (this.state.countdown <= 0)
 					this.state.phase = "RUNNING";
-				}
 			}
 			this.emitTick(dt);
+			this.nextTickAt += TICK_MS;
+			this.scheduleNextTick();
 			return;
 		}
 
 		if (this.state.phase !== "RUNNING") {
 			this.emitTick(dt);
+			this.nextTickAt += TICK_MS;
+			this.scheduleNextTick();
 			return;
 		}
 
@@ -217,6 +238,8 @@ export class GameLoop {
 			this.applyScore4P();
 
 		this.emitTick(dt);
+		this.nextTickAt += TICK_MS;
+		this.scheduleNextTick();
 	}
 
 	private resetBall() {
@@ -255,7 +278,6 @@ export class GameLoop {
 		this.state.ball.vx = vx;
 		this.state.ball.vy = vy;
 
-		// on force un tick quand l'état change visiblement
 		this.emitTick(0, true);
 	}
 
@@ -269,9 +291,9 @@ export class GameLoop {
 				continue;
 
 			const life = p.life ?? 0;
-			if (life > 0) {
+			if (life > 0)
 				p.activate = true;
-			} else {
+			else {
 				p.activate = false;
 				standing--;
 			}
@@ -402,15 +424,10 @@ export class GameLoop {
 			paddle.vel = input.dir * PADDLE_SPEED;
 			paddle.pos += paddle.vel * dt;
 
-			if (paddle.axis === "y") {
-				const min = 0;
-				const max = playH - PADDLE_LEN;
-				paddle.pos = clamp(paddle.pos, min, max);
-			} else {
-				const min = 0;
-				const max = playW - PADDLE_LEN;
-				paddle.pos = clamp(paddle.pos, min, max);
-			}
+			if (paddle.axis === "y")
+				paddle.pos = clamp(paddle.pos, 0, playH - PADDLE_LEN);
+			else
+				paddle.pos = clamp(paddle.pos, 0, playW - PADDLE_LEN);
 		}
 	}
 
@@ -419,32 +436,22 @@ export class GameLoop {
 		if (!p || p.activate === false)
 			return null;
 
-		if (slot === "left") {
+		if (slot === "left")
 			return { x: playX + MARGIN, y: playY + p.pos, w: PADDLE_THICK, h: PADDLE_LEN };
-		}
-		if (slot === "right") {
+		if (slot === "right")
 			return { x: playX + playW - MARGIN - PADDLE_THICK, y: playY + p.pos, w: PADDLE_THICK, h: PADDLE_LEN };
-		}
-
-		if (slot === "left1") {
+		if (slot === "left1")
 			return { x: playX + MARGIN + 0 * GAP, y: playY + p.pos, w: PADDLE_THICK, h: PADDLE_LEN };
-		}
-		if (slot === "left2") {
+		if (slot === "left2")
 			return { x: playX + MARGIN + 1 * GAP, y: playY + p.pos, w: PADDLE_THICK, h: PADDLE_LEN };
-		}
-		if (slot === "right1") {
+		if (slot === "right1")
 			return { x: playX + playW - MARGIN - PADDLE_THICK - 0 * GAP, y: playY + p.pos, w: PADDLE_THICK, h: PADDLE_LEN };
-		}
-		if (slot === "right2") {
+		if (slot === "right2")
 			return { x: playX + playW - MARGIN - PADDLE_THICK - 1 * GAP, y: playY + p.pos, w: PADDLE_THICK, h: PADDLE_LEN };
-		}
-
-		if (slot === "top") {
+		if (slot === "top")
 			return { x: playX + p.pos, y: playY + MARGIN, w: PADDLE_LEN, h: PADDLE_THICK };
-		}
-		if (slot === "bottom") {
+		if (slot === "bottom")
 			return { x: playX + p.pos, y: playY + playH - MARGIN - PADDLE_THICK, w: PADDLE_LEN, h: PADDLE_THICK };
-		}
 
 		return null;
 	}
