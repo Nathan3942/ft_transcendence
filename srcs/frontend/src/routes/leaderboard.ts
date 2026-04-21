@@ -86,9 +86,17 @@ function createLeaderboardCells(users: userInfo[]): HTMLTableSectionElement {
 				cell.className = "bg-white hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800 text-gray-800 dark:text-white";
 		}
 
+		const usernameTd = document.createElement("td");
+		usernameTd.className = "py-2 px-4 border-b border-gray-200 dark:border-gray-700";
+		usernameTd.append(createButton({
+			buttonText: user?.username || "Undefined",
+			href: `/user-profile/${user?.userId}`,
+			extraClasses: "hover:opacity-80 transition-colors duration-150",
+		}));
+
 		cell.append(
 			createTdElement(i + 1),
-			createTdElement(user?.username || "Undefined"),
+			usernameTd,
 			createTdElement(user?.wins || NaN),
 			createTdElement(user?.losses || NaN),
 			createTdElement(user?.totalMatches || NaN),
