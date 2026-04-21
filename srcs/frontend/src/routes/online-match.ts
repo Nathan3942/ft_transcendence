@@ -113,11 +113,12 @@ function bindInput(ws: WebSocket, gameId: string, slot: GameSlot, canvas: HTMLCa
 			return;
 
 		if (e.key === "Escape") {
+			console.log(`User name ${getUserName()}`);
 			ws.send(JSON.stringify({
 				type: "pause_toggle",
 				gameId,
 				clientId: getClientId(),
-				userId: getUserName()
+				userName: getUserName()
 			}));
 			return;
 		}
@@ -412,9 +413,9 @@ export default function onlineMatch(): HTMLDivElement {
 
 		if (msg.type === "game_paused") {
 			if (msg.reason === "Escape")
-				status.textContent = `${t("onlineMatch.pausedBy")} ${msg.userId}`;
+				status.textContent = `${t("onlineMatch.pausedBy")} ${msg.userName}`;
 			else
-				status.textContent = `${t("onlineMatch.pausedPlayer")} ${msg.userId} ${t("onlineMatch.playerDisconnected")}`;
+				status.textContent = `${t("onlineMatch.pausedPlayer")} ${msg.userName} ${t("onlineMatch.playerDisconnected")}`;
 			return;
 		}
 

@@ -231,7 +231,7 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 		}
 		else {
 			app.log.info({ gameId, userId }, "Running match: pause game");
-			gameManager.pauseGame(gameId, "player_disconnect", ws._clientId ?? "", userId);
+			gameManager.pauseGame(gameId, "player_disconnect", ws._clientId ?? "", userId, ws._username ?? "");
 		}
 
 		ws._gameId = undefined;
@@ -533,7 +533,7 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 			}
 
 			if (msg.type === "leave_tournament") {
-				
+
 				leaveCurrentTournament(ws);
 				return;
 			}

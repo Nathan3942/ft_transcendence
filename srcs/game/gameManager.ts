@@ -307,13 +307,13 @@ export class GameManager {
 		g.loop.start();
 	}
 
-	pauseGame(gameId: GameId, reason: string, clientId: string, userId: number) {
+	pauseGame(gameId: GameId, reason: string, clientId: string, userId: number, userName: string) {
 		const g = this.games.get(gameId);
 		if (!g)
 			return;
 		g.loop.pause();
 		console.log(`Pause: reason ${userId}, ${clientId}`);
-		this.broadcastToRoom(`game:${gameId}`, { type: "game_paused", reason,  clientId, userId });
+		this.broadcastToRoom(`game:${gameId}`, { type: "game_paused", reason,  clientId, userName });
 		this.broadcastToRoom(`game:${gameId}`, { type: "game_tick", state: g.state });
 	}
 
