@@ -29,7 +29,7 @@ export default function chooseOnlineMode(): HTMLDivElement {
 	const inner = document.createElement("div");
 
 	outer.className = "flex flex-col flex-1 justify-center items-end"
-	inner.className = "text-3xl w-9/12 h-2/3 flex flex-col items-end justify-evenly";
+	inner.className = "text-3xl w-9/12 flex flex-col items-end gap-4 py-4 md:h-2/3 md:justify-evenly md:gap-0 md:py-0";
 
 	outer.append(createSoftBackLoad("bg-green-300 dark:bg-green-800", "/game-online"))
 
