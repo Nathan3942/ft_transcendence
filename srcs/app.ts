@@ -13,46 +13,32 @@ import { env, isDev, isProd } from './config/env'
 import { wsPlugin } from './ws'
 
 
-
-
-/**
- * creation et config du server fastify
- * plugind db error handler global et routes
- * @returns l'instance fastify prete
- */
 export async function buildApp(): Promise<FastifyInstance> {
-  //creation server avec logger pour affichage console
   const app = Fastify({
-    logger: true
+    logger: true //affichage console
   })
 
-  // Cors setup
   await app.register(cors, {
     origin: isDev ? true : env.FRONTEND_URL,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     credentials: true
   })
 
-  // Cookie — parsing des cookies (requis pour HttpOnly JWT)
   await app.register(cookie)
 
-  // JWT — disponible via server.jwt.sign() et request.jwtVerify()
   await app.register(jwt, {
     secret: env.JWT_SECRET,
     cookie: { cookieName: 'token', signed: false }
   })
 
-  // Multipart — parsing fichiers uploadés (avatars)
   await app.register(multipart, { limits: { fileSize: 5 * 1024 * 1024 } }) // 5 MB max
 
-  // Static — sert les fichiers uploadés depuis /uploads
   await app.register(staticFiles, {
     root: path.join(process.cwd(), 'uploads'),
     prefix: '/uploads/',
     decorateReply: false
   })
 
-  // Static — sert le frontend buildé en production
   if (isProd) {
     await app.register(staticFiles, {
       root: path.join(process.cwd(), 'srcs/frontend/dist'),
@@ -60,7 +46,6 @@ export async function buildApp(): Promise<FastifyInstance> {
     })
   }
 
-  //rate limit pour eviter trop de request
   await registerRateLimit(app)
 
   initDatabase()

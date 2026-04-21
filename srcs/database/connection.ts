@@ -1,23 +1,22 @@
-import Database from 'better-sqlite3' //importe fonctions et classe du package
+import Database from 'better-sqlite3'
 import { config } from '../config/env'
-import { existsSync, mkdirSync } from 'fs'//fs = filesystem natif node.js
+import { existsSync, mkdirSync } from 'fs'//filesystem
 import { dirname } from 'path' //path natif node.js
 
-//variable mutable / 1 seule connexion reutilisable singleton
+
 let db: Database.Database | null = null
 
 export const initDatabase = (): Database.Database => {
   if (db) {
     return db
   }
-    //creer un dossier pour la db
     const folder = dirname(config.database.path)
-  if (!existsSync(folder)){ //check si dossier existe deja
+  if (!existsSync(folder)){
     mkdirSync(folder, { recursive: true })
   }
-    db = new Database(config.database.path) //constructeur
-    db.pragma('foreign_keys = ON') //bloque les insertion de fausse data liasons des tables db
-    db.pragma("journal_mode = WAL") //permet plusieurs requetes db simultanées les ecritures db vont dans fichier temp .wal ensuite fusion
+    db = new Database(config.database.path)
+    db.pragma('foreign_keys = ON') //liaisons tables db
+    db.pragma("journal_mode = WAL") //lecture pendant ecriture ok
     return db
 }
 

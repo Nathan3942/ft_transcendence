@@ -1,10 +1,3 @@
-/* ce fichier permet de creer les table dans la database
-- tournaments : stocke les tournois
-- tournament_players : qui participe à quel tournoi
-- matches : les matchs d'un tournoi
-- match_player : quels joueurs participent à un match et leur score
-*/
-
 import { getDatabase } from './connection'
 
 export const initTables = (): void => {
@@ -24,7 +17,7 @@ export const initTables = (): void => {
     );
   `)
 
-  // friends (demandes d'amis et statut)
+  // friends
   db.exec(`
     CREATE TABLE IF NOT EXISTS friends (
       id           INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -38,7 +31,8 @@ export const initTables = (): void => {
       UNIQUE (requester_id, addressee_id)
     );
   `)
-  // Table des tournois
+  
+  //tournaments
   db.exec(`
     CREATE TABLE IF NOT EXISTS tournaments (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -50,7 +44,7 @@ export const initTables = (): void => {
     );
   `)
 
-  // Table de liaison entre tournois et joueurs (inscriptions)
+  // liaison tournois joueurs
   db.exec(`
     CREATE TABLE IF NOT EXISTS tournament_players (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -61,9 +55,9 @@ export const initTables = (): void => {
       FOREIGN KEY (user_id) REFERENCES users(id),
       UNIQUE (tournament_id, user_id)
     );
-  `)//UNIQUE empeche d'inscrire plusieurs fois meme joueur
+  `)
 
-  // Table des matchs
+  // matchs
   db.exec(`
     CREATE TABLE IF NOT EXISTS matches (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -81,7 +75,7 @@ export const initTables = (): void => {
     );
   `)
 
-  // Table de liaison entre matchs et joueurs (participants à un match)
+  // liaisons matchs et joueur qui participent au match
   db.exec(`
     CREATE TABLE IF NOT EXISTS match_player (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

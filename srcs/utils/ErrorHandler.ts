@@ -1,26 +1,16 @@
-/**
- * Error Handler
- * Centralized error handling for Fastify
- * Fastify has a default error handler that catches all errors automatically
- * and returns status code 500 with a generic message.
- * This custom handler provides better error responses and production safety.
- */
+/*fastify a un error handler de base qui renvoie 500 quand il catch une erreur, on peut le custom
+mon handler custom: en mode dev details / mode prod pas de details*/
 
 import type { FastifyRequest, FastifyReply } from 'fastify'
 import { BaseError } from './appErrors'
 import { env, isProd } from '../config/env'
 
-/**
- * Custom error handler for Fastify
- * - In development: returns detailed error information for debugging
- * - In production: returns generic error messages to avoid leaking implementation details
- */
 export function errorHandler(
     error: unknown,
     request: FastifyRequest,
     reply: FastifyReply
 ) {
-    // Log all errors for monitoring
+    // Loguer les erreurs
     request.log.error({
         error,
         url: request.url,
@@ -29,9 +19,7 @@ export function errorHandler(
         query: request.query
     }, 'Error occurred')
 
-    // Handle known application errors (BaseError instances)
-    // Always pass through error.message — these are intentional user-facing messages
-    // (e.g. "User not found"), not implementation details.
+    // gerer les erreurs connues (instances de baseError)
     if (error instanceof BaseError) {
         return reply.status(error.statusCode).send({
             error: error.name,
@@ -65,8 +53,8 @@ export function errorHandler(
     }
 
 
-    // Handle HTTP errors from Fastify plugins (ex: @fastify/jwt)
-    // Ces erreurs ont un statusCode mais ne sont pas des BaseError
+    // gerer erreur http des plugins fastify ex:jwt
+    // ont des statuscode
     if (error instanceof Error && statusCode) {
         return reply.status(statusCode).send({
             error: error.name || "HttpError",
@@ -75,20 +63,18 @@ export function errorHandler(
         })
     }
 
-    // Handle unexpected errors (500 Internal Server Error)
-    // In production, NEVER expose internal error details
+    // gerer erreur innatendue interne
     return reply.status(500).send({
         error: 'InternalServerError',
         message: isProd
-            ? 'An unexpected error occurred. Please try again later.'
+            ? 'An unexpected error occurred. Please try again later.' //pas details en prod
             : (error instanceof Error ? error.message : 'Unexpected error'),
         details: []
     })
 }
 
 /**
- * Generic production-safe error messages based on status code
- * Never exposes implementation details or stack traces
+pour prod message generiques leak pas d'infos
  */
 function getProductionMessage(statusCode: number): string {
     switch (statusCode) {
@@ -112,8 +98,7 @@ function getProductionMessage(statusCode: number): string {
 }
 
 /**
- * Handler for 404 Not Found errors
- * Triggered when no route matches the request
+handler pour les 404 not found
  */
 export function notFoundHandler(request: FastifyRequest, reply: FastifyReply) {
     return reply.status(404).send({

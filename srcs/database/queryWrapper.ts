@@ -1,5 +1,5 @@
-/*ce fichier contient un queryWrapper qui permet de centraliser toutes les
-requetes SQL faite a la database (evite injections sql)*/
+/*centraliser les requetes sql */
+
 import {getDatabase} from "./connection"
 
 export function queryOne<T>(sql: string, params: unknown[] = []): T | undefined {
