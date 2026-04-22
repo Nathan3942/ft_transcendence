@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/21 19:57:34 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/21 20:09:26 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/22 15:54:35 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ const TICK_MS = 16;
 // envoi réseau ~30 Hz
 const NET_TICK_MS = 33;
 
-const WINNING_SCORE = 1;
+const WINNING_SCORE = 5;
 
 function clamp(v: number, min: number, max: number) {
 	return Math.max(min, Math.min(max, v));

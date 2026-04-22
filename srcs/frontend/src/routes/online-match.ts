@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 17:15:35 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/22 15:29:25 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/22 16:05:43 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,8 @@ import { t } from "../i18n/i18n.js";
 import { getItem } from "../helpers/localStoragehelper.js";
 
 type Dir = -1 | 0 | 1;
+
+let gameEnded = false;
 
 function randomId(): string {
 	const c: any = globalThis.crypto as any;
@@ -244,7 +246,7 @@ export default function onlineMatch(): HTMLDivElement {
 
 		try {
 			const matchId = getCurrentMatchId();
-			if (matchId && ws.readyState === WebSocket.OPEN) {
+			if (!gameEnded && matchId && ws.readyState === WebSocket.OPEN) {
 				ws.send(JSON.stringify({
 					type: "leave_game",
 					gameId: matchId,
@@ -368,6 +370,8 @@ export default function onlineMatch(): HTMLDivElement {
 		}
 
 		if (msg.type === "game_over") {
+			
+			gameEnded = true;
 			const winner = msg.winnerName ?? msg.winnerUserId ?? msg.winnerSlot;
 
 			status.textContent = `${t("onlineMatch.winner")}: ${winner}`;

@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/13 15:48:09 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/22 15:40:01 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/22 16:07:17 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,7 @@ const userConnections = new Map<number, number>();
 const sockets = new Set<WsSocket>();
 
 const disconnectTimers = new Map<number, NodeJS.Timeout>();
+
 
 // etend le type FastifyInstance pour l'ajouter au wsHub
 declare module "fastify" {
@@ -215,11 +216,13 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 
 		const match = getMatchById(gameId);
 
+		const game = gameManager.get(gameId);
+
 		if (match?.status === "pending") {
 			app.log.info({ gameId, userId }, "Pending match: unregister player");
 			gameManager.unregisterPlayer(gameId, userId);
 
-			const game = gameManager.get(gameId);
+			
 			if (game) {
 				const mode = normalizeMode(game.state.mode);
 				const count = countRegisteredPlayers(game, mode);
@@ -227,6 +230,9 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 
 				hub.broadcast(room, { type: "match_waiting", gameId, count, playerNeeded, mode });
 			}
+		}
+		else if (match?.status === "finished" || game?.state.status === "ended") {
+			app.log.info({ gameId, userId }, "Finished match: simple leave");
 		}
 		else {
 			app.log.info({ gameId, userId }, "Running match: pause game");
