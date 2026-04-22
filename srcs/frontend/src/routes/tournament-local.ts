@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 16:32:13 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/22 14:55:55 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/22 15:08:24 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -655,78 +655,85 @@ function playNextMatch(inner: HTMLDivElement) {
 export default function createLocalTournament(): HTMLDivElement {
 	const outer = document.createElement("div");
 	const inner = document.createElement("div");
-	const scrollArea = document.createElement("div");
 
-	outer.className = `
-		w-full h-full min-h-0
-		flex flex-col items-center
-		px-3 py-3 sm:px-4 md:px-6
-	`;
+	if (gTournament)
+		buildBracket(inner);
+	else {
+		const scrollArea = document.createElement("div");
 
-	inner.className = `
-		w-full max-w-7xl
-		flex flex-1 min-h-0 flex-col
-		items-center
-	`;
+		outer.className = `
+			w-full h-full min-h-0
+			flex flex-col items-center
+			px-3 py-3 sm:px-4 md:px-6
+		`;
 
-	scrollArea.className = `
-		w-full flex-1 min-h-0
-		overflow-y-auto overflow-x-hidden
-		flex flex-col items-center
-		gap-4 sm:gap-6
-		pr-1
-	`;
+		inner.className = `
+			w-full max-w-7xl
+			flex flex-1 min-h-0 flex-col
+			items-center
+		`;
 
-	const formBlock = document.createElement("div");
-	formBlock.className = `
-		w-full max-w-2xl
-		flex flex-col gap-3
-		p-4 sm:p-6
-		bg-blue-300 dark:bg-blue-900
-		rounded-2xl
-		shrink-0
-	`;
+		scrollArea.className = `
+			w-full flex-1 min-h-0
+			overflow-y-auto overflow-x-hidden
+			flex flex-col items-center
+			gap-4 sm:gap-6
+			pr-1
+		`;
 
-	const title = document.createElement("h2");
-	title.textContent = t("tournamentLocal.enterPlayerNames");
-	title.className = "text-white text-xl sm:text-2xl font-semibold self-start mb-1 sm:mb-2";
-	formBlock.appendChild(title);
+		const formBlock = document.createElement("div");
+		formBlock.className = `
+			w-full max-w-2xl
+			flex flex-col gap-3
+			p-4 sm:p-6
+			bg-blue-300 dark:bg-blue-900
+			rounded-2xl
+			shrink-0
+		`;
 
-	for (let i = 1; i <= 8; i++) {
-		formBlock.appendChild(
-			createTextInput(`player-${i}`, `${t("tournamentLocal.playerNamePlaceholder")} ${i}`)
+		const title = document.createElement("h2");
+		title.textContent = t("tournamentLocal.enterPlayerNames");
+		title.className = "text-white text-xl sm:text-2xl font-semibold self-start mb-1 sm:mb-2";
+		formBlock.appendChild(title);
+
+		for (let i = 1; i <= 8; i++) {
+			formBlock.appendChild(
+				createTextInput(`player-${i}`, `${t("tournamentLocal.playerNamePlaceholder")} ${i}`)
+			);
+		}
+
+		const btnClasses = `
+			w-full
+			flex flex-row
+			p-3 sm:p-4
+			justify-center items-center
+			rounded-xl
+			text-sm sm:text-base
+		`;
+
+		const button = makeButtonBlock(
+			"bg-blue-300 dark:bg-blue-900",
+			createButton({
+				id: "continue",
+				extraClasses: btnClasses,
+				buttonText: t("tournamentLocal.continue"),
+				icon: "assets/images/enter-svgrepo-com.svg?raw",
+				f: () => buildBracket(inner),
+				iconAlt: "Icon",
+				iconBClass: "h-8 sm:h-10 pr-2 sm:pr-3 dark:invert",
+			})
 		);
+
+		(button as HTMLElement).style.width = "100%";
+		(button as HTMLElement).style.maxWidth = "24rem";
+		(button as HTMLElement).classList.add("shrink-0");
+
+		scrollArea.appendChild(formBlock);
+		scrollArea.appendChild(button);
+		inner.appendChild(scrollArea);
 	}
 
-	const btnClasses = `
-		w-full
-		flex flex-row
-		p-3 sm:p-4
-		justify-center items-center
-		rounded-xl
-		text-sm sm:text-base
-	`;
-
-	const button = makeButtonBlock(
-		"bg-blue-300 dark:bg-blue-900",
-		createButton({
-			id: "continue",
-			extraClasses: btnClasses,
-			buttonText: t("tournamentLocal.continue"),
-			icon: "assets/images/enter-svgrepo-com.svg?raw",
-			f: () => buildBracket(inner),
-			iconAlt: "Icon",
-			iconBClass: "h-8 sm:h-10 pr-2 sm:pr-3 dark:invert",
-		})
-	);
-
-	(button as HTMLElement).style.width = "100%";
-	(button as HTMLElement).style.maxWidth = "24rem";
-	(button as HTMLElement).classList.add("shrink-0");
-
-	scrollArea.appendChild(formBlock);
-	scrollArea.appendChild(button);
-	inner.appendChild(scrollArea);
+	
 	outer.appendChild(inner);
 
 	return outer;
