@@ -195,6 +195,7 @@ export class GameManager {
 						return;
 
 					g.finished = true;
+					g.state.status = "ended";
 
 					const winnerSlot = evt.winnerSlot as GameSlot;
 					const winnerUserId = this.games.get(id)?.players[winnerSlot]?.userId ?? null;
