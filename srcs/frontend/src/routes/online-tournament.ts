@@ -298,13 +298,14 @@ export default function onlineTournament(): HTMLDivElement {
 		}
 
 		if (msg.type === "tournament_started") {
-			status.textContent = `Tournament #${msg.tournamentId}: ${t("onlineTournament.started")}! ClientId: ${getClientId()}`;
+			status.textContent = `Tournament #${msg.tournamentId}: ${t("onlineTournament.started")}!`;
 			renderBracket(bracketContainer, msg.bracket);
 			updateMyMatchButton(myMatchBtn, msg.bracket);
 			return;
 		}
 
 		if (msg.type === "tournament_bracket_update") {
+			status.textContent = `Tournament #${msg.tournamentId}: ${t("onlineTournament.updated")}!`;
 			renderBracket(bracketContainer, msg.bracket);
 			updateMyMatchButton(myMatchBtn, msg.bracket);
 			return;
