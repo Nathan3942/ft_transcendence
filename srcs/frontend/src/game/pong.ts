@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/15 16:56:00 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/20 04:16:16 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/22 15:33:46 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -388,9 +388,6 @@ export function startPong(
 
 
 	const touch = bindTouch(canvas);
-
-
-	// let inputSource: (s: PongState, dt: number) => PongInput = () => keyboardToInput(keysDown, keysPressed);
 
 	let inputSource: (s: PongState, dt: number) => PongInput = (s, dt) => {
 		const touchY = touch.getTouchY();

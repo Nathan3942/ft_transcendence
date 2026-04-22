@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 15:46:01 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/16 08:32:26 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/22 15:38:45 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ export type GamePhase = "LOBBY" | "COUNTDOWN" | "RUNNING" | "ENDED";
 export type GameStatus = "waiting" | "running" | "paused" | "ended";
 
 export type PaddleInput = {
-	dir: -1 | 0 | 1; // -1 up, 0 stop, 1 down
+	dir: -1 | 0 | 1; 
 	esc: boolean;
 	ts: number; // client timestamp
 }

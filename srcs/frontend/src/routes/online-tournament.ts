@@ -6,12 +6,11 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/09 15:18:28 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/21 20:34:27 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/22 15:37:50 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import { getRouter } from "../handler/routeHandler.js";
-import { getLocalId } from "../helpers/apiHelper.js";
 import { getItem } from "../helpers/localStoragehelper.js";
 import { getCurrentTournamentId, setCurrentMatchId } from "../services/onlineStore.js";
 import { t } from "../i18n/i18n.js";
@@ -46,7 +45,6 @@ function createMatchBox(match: any): HTMLDivElement {
 	// PLAYER 1
 	const p1 = document.createElement("div");
 	const isMe1 = myClientId === match.player1ClientId;
-	console.log(`for see my user client id ${myClientId}, playerclient1 ${match.player1ClientId}, playerclient2 ${match.player2ClientId}\n\n`);
 
 	p1.className = isMe1
 		? "px-2 py-1 rounded bg-green-200 text-green-900 font-bold"
@@ -322,7 +320,6 @@ export default function onlineTournament(): HTMLDivElement {
 
 			tournamentFinished = true;
 			status.textContent = `Winner: ${msg.winnerName}`;
-			console.log("alerte\n\n");
 			alert(`Tournament finished!\nWinner: ${msg.winnerName}`);
 			cleanup();
 			getRouter().navigateTo("/game-online");

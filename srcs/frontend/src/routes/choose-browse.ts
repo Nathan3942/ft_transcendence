@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/05 15:46:15 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/17 12:39:39 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/22 15:37:11 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,6 @@ export default function chooseBrowse(): HTMLDivElement {
 			id: "browse-matches-button",
 			extraClasses: btnClasses,
 			buttonText: t("browse.browseTournaments"),
-			// href: "/browse-games",
 			f: async () => {
 				getRouter().navigateTo("/browse-tournaments");
 			},

@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/13 15:48:09 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/21 21:14:02 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/22 15:40:01 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -158,7 +158,6 @@ function handleUserDisconnect(userId: number) {
 		return;
 	}
 
-	// plus socket active user
 	userConnections.delete(userId);
 
 	// pas plusieurs timers meme user
@@ -366,7 +365,6 @@ export const wsPlugin: FastifyPluginAsync = fp(async (app) => {
 
 			if (msg.type === "join_game") {
 				
-				console.log(`user id 1: ${ws._userId}`);
 				if (!ws._userId)
 					return;
 				

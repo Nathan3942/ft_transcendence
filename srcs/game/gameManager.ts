@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 15:45:30 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/22 14:16:11 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/22 15:38:30 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -317,7 +317,7 @@ export class GameManager {
 		if (!g)
 			return;
 		g.loop.pause();
-		console.log(`Pause: reason ${userId}, ${clientId}`);
+		console.log(`Pause: reason ${reason} by ${userId}`);
 		this.broadcastToRoom(`game:${gameId}`, { type: "game_paused", reason,  clientId, userName });
 		this.broadcastToRoom(`game:${gameId}`, { type: "game_tick", state: g.state });
 	}
@@ -341,8 +341,6 @@ export class GameManager {
 
 		game.status = "waiting"; // ou countdown
 		game.play = initPlay(game.mode);
-
-		// return (game);
 	}
 
 	input(gameId: GameId, slot: GameSlot, input: PaddleInput) {
@@ -357,7 +355,6 @@ export class GameManager {
 
 		const game = this.games.get(gameId)!;
 		game.players[slot] = { clientId, userId, username };
-		console.log(`\n\nUserid : ${userId}\n\n`);
 	}
 
 	unregisterPlayer(gameId: GameId, userId: number) {
@@ -368,7 +365,6 @@ export class GameManager {
 		for (const slot of slotsForMode(game.state.mode)) {
 			if (game.players[slot]?.userId === userId) {
 				delete game.players[slot];
-				console.log(`Unregister user ${userId} from slot ${slot} in game ${gameId}`);
 				return;
 			}
 		}

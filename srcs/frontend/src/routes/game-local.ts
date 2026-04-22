@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/22 14:02:07 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/22 14:02:09 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/22 15:28:56 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,7 +118,6 @@ async function createLocalMatch(
 				return;
 
 			matchSaved = true;
-			console.log(`p1: ${p1Id}, p2: ${p2Id}`);
 
 			await saveMatchResult(p1Id, p2Id, s1, s2, winner, mode, p1Name, p2Name);
 		},

@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/19 10:11:49 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/20 04:11:53 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/22 15:33:16 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -227,7 +227,6 @@ function applyBounceFromPaddle(state: PongState, p: Paddle, cfg: PongConfig) {
 	if (half <= 1e-6)
 		return;
 
-	// balle playfield
 	const localBallX = state.ballX - state.playX;
 	const localBallY = state.ballY - state.playY;
 
@@ -615,7 +614,6 @@ export function updateCore(state: PongState, input: PongInput, dt: number, cfg: 
 		const r = paddleReact(p, state, cfg);
 		if (ballIntersectsRect(state.ballX, state.ballY, cfg.ballRadius, r)) {
 			applyBounceFromPaddle(state, p, cfg);
-			//att au 4p pour les colision paddle
 			break;
 		}
 	}

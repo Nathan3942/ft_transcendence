@@ -283,7 +283,8 @@ const fr: TranslationDict = {
 		final: "Finale",
 		match: "Match",
 		semi: "Demi",
-		bot: "Bot"
+		bot: "Bot",
+		duplicate: "Nom de joueur en double"
 	}
 };
 

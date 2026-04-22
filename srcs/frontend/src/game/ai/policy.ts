@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 12:47:52 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/22 02:13:42 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/22 15:40:06 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,7 +87,6 @@ export function makeAIPolicyP2(genome: Genome) {
 
 		//1 hz
         visionAcc += dt;
-		// visionAcc = genome.reaction;
 
 		//paddle P2
         const p2 = s.paddles[1];

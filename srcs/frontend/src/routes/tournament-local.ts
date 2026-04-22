@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 16:32:13 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/22 15:08:24 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/22 15:26:28 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -272,17 +272,36 @@ function renderBracket(bracket: Bracket): HTMLDivElement {
 
 function getPlayersFromInputs(count = 8): Player[] {
 	const players: Player[] = [];
+	const names = new Set<string>();
 	let botIndex = 1;
 
 	for (let i = 1; i <= count; i++) {
 		const el = document.getElementById(`player-${i}`) as HTMLInputElement | null;
 		const raw = (el?.value ?? "").trim();
 
-		if (raw.length === 0)
-			players.push({ id: i, name: `${t("tournamentLocal.bot")} ${botIndex++}`, ai: true });
-		else
-			players.push({ id: i, name: raw, ai: false });
+		let name: string;
+		let ai: boolean;
+
+		if (raw.length === 0) {
+			name = `${t("tournamentLocal.bot")} ${botIndex++}`;
+			ai = true;
+		} else {
+			name = raw;
+			ai = false;
+
+			if (names.has(name)) {
+				
+				alert(`${t("tournamentLocal.duplicate")}`);
+
+				throw new Error("Duplicate player name");
+			}
+
+			names.add(name);
+		}
+
+		players.push({ id: i, name, ai });
 	}
+
 	return players;
 }
 
@@ -476,11 +495,9 @@ async function CreateMatch(
 	match: Match,
 	onDone: (res: GameResult) => void
 ) {
-	let swapped = false;
 
 	if (match.p1.ai && !match.p2.ai) {
 		[match.p1, match.p2] = [match.p2, match.p1];
-		swapped = true;
 	}
 
 	if (match.p1.ai && match.p2.ai) {

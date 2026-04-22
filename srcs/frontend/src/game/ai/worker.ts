@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 12:47:43 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/22 02:04:16 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/22 15:36:46 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,6 @@ self.onmessage = (e: MessageEvent<Incoming>) => {
 				return evaluateGenome(g, msg.cfg.episodesPerGenome);
 			},
 			(p) => {
-				// p = { gen, bestFitness, bestGenome }
 				post({ type: "progress", ...p });
 			}
 		);

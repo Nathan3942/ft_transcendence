@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 12:47:55 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/22 01:59:42 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/22 15:35:02 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,7 +102,6 @@ export function evolve(cfg: GAConfig, evaluate: (g: Genome) => number, onProgres
 		const scoreFn = (g: Genome) => scored.find((x) => x.g === g)?.f ?? -Infinity;
 
 		while (next.length < cfg.popSize) {
-			//elite.length ? elite : 
 			const a = tournament(elite.length ? elite : pop, scoreFn, 5);
 			const b = tournament(elite.length ? elite : pop, scoreFn, 5);
 			const child = mutate(crossover(a, b), cfg.mutationRate, cfg.mutationSigma);

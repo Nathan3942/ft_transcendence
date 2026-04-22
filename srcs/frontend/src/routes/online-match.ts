@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/19 17:15:35 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/21 21:16:57 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/22 15:29:25 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,6 @@ function bindInput(ws: WebSocket, gameId: string, slot: GameSlot, canvas: HTMLCa
 			return;
 
 		if (e.key === "Escape") {
-			console.log(`User name ${getUserName()}`);
 			ws.send(JSON.stringify({
 				type: "pause_toggle",
 				gameId,
@@ -285,7 +284,6 @@ export default function onlineMatch(): HTMLDivElement {
 	window.addEventListener("popstate", cleanup);
 	window.addEventListener("pageshow", (event) => {
 		if (event.persisted) {
-			console.log("Page restored from bfcache");
 			window.location.reload();
 		}
 	});
@@ -317,8 +315,6 @@ export default function onlineMatch(): HTMLDivElement {
 			username: getItem<string>("username"),
 			mode: getCurrentMatchMode(),
 		}));
-
-		console.log("JOIN USERNAME =", getItem("username"));
 	};
 
 	ws.onmessage = (e) => {

@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/27 10:03:13 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/01 19:03:11 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/22 15:37:43 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,11 +17,6 @@ import { getRouter } from "../handler/routeHandler";
 import { t } from "../i18n/i18n";
 import { createOnlineMatch } from "../services/online";
 import { setCurrentMatchId, setCurrentMatchMode } from "../services/onlineStore";
-import onlineMatch from "./online-match";
-
-function navigate(path: string) {
-	window.dispatchEvent(new CustomEvent("navigate", { detail: { path } }));
-}
 
 
 export default function chooseOnlineMode(): HTMLDivElement {
