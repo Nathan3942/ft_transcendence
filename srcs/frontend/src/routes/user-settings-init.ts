@@ -140,12 +140,6 @@ export default function initUSerSettings(): void {
 		}
 	}
 
-	async function updateLocale(locale: string): Promise<boolean> {
-		// PATCH API call here
-
-		return false;
-	}
-
 	async function deleteUser(): Promise<string> {
 		const resp = await fetch(`${API_BASE}/users/${getLocalId()}`, {
 			method: "DELETE",
@@ -314,7 +308,6 @@ export default function initUSerSettings(): void {
 				extraClasses: languageButtonClasses,
 				buttonText: "en",
 				f: () => {
-					updateLocale("en");
 					setLocale("en");
 				}
 			}),
@@ -323,7 +316,6 @@ export default function initUSerSettings(): void {
 				extraClasses: languageButtonClasses,
 				buttonText: "fr",
 				f: () =>  {
-					updateLocale("fr");
 					setLocale("fr");
 				}
 			}),
@@ -332,7 +324,6 @@ export default function initUSerSettings(): void {
 				extraClasses: languageButtonClasses,
 				buttonText: "de",
 				f: () => {
-					updateLocale("de");
 					setLocale("de");
 				}
 			})
