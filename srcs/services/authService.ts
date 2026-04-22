@@ -26,7 +26,16 @@ export async function register(
     setOnlineStatus(user.id, true)
 
     const payload = { id: user.id, username: user.username }
-    return { user: { ...user, is_online: 1 }, payload }
+    const publicUser: PublicUser = {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        display_name: user.display_name,
+        avatar_url: user.avatar_url,
+        is_online: 1,
+        created_at: user.created_at,
+    }
+    return { user: publicUser, payload }
 }
 
 export async function login(
@@ -50,11 +59,16 @@ export async function login(
 
     // Payload du JWT — seulement ce qui est nécessaire
     const payload = { id: userWithHash.id, username: userWithHash.username }
-
-    // PublicUser sans password_hash, avec is_online à jour
-    const { password_hash: _, ...publicUser } = { ...userWithHash, is_online: 1 }
-
-    return { user: publicUser as PublicUser, payload }
+    const publicUser: PublicUser = {
+        id: userWithHash.id,
+        username: userWithHash.username,
+        email: userWithHash.email,
+        display_name: userWithHash.display_name,
+        avatar_url: userWithHash.avatar_url,
+        is_online: 1,
+        created_at: userWithHash.created_at,
+    }
+    return { user: publicUser, payload }
 }
 
 export function logout(userId: number): void {
