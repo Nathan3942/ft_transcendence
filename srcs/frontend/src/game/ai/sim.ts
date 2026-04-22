@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 12:47:49 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/20 02:17:22 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/22 02:01:44 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 import type { Genome } from "./type.js";
 import type { PongConfig, PongInput, PongState } from "../pong_core.js";
 import { DEFAULT_CONFIG, creatInitialState, updateCore } from "../pong_core.js";
-import { makeAIPolicyP2 } from "./policy.js";
+import { makeAIPolicyP2, predictYWithBounces } from "./policy.js";
 
 function emptyInput(): PongInput {
   return {
@@ -38,22 +38,49 @@ function baselineP1(state: PongState): PongInput {
 		return input;
 	}
 
-	// pendant COUNTDOWN/PAUSED -> pas besoin de bouger
 	if (state.phase !== "RUNNING")
 		return input;
 
+	const BALL_R = 10;
 	const p1 = state.paddles[0];
-	const center = p1.pos + p1.len / 2;
+	const center = state.playY + p1.pos + p1.len / 2;
+	const ballGoingToP1 = state.ballVX < 0;
 
-	const targetY = state.ballVX < 0 ? state.ballY : (state.playY + state.playH / 2);
+	let targetY: number;
+
+	if (ballGoingToP1) {
+		const paddleX = state.playX + BALL_R;
+		const top = state.playY + BALL_R;
+		const bottom = state.playY + state.playH - BALL_R;
+
+		targetY = predictYWithBounces(
+			state.ballX,
+			state.ballY,
+			state.ballVX,
+			state.ballVY,
+			paddleX,
+			top,
+			bottom
+		);
+	} else {
+		const mid = state.playY + state.playH / 2;
+		targetY = mid + (state.ballY - mid) * 0.2;
+	}
+
+	targetY = Math.max(
+		state.playY + p1.len / 2,
+		Math.min(state.playY + state.playH - p1.len / 2, targetY)
+	);
+
 	const dy = targetY - center;
+	const deadZone = 10;
 
-	if (Math.abs(dy) < 12)
+	if (Math.abs(dy) <= deadZone)
 		return input;
 
-	if (dy < 0) 
+	if (dy < 0)
 		input.p1.up = true;
-	else 
+	else
 		input.p1.down = true;
 
 	return input;
@@ -119,8 +146,14 @@ export function evaluateGenome(genome: Genome, episodes: number, config?: Partia
 			}
 		}
 
-		const winBonus = state.winner === 2 ? 5000 : state.winner === 1 ? -1000 : 0;
-		const fitness = frames + touches * 500 + winBonus - state.scoreP1 * 100;
+		const fitness =
+			(state.scoreP2 * 3000)
+			- (state.scoreP1 * 2000)
+			+ (state.winner === 2 ? 10000 : 0)
+			- (state.winner === 1 ? 5000 : 0)
+			+ touches * 150
+			- dirChanges * 10
+			- frames * 0.2;
 
 		total += fitness;
 	}

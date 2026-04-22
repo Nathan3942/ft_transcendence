@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 12:47:43 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/20 02:18:07 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/22 02:04:16 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,8 @@ self.onmessage = (e: MessageEvent<Incoming>) => {
 		return;
 	}
 
-	if (msg.type !== "train") return;
+	if (msg.type !== "train")
+		return;
 
 	shouldStop = false;
 	post({ type: "debug", msg: "train received" });
