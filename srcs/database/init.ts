@@ -13,7 +13,8 @@ export const initTables = (): void => {
       display_name  TEXT UNIQUE,
       avatar_url    TEXT,
       is_online     INTEGER NOT NULL DEFAULT 0,
-      created_at    DATETIME DEFAULT CURRENT_TIMESTAMP
+      created_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
+      deleted_at    DATETIME DEFAULT NULL
     );
   `)
 

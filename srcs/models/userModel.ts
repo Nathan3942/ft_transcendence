@@ -12,6 +12,7 @@ export interface User {
   avatar_url: string | null;
   is_online: number; // 0 | 1 (SQLite n'a pas de BOOLEAN)
   created_at: string;
+  deleted_at: string | null;
 }
 
 // Version sans password_hash pour les réponses API
