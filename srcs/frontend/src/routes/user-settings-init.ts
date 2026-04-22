@@ -5,6 +5,7 @@ import { getLocalId } from "../helpers/apiHelper";
 import { getLocalUserAvatar } from "../helpers/avatarHelper";
 import { getItem, setItem } from "../helpers/localStoragehelper";
 import { setLocale, t } from "../i18n/i18n";
+import type { user } from "../interfaces/properties";
 
 export default function initUSerSettings(): void {
 
@@ -37,7 +38,7 @@ export default function initUSerSettings(): void {
 	const languageDropdownButton = document.getElementById("language-settings-button") as HTMLButtonElement;
 
 	// Declaration of Functions
-	async function uploadAvatar(file: File): Promise<string> {
+	async function uploadAvatar(file: File): Promise<{ data: user }> {
 		const form = new FormData();
 		form.append("file", file);
 
@@ -62,7 +63,7 @@ export default function initUSerSettings(): void {
 			throw `Unexpected error: ${resp.status}`;
 		}
 
-		return await resp.text();
+		return await resp.json();
 	}
 
 	async function updateUserInfo(): Promise<string> {
@@ -180,9 +181,10 @@ export default function initUSerSettings(): void {
 			profileImg.src = url;
 			try {
 				const savedUrl = await uploadAvatar(file);
-				profileImg.src = url;
+				const avatar = savedUrl.data?.avatar_url ?? getLocalUserAvatar();
+				profileImg.src = avatar;
 				URL.revokeObjectURL(url);
-				setItem<string>("avatar_url", url);
+				setItem<string>("avatar_url", avatar);
 				profileImg.classList.remove("dark:invert");
 				if (avatarMsg) {
 					if (!avatarMsg.classList.contains("text-green-600"))
@@ -192,7 +194,7 @@ export default function initUSerSettings(): void {
 					avatarMsg.innerText = t("settings.avatarUpdated");
 				}
 				if (headerAvatar)
-					headerAvatar.src = url;
+					headerAvatar.src = avatar;
 			} catch (e) {
 				profileImg.src = getLocalUserAvatar();
 				console.error(e);
