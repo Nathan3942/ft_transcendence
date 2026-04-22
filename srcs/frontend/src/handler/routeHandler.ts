@@ -102,12 +102,22 @@ export class Router {
 			}
 		}
 
+		let component: HTMLDivElement;
 		try {
-			const component = await route.component(params);
+			component = await route.component(params);
+		} catch (err) {
 			if (navId !== this.currentNavId) return;
+			console.warn("Chunk load failed for", path, err);
+			window.location.href = path;
+			return;
+		}
+
+		if (navId !== this.currentNavId) return;
+
+		try {
 			this.replaceRoot(component);
 			if (route.init)
-				route.init(params)
+				await route.init(params);
 		} catch (err) {
 			if (navId !== this.currentNavId) return;
 			console.error("Failed to load component for", path, err);
