@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "outDir": "./dist", //compiled typescript files go there
+    "rootDir": "srcs", //where typescript files are (my code)
+    "strict": true, //strict rule for types you have to specify type when initializing a variable
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true //Upper and lowercases have to match in file names
+  },
+  "include": ["srcs/**/*"], // compile all
+  "exclude": ["node_modules", "srcs/frontend/src"] // do not compile node_modules (node_modules are additional tools to node.js)
+}
