@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/02 16:32:13 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/21 02:18:03 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/22 14:55:55 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -486,7 +486,7 @@ async function CreateMatch(
 	if (match.p1.ai && match.p2.ai) {
 		const winnerSide: 1 | 2 = Math.random() < 0.5 ? 1 : 2;
 		const loserScore = 0;
-		const winScore = 1;
+		const winScore = 1; // modif quand change score pour win
 
 		const s1 = winnerSide === 1 ? winScore : loserScore;
 		const s2 = winnerSide === 2 ? winScore : loserScore;
@@ -592,14 +592,7 @@ async function CreateMatch(
 			window.removeEventListener("resize", onResize);
 			unbindKeys?.();
 
-			const realWinnerSide = swapped
-				? (winner === 1 ? 2 : 1) as 1 | 2
-				: (winner as 1 | 2);
-
-			const realS1 = swapped ? s2 : s1;
-			const realS2 = swapped ? s1 : s2;
-
-			onDone({ winnerSide: realWinnerSide, s1: realS1, s2: realS2 });
+			onDone({ winnerSide: winner, s1, s2 });
 		},
 	};
 
