@@ -9,7 +9,7 @@ const PUBLIC_FIELDS = `
 `
 
 export function getAll(): PublicUser[] {
-    return queryAll(`SELECT ${PUBLIC_FIELDS} FROM users`) as PublicUser[]
+    return queryAll(`SELECT ${PUBLIC_FIELDS} FROM users WHERE deleted_at IS NULL`) as PublicUser[]
 }
 
 export function getById(id: string | number): PublicUser | undefined {
@@ -17,11 +17,11 @@ export function getById(id: string | number): PublicUser | undefined {
 }
 
 export function getByIdWithHash(id: string | number): User | undefined {
-    return queryOne(`SELECT * FROM users WHERE id = ?`, [id]) as User | undefined
+    return queryOne(`SELECT * FROM users WHERE id = ? AND deleted_at IS NULL`, [id]) as User | undefined
 }
 
 export function getByUsername(username: string): PublicUser | undefined {
-    return queryOne(`SELECT ${PUBLIC_FIELDS} FROM users WHERE username = ?`, [username]) as PublicUser | undefined
+    return queryOne(`SELECT ${PUBLIC_FIELDS} FROM users WHERE username = ? AND deleted_at IS NULL`, [username]) as PublicUser | undefined
 }
 
 // Inclut password_hash — usage interne uniquement (auth)
@@ -94,7 +94,18 @@ export function updateUser(id: string | number, fields: Partial<Pick<User, 'user
 }
 
 export function deleteUser(id: string | number): boolean {
-    const result = queryExecute('DELETE FROM users WHERE id = ?', [id])
+    const result = queryExecute(
+        `UPDATE users SET
+            deleted_at    = CURRENT_TIMESTAMP,
+            username      = '[deleted_' || id || ']',
+            email         = '[deleted_' || id || ']',
+            password_hash = '',
+            display_name  = NULL,
+            avatar_url    = NULL,
+            is_online     = 0
+        WHERE id = ? AND deleted_at IS NULL`,
+        [id]
+    )
     return result.changes > 0
 }
 
