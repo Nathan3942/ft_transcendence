@@ -478,14 +478,14 @@ function applyScore(state: PongState, cfg: PongConfig, event?: PongEvents, playe
 
 	event?.onScore?.(player, state.scoreP1, state.scoreP2);
 
-	if (state.scoreP1 >= cfg.winningScore) {
+	if (state.scoreP1 >= cfg.winningScore && state.phase !== "GAMEOVER") {
 		state.phase = "GAMEOVER";
 		state.winner = 1;
 		event?.onGameOver?.(1, state.scoreP1, state.scoreP2, state.mod);
 		event?.onStateChange?.(state.phase);
 		return;
 	}
-	if (state.scoreP2 >= cfg.winningScore) {
+	if (state.scoreP2 >= cfg.winningScore && state.phase !== "GAMEOVER") {
 		state.phase = "GAMEOVER";
 		state.winner = 2;
 		event?.onGameOver?.(2, state.scoreP1, state.scoreP2, state.mod);

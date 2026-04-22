@@ -1,3 +1,16 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   game-local-ai.ts                                   :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/04/22 14:02:12 by njeanbou          #+#    #+#             */
+/*   Updated: 2026/04/22 14:02:14 by njeanbou         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+
 import { createButton } from "../components/button/button";
 import makeButtonBlock from "../components/button/buttonBlock";
 import createBackButton from "../components/button/backButton";

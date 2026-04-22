@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/18 15:45:30 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/21 19:58:30 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/22 14:16:11 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@ import type { GameId, GameState, PaddleInput, ModeId, GameSlot } from "./types";
 import { GameLoop } from "./gameLoop";
 import { addMatchPlayer, finishMatch, getMatchById } from "../repository/matchesRepository";
 import { TournamentMaganer } from "../tournament/tournamentManager";
+import { updateMatchPlayerScore } from "../services/matchService";
 
 
 const H = 750;
@@ -221,7 +222,10 @@ export class GameManager {
 								const baseSlot = slot.replace(/\d+/, '') as "left" | "right";
 								score = g.state.score[baseSlot] ?? 0;
 							}
-							addMatchPlayer(Number(id), Number(player.userId), score);
+							if (m.tournamentId)
+								updateMatchPlayerScore(m.id, Number(player.userId), score);
+							else
+								addMatchPlayer(Number(id), Number(player.userId), score);
 						}
 					}
 
