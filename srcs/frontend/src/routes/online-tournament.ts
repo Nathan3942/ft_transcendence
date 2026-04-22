@@ -173,7 +173,7 @@ function updateMyMatchButton(button: HTMLButtonElement, bracket: any) {
 	button.textContent = `${t("onlineTournament.goToMatch")} (#${myMatch.matchId})`;
 	button.onclick = () => {
 		setCurrentMatchId(String(myMatch.matchId));
-		getRouter().navigateTo("/online-match");
+		getRouter().lazyLoad("/online-match");
 	};
 }
 
@@ -252,8 +252,14 @@ export default function onlineTournament(): HTMLDivElement {
 
 	function onNavigate(ev: any) {
 		const nextPath = ev?.detail?.path as string | undefined;
-		if (!nextPath || nextPath !== "/online-tournament")
-			cleanup();
+		
+		if (!nextPath)
+			return;
+
+		if (nextPath === "/online-tournament" || nextPath === "/online-match")
+			return;
+		
+		cleanup();
 	}
 
 	window.addEventListener("beforeunload", onBeforeUnload);
