@@ -9,8 +9,8 @@ services:
       PORT: 3000
       FRONTEND_URL: https://localhost
     volumes:
-      - ./data:/app/data
-      - ./uploads:/app/uploads
+      - ./data:/app/data:z
+      - ./uploads:/app/uploads:z
     networks:
       - app
     restart: unless-stopped

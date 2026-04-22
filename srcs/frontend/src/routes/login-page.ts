@@ -3,7 +3,7 @@ import { loginHandler, registerHandler } from "../handler/loginHandler";
 import { getItem } from "../helpers/localStoragehelper";
 import { t } from "../i18n/i18n";
 
-let defaultClasses = "w-1/3 items-center justify-center bg-gray-200 px-4 py-2 dark:bg-gray-950";
+let defaultClasses = "w-11/12 sm:w-2/3 md:w-1/2 lg:w-1/3 items-center justify-center bg-gray-200 px-4 py-2 dark:bg-gray-950";
 
 function createLoginForm(): HTMLDivElement {
 
@@ -127,7 +127,7 @@ function createRegistrationForm(): HTMLDivElement {
 	const errorMsg = document.createElement("p");
 
 	outer.id = "register-container";
-	outer.classList = "w-1/3 items-center justify-center bg-gray-200 px-4 py-2 dark:bg-gray-950";
+	outer.classList = "w-11/12 sm:w-2/3 md:w-1/2 lg:w-1/3 items-center justify-center bg-gray-200 px-4 py-2 dark:bg-gray-950";
 	outer.classList.add("hidden");
 
 	h1.className = "mb-6 text-center text-2xl font-bold";

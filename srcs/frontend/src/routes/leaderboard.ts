@@ -97,9 +97,9 @@ function createLeaderboardCells(users: userInfo[]): HTMLTableSectionElement {
 		cell.append(
 			createTdElement(i + 1),
 			usernameTd,
-			createTdElement(user?.wins || NaN),
-			createTdElement(user?.losses || NaN),
-			createTdElement(user?.totalMatches || NaN),
+			createTdElement(user?.wins || 0),
+			createTdElement(user?.losses || 0),
+			createTdElement(user?.totalMatches || 0),
 			createTdElement(user?.winrateString || "NaN"),
 		);
 
