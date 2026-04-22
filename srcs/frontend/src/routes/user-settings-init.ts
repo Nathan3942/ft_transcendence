@@ -1,6 +1,6 @@
 import { createButton } from "../components/button/button";
 import { renderError, renderMessage } from "../components/popup/popup";
-import { API_BASE, authenticate, clearLoginInfo, redirectToLogin } from "../handler/loginHandler";
+import { API_BASE, authenticate, clearLoginInfo, logoutHandler, redirectToLogin } from "../handler/loginHandler";
 import { getLocalId } from "../helpers/apiHelper";
 import { getLocalUserAvatar } from "../helpers/avatarHelper";
 import { getItem, setItem } from "../helpers/localStoragehelper";
@@ -358,8 +358,7 @@ export default function initUSerSettings(): void {
 				const resp = await deleteUser();
 				if (resp === "200") {
 					console.log("Sucessfully deleted user account");
-					clearLoginInfo();
-					redirectToLogin();
+					logoutHandler();
 				} else {
 					console.error(resp);
 					deleteStatus.innerText = resp;
