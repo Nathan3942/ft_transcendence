@@ -11,7 +11,8 @@
 /* ************************************************************************** */
 
 import { addPlayerToMatch, createMatch } from "../repository/matchesRepository";
-import { getTournamentStatus, updateTournamentStatus } from "../services/tournamentService";
+import { getTournamentStatus } from "../services/tournamentService";
+import { updateTournamentWinnerRepo } from "../repository/tournamentsRepository";
 
 type TournamentPlayer = {
 	clientId: string;
@@ -275,7 +276,7 @@ export class TournamentMaganer {
 			final.winner &&
 			getTournamentStatus(tournamentId) !== "finished"
 		) {
-			updateTournamentStatus(Number(tournamentId), "finished");
+			updateTournamentWinnerRepo(Number(tournamentId), winnerUserId);
 
 			return {
 				type: "tournament_finished" as const,
