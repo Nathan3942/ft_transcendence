@@ -18,11 +18,11 @@ import AIWorker from "../game/ai/worker?worker";
 type AIDifficulty = "easy" | "medium" | "hard";
 
 const GA_DEFAULT: GAConfig = {
-	popSize: 120,
+	popSize: 50,
 	elitism: 0.15,
 	mutationRate: 0.4,
-	mutationSigma: 0.06,
-	generation: 100,
+	mutationSigma: 0.6,
+	generation: 50,
 	episodesPerGenome: 6,
 };
 
@@ -347,7 +347,7 @@ async function InitAiGame(diffNum: number, pageRoot: HTMLDivElement) {
 	const controller = startPong(canvas, ctx, { mode: "1v1", tournament: false }, {}, events);
 	activeAIController = controller;
 
-	// injection IA
+
 	const keysDown = createKeyMap();
 	const keysPressed = createKeyMap();
 	const unbindKeys = bindKeyboard(keysDown, keysPressed);
@@ -378,7 +378,7 @@ async function InitAiGame(diffNum: number, pageRoot: HTMLDivElement) {
 
 		if (msg.type === "progress") {
 			lastTrainedGenome = msg.bestGenome as Genome;
-			console.log(`[GA] gen=${msg.gen} bestFit=${Math.round(msg.bestFitness)}`, msg.bestGenome);
+			console.log(`[GA] gen=${msg.gen} bestFit=${Math.round(msg.bestFitness)} genBestFit: ${msg.genBestFit}, genAvgFit: ${msg.genAvgFit}, genWorstFit: ${msg.genWorstFit}`, msg.bestGenome);
 		}
 		if (msg.type === "done") {
 			training = false;
@@ -395,14 +395,16 @@ async function InitAiGame(diffNum: number, pageRoot: HTMLDivElement) {
 	};
 
 	window.trainHardAI = () => {
-		if (training) return;
+		if (training)
+			return;
 		training = true;
 		console.log("[GA] training start...");
 		worker.postMessage({ type: "train", cfg: GA_DEFAULT });
 	};
 
 	window.stopTrainingAI = () => {
-		if (!training) return;
+		if (!training)
+			return;
 		console.log("[GA] stop requested...");
 		worker.postMessage({ type: "stop" });
 		training = false;

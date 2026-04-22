@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 12:47:55 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/20 02:20:19 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/22 01:59:42 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,6 @@
 
 import type { Genome, GAConfig, TrainProgress } from "./type.js";
 
-function clamp01(x: number) {
-	return (Math.max(0, Math.min(1, x)));
-}
 
 export function randomGenome(): Genome {
     return {
@@ -92,8 +89,12 @@ export function evolve(cfg: GAConfig, evaluate: (g: Genome) => number, onProgres
 			bestFit = scored[0].f;
 			best = scored[0].g;
 		}
+		
+		const genBestFit = scored[0].f;
+		const genWorstFit = scored[scored.length - 1].f;
+		const genAvgFit = scored.reduce((sum, x) => sum + x.f, 0) / scored.length;
 
-		onProgress?.({ gen, bestFitness: bestFit, bestGenome: best });
+		onProgress?.({ gen, bestFitness: bestFit, bestGenome: best, genBestFit, genAvgFit, genWorstFit });
 
 		const elitCount = Math.max(1, Math.floor(cfg.popSize * cfg.elitism));
 		const elite = scored.slice(0, elitCount).map((x) => x.g);
@@ -101,6 +102,7 @@ export function evolve(cfg: GAConfig, evaluate: (g: Genome) => number, onProgres
 		const scoreFn = (g: Genome) => scored.find((x) => x.g === g)?.f ?? -Infinity;
 
 		while (next.length < cfg.popSize) {
+			//elite.length ? elite : 
 			const a = tournament(elite.length ? elite : pop, scoreFn, 5);
 			const b = tournament(elite.length ? elite : pop, scoreFn, 5);
 			const child = mutate(crossover(a, b), cfg.mutationRate, cfg.mutationSigma);

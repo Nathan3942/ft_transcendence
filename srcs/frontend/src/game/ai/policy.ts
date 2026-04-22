@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 12:47:52 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/18 14:04:50 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/22 02:13:42 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ function reflectY(y: number, top: number, bottom: number) {
 	return (top + v);
 }
 
-function predictYWithBounces(
+export function predictYWithBounces(
 	ballX: number,
 	ballY: number,
 	ballVX: number,
@@ -86,9 +86,10 @@ export function makeAIPolicyP2(genome: Genome) {
 
 
 		//1 hz
-        visionAcc += dt; // approx peut passer dt
+        visionAcc += dt;
+		// visionAcc = genome.reaction;
 
-		//paddle P2 = index 1 dans init 1v1
+		//paddle P2
         const p2 = s.paddles[1];
         const paddleCenter = s.playY + p2.pos + p2.len / 2;
 
@@ -99,10 +100,10 @@ export function makeAIPolicyP2(genome: Genome) {
 
 				if (Math.abs(err) <= Math.max(stopEps, genome.deadZone)) {
 					lastDecision = 0;
-				} else {
-					if ((lastDecision === 1  && err < 0) || (lastDecision === -1 && err > 0)) {
+				}
+				else {
+					if ((lastDecision === 1  && err < 0) || (lastDecision === -1 && err > 0))
 						lastDecision = 0;
-					}
 				}
 			}
 
@@ -115,7 +116,6 @@ export function makeAIPolicyP2(genome: Genome) {
         }
 		
         visionAcc = 0;
-        
 
         // recentre si la balle seloigne
         const ballGoingToP2 = s.ballVX > 0;

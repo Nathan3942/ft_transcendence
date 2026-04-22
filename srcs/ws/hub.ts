@@ -6,7 +6,7 @@
 /*   By: njeanbou <njeanbou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/13 14:57:23 by njeanbou          #+#    #+#             */
-/*   Updated: 2026/04/10 16:20:21 by njeanbou         ###   ########.fr       */
+/*   Updated: 2026/04/22 00:44:07 by njeanbou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,6 @@ export class WsHub {
     // ajoute le socket dans une room
     join(ws: WsSocket, room: WsRoom) {
 
-        console.log(`lalaal\n\n`);
         if (!this.rooms.has(room))
             this.rooms.set(room, new Set());
 
