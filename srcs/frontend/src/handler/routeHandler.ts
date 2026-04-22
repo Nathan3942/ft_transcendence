@@ -28,6 +28,7 @@ export type ComponentFactory<T extends HTMLElement = HTMLElement> = () => T | Pr
 export class Router {
 	private readonly routeMap: Map<String, Route>;
 	private readonly root: HTMLElement;
+	private currentNavId = 0;
 
 	constructor(root: HTMLElement, routes: Route[]) {
 		this.root = root;
@@ -81,6 +82,7 @@ export class Router {
 	}
 
 	private async handleLocation(path: string): Promise<void> {
+		const navId = ++this.currentNavId;
 		const match = this.findMatchingRoutes(path);
 		if (!match)
 			return this.renderNotFound();
@@ -90,6 +92,7 @@ export class Router {
 		if (route.guarded) {
 			for (const g of route.guarded) {
 				const res = await g();
+				if (navId !== this.currentNavId) return;
 				if (res === true)
 					continue;
 				else if (res === false)
@@ -101,10 +104,12 @@ export class Router {
 
 		try {
 			const component = await route.component(params);
+			if (navId !== this.currentNavId) return;
 			this.replaceRoot(component);
 			if (route.init)
 				route.init(params)
 		} catch (err) {
+			if (navId !== this.currentNavId) return;
 			console.error("Failed to load component for", path, err);
 			renderError(`Component for: ${path} failed to load...`);
 		}
