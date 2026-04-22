@@ -1,0 +1,143 @@
+/**
+ * Matches Routes
+ * Handles HTTP requests for match operations
+ * All business logic delegated to matchService
+ */
+
+import { FastifyInstance } from 'fastify'
+import { success } from '../../utils/response'
+import * as matchService from '../../services/matchService'
+import { authenticate } from '../../plugins/authenticate'
+import { ForbiddenError } from '../../utils/appErrors'
+
+export default async function matchesRoutes(server: FastifyInstance) {
+
+    /************************* GET ALL MATCHES **********************************/
+    server.get('/matches', async (_request, _reply) => {
+        const matches = matchService.getAllMatches()
+        return success(matches)
+    })
+
+    /************************* GET MATCH BY ID **********************************/
+    server.get('/matches/:id', async (request, _reply) => {
+        const { id } = request.params as { id: string }
+        const match = matchService.getMatchById(id)
+        return success(match)
+    })
+
+    /************************* CREATE MATCH **********************************/
+    server.post('/matches', async (request, _reply) => {
+        const { tournamentId, round, status, mode } = request.body as {
+            tournamentId: number | null;
+            round: number | null;
+            status?: 'pending' | 'in_progress' | 'finished';
+            mode?: '1v1' | '2v2' | '3p' | '4p';
+        }
+        const match = matchService.createMatch(
+            tournamentId ?? null,
+            round ?? null,
+            status ?? 'pending',
+            mode ?? '1v1'
+        )
+        return success(match)
+    })
+
+    /************************* DELETE MATCH **********************************/
+    server.delete('/matches/:id', async (request, _reply) => {
+        const { id } = request.params as { id: string }
+        const result = matchService.deleteMatch(id)
+        return success(result)
+    })
+
+    /************************* DELETE ALL MATCHES **********************************/
+    // server.delete('/matches', async (_request, _reply) => {
+    //     const result = matchService.deleteAllMatches();
+    //     return success(result);
+    // });
+
+    /************************* GET MATCHES BY TOURNAMENT **********************************/
+    server.get('/tournaments/:tournamentId/matches', async (request, _reply) => {
+        const { tournamentId } = request.params as { tournamentId: string }
+        const matches = matchService.getMatchesByTournament(tournamentId)
+        return success(matches)
+    })
+
+    /************************* ADD PLAYER TO MATCH **********************************/
+    server.post('/matches/:id/players', async (request, _reply) => {
+        const { id } = request.params as { id: string }
+        const { userId, score } = request.body as { userId: number; score?: number | null }
+        const matchPlayer = matchService.addPlayerToMatch(id, userId, score ?? null)
+        return success(matchPlayer)
+    })
+
+    /************************* UPDATE MATCH SCORE **********************************/
+    server.patch('/matches/:id/score', async (request, _reply) => {
+        const { id } = request.params as { id: string }
+        const { userId, score } = request.body as { userId: number; score: number }
+        const result = matchService.updateMatchPlayerScore(id, userId, score)
+        return success(result)
+    })
+
+    /************************* UPDATE MATCH STATUS **********************************/
+    server.patch('/matches/:id/status', async (request, _reply) => {
+        const { id } = request.params as { id: string }
+        const { status } = request.body as { status: 'pending' | 'in_progress' | 'finished' }
+        const result = matchService.updateMatchStatus(id, status)
+
+        if (status === "finished") {
+            server.gameManager.forceCloseGame(id, "deleted");
+        }
+
+        return success(result)
+    })
+
+    /************************* START MATCH **********************************/
+    server.post('/matches/:id/start', async (request, _reply) => {
+        const { id } = request.params as { id: string }
+        const result = matchService.startMatch(id)
+        return success(result)
+    })
+
+    /************************* FINISH MATCH **********************************/
+    server.post('/matches/:id/finish', async (request, _reply) => {
+        const { id } = request.params as { id: string }
+        const { winnerId } = request.body as { winnerId: number | null }
+        const result = matchService.finishMatch(id, winnerId ?? null)
+        return success(result)
+    })
+
+    /************************* GET MATCHES BY STATUS **********************************/
+    server.get('/matches/status/:status', async (request, _reply) => {
+        const { status } = request.params as { status: 'pending' | 'in_progress' | 'finished' }
+        const matches = matchService.getMatchesByStatus(status)
+        return success(matches)
+    })
+
+    /************************* SAVE MATCH RESULT **********************************/
+    server.post('/matches/result', { preHandler: authenticate }, async (request, _reply) => {
+        const { player1Id, player2Id, scorePlayer1, scorePlayer2, winnerId, mode } = request.body as {
+            player1Id: number;
+            player2Id: number | null;
+            scorePlayer1: number;
+            scorePlayer2: number;
+            winnerId: number | null;
+            mode?: string;
+        }
+
+        const user = request.user as { id: number; username: string }
+        if (user.id !== player1Id) {
+            throw new ForbiddenError('You can only save matches for yourself')
+        }
+
+        const match = matchService.saveMatchResult(
+            player1Id,
+            player2Id,
+            scorePlayer1,
+            scorePlayer2,
+            winnerId,
+            (mode as any) ?? '1v1'
+        )
+        return success(match)
+    })
+
+}
