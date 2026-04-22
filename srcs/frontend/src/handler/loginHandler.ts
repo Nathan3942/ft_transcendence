@@ -39,7 +39,6 @@ export async function loginHandler(payload: loginRequest): Promise<number> {
 
 	setItem<number>("id", respUser.id);
 	setItem<string>("username", respUser.username);
-	setItem<string>("display_name", respUser.display_name);
 	if (respUser.email)
 		setItem<string>("email", respUser.email);
 	setItem<string | null>("avatar_url", respUser.avatar_url);
@@ -80,7 +79,6 @@ export async function registerHandler(payload: registrationRequest): Promise<num
 
 	setItem<number>("id", respUser.id);
 	setItem<string>("username", respUser.username);
-	setItem<string>("display_name", respUser.display_name);
 	if (respUser.email)
 		setItem<string>("email", respUser.email);
 	setItem<string | null>("avatar_url", respUser.avatar_url);
@@ -96,7 +94,6 @@ export async function registerHandler(payload: registrationRequest): Promise<num
 export function clearLoginInfo() {
 	setItem<null>("id", null);
 	setItem<null>("username", null);
-	setItem<null>("display_name", null);
 	setItem<null>("email", null);
 	setItem<null>("avatar_url", null);
 	setItem<boolean>("is_online", false);
@@ -175,7 +172,6 @@ export async function authenticate(): Promise<boolean | string> {
 
 			setItem<number>("id", respUser.id);
 			setItem<string>("username", respUser.username);
-			setItem<string>("display_name", respUser.display_name);
 			if (respUser.email)
 				setItem<string>("email", respUser.email);
 			setItem<string | null>("avatar_url", respUser.avatar_url);

@@ -40,7 +40,6 @@ export interface authResponse {
 export interface user {
 	id: number;
 	username: string;
-	display_name: string;
 	email?: string;
 	avatar_url: string | null;
 	is_online: boolean;
@@ -94,7 +93,6 @@ export interface Friend {
 	friendship_id: number,
 	id: number,
 	username: string,
-	display_name: string,
 	avatar_url: string,
 	is_online: boolean
 }
@@ -115,7 +113,6 @@ export interface FriendRequest {
 	friendship_id: number,
 	requester_id: number,
 	username: string,
-	display_name: string,
 	avatar_url: string,
 	created_at: string
 }
