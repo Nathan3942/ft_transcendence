@@ -266,7 +266,8 @@ const fr: TranslationDict = {
 		started: "commencé",
 		tournamentFinished: "Tournoi terminé !",
 		tournamentFull: "complet",
-		rejoin: "rejoindre"
+		rejoin: "rejoindre",
+		updated: "mis à jour"
 	},
 
 	tournamentLocal: {
