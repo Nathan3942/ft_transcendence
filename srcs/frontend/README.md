@@ -1,6 +1,6 @@
 # Overview
 
-This is the frontend section of the SPA (Single Page Application), it is written in **Typescript** and uses **TailwindCSS** for styling. It is compiled using `pnpm run build` with the output being stored in a Docker container at:
+This is the frontend section of the SPA (Single Page Application), it is written in **Typescript** and uses **TailwindCSS** for styling. It is compiled using `pnpm run build` from the `srcs/frontend` directory, with the output being stored in a Docker container at:
 ```
 /var/www/pong-frontend
 ```
@@ -20,10 +20,11 @@ The frontend is structured as follows:
 - `/src/main.ts`: Is the primary entrypoint for the program.
 - `/src/components`: Contains reusable UI components.
 - `/src/game`: Contains game logic and rendering.
-- `/src/handler`: Contains logic for non tasks with no UI interaction.
+- `/src/handler`: Contains routing, page lifecycle, login flow, and auth guard logic.
 - `/src/helpers`: Contains utility and helper functions.
 - `/src/interfaces`: Contains TypeScript interfaces.
 - `/src/routes`: Contains the logic for constructing individual pages.
+- `/src/i18n`: Contains internationalisation logic and locale files (English, French, German).
 - `/src/services`: Contains service logic for interacting with external APIs or backend.
 
 ---
@@ -45,9 +46,9 @@ Use `[manager] install` in the `/srcs/frontend` directory to automatically insta
 
 | Dependency      | Version |
 | --------------- | ------- |
-| **TypeScript**  | 5.7.3   |
+| **TypeScript**  | 5.9.3   |
 | **Vite**        | 7.3.1   |
-| **TailwindCSS** | —       |
+| **TailwindCSS** | 4.2.2   |
 
 
 ---

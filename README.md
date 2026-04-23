@@ -1,146 +1,116 @@
-# transcendence-backend-collab
+# ft_transcendence
 
-broton and tmontani's work on the backend of the ft_transcendance project
-
-our approach is to start with a minimal and fonctional backend and to add features along the way.
-
- - Objectif
-- Architecture
-- Concepts clés
-- Choix techniques
-- Pièges
-- Ce que j’ai appris
-
-# Transcendence – Backend
-
-## 1. Objectif du projet
-- Ce que fait le backend
-- À quoi il sert dans le projet global
-- Problèmes principaux qu’il résout
+A full-stack web application for playing **Pong** — live, multiplayer, with tournaments and user management. Built as the final project of the 42 Common Core.
 
 ---
 
-## 2. Périmètre et responsabilités
-- Ce que le backend GÈRE
-- Ce qu’il ne gère PAS
-- Hypothèses / contraintes du projet
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Backend | Fastify + Node.js (TypeScript) |
+| Frontend | TypeScript + Tailwind CSS + Vite (SPA) |
+| Database | SQLite (better-sqlite3) |
+| Auth | JWT + bcrypt |
+| Real-time | WebSockets (@fastify/websocket) |
+| Infra | Docker + docker-compose |
 
 ---
 
-## 3. Architecture globale
-### 3.1 Vue d’ensemble
-- Organisation générale des dossiers
-- Séparation des responsabilités
+## Modules implemented
 
-### 3.2 Flux principal
-Exemple :
-Request → Middleware → Controller → Service → Database → Response
+**Major modules**
+- Backend framework (Fastify + Node.js)
+- Standard user management — registration, login, avatars, friends, stats, match history
+- Remote players — two players on separate machines via WebSocket
+- Multiple players — more than 2 players in the same game
+- AI opponent — computer-controlled player with identical paddle speed constraints
 
----
+**Minor modules** (2 minor = 1 major)
+- Frontend toolkit (Tailwind CSS)
+- Database (SQLite)
+- User and game stats dashboards
+- Support on all devices (responsive design)
+- Expanding browser compatibility (cross-browser support)
+- Multiple languages (i18n)
 
-## 4. Organisation du code
-- controllers/ → rôle
-- services/ → rôle
-- middlewares/ → rôle
-- models/ → rôle
-- utils/ → rôle
-
-👉 Pourquoi cette organisation ?
-
----
-
-## 5. Concepts clés
-### 5.1 Authentification
-- Problème à résoudre
-- Principe général
-- Où c’est implémenté dans le projet
-
-### 5.2 Autorisation
-- Différence avec l’auth
-- Cas concrets dans le projet
-
-### 5.3 Temps réel / WebSocket (si applicable)
-- Pourquoi c’est nécessaire
-- Contraintes associées
-
-*(1 concept = 1 sous-section)*
+**Core mandatory features**
+- Live 1v1 Pong game (same keyboard or remote)
+- Tournament system with matchmaking and bracket display
+- Alias registration per tournament
+- HTTPS / WSS everywhere
+- Input validation, SQL injection and XSS protection
+- Passwords hashed with bcrypt
 
 ---
 
-## 6. Décisions techniques importantes
-### 6.1 Pourquoi ce framework / langage
-### 6.2 Pourquoi cette architecture
-### 6.3 Pourquoi ce pattern (middleware, service, etc.)
+## Getting started
 
-👉 Toujours répondre à : **pourquoi ?**
+### Prerequisites
 
----
+- Docker and docker-compose
 
-## 7. Sécurité
-- Points de sécurité mis en place
-- Ce qui est volontairement simple
-- Ce qui pourrait être amélioré
+### 1. Configure environment
 
----
+```bash
+cp .env.example .env
+```
 
-## 8. Gestion des erreurs
-- Où sont gérées les erreurs
-- Philosophie (centralisée ou non)
-- Erreurs fréquentes anticipées
+Edit `.env` and set at minimum:
 
----
+```env
+JWT_SECRET=<a_strong_random_secret>
+```
 
-## 9. Tests
-- Ce qui est testé
-- Ce qui ne l’est pas (et pourquoi)
-- Type de tests (manuel, automatisé)
+All credentials must stay in `.env` — never commit them.
 
----
+### 2. Run
 
-## 10. Pièges et erreurs rencontrées
-- Erreurs de conception
-- Mauvaises implémentations initiales
-- Bugs importants et leur cause
+```bash
+docker compose up --build
+```
+
+The app is served over HTTPS at `https://localhost`.
 
 ---
 
-## 11. Ce que j’ai appris
-- Leçons techniques
-- Leçons méthodologiques
-- Ce que je ferais différemment
+## Project structure
+
+```
+srcs/
+├── app.ts              # Fastify app setup
+├── server.ts           # Entry point
+├── config/             # Environment config
+├── database/           # SQLite schema & migrations
+├── models/             # Data types / schemas (Zod)
+├── repository/         # DB access layer
+├── routes/             # HTTP route handlers
+├── services/           # Business logic
+│   ├── authService.ts
+│   ├── friendsService.ts
+│   ├── matchService.ts
+│   ├── statsService.ts
+│   ├── tournamentService.ts
+│   └── userService.ts
+├── plugins/            # Fastify plugins (JWT, CORS, etc.)
+├── ws/                 # WebSocket handlers (game)
+├── game/               # Pong game logic
+├── tournament/         # Tournament & matchmaking logic
+├── utils/
+└── frontend/           # Vite SPA (TypeScript + Tailwind)
+```
+
+> [!NOTE]
+> The frontend has its own [README](srcs/frontend/README.md) with full documentation on its architecture, components, routing, and i18n setup.
 
 ---
 
-## 12. Limitations actuelles
-- Ce qui manque
-- Ce qui est volontairement simplifié
-- Hypothèses non couvertes
+## Environment variables
 
----
-
-## 13. Améliorations possibles
-- À court terme
-- À long terme
-- Hors scope du projet
-
----
-
-## 14. À approfondir plus tard
-- Concepts avancés
-- Optimisations
-- Sujets à revoir après le projet
-
----
-
-## 15. Glossaire (optionnel mais très fort)
-- JWT :
-- Middleware :
-- Service :
-- Controller :
-
----
-
-## 16. Questions de soutenance possibles (OPTIONNEL MAIS EXCELLENT)
-- Pourquoi avoir mis cette logique ici ?
-- Que se passe-t-il si X échoue ?
-- Comment sécuriser davantage cette partie ?
+| Variable | Description | Default |
+|---|---|---|
+| `NODE_ENV` | `development` / `production` | `development` |
+| `PORT` | Backend HTTP port | `3000` |
+| `DATABASE_PATH` | Path to SQLite file | `./data/transcendence.db` |
+| `FRONTEND_URL` | Allowed CORS origin | `http://localhost:5173` |
+| `JWT_SECRET` | Secret for signing JWTs | **required** |
